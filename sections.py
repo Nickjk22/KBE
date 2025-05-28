@@ -82,7 +82,6 @@ class Section(GeomBase):
         )
 
 
-
     @Part
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,

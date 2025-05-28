@@ -25,7 +25,11 @@ class Segment(GeomBase):
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
 
-    segment_spanwise_position = Input(0.7)
+    segment_number = Input(14)
+
+    @Attribute
+    def spanwise_points_list_segments(self):
+        return np.linspace(0, 1, self.segment_number)
 
     @Part
     def segment_frame(self):
@@ -45,26 +49,41 @@ class Segment(GeomBase):
                     (self.wing_tip_chord - self.wing_middle_chord) / (
                     self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
-    @Attribute
-    def chord_section(self):
-        return self._calculate_chord_at_position(self.segment_spanwise_position)
+    # @Attribute
+    # def chord_section(self):
+    #     return self._calculate_chord_at_position(self.segment_spanwise_position)
 
     @Part
     def section_airfoil(self):
-        return LineSegment(Point(((self.segment_spanwise_position * self.wing_semi_span * np.tan(
-            radians(self.wing_sweep_leading_edge_planform1)))
-                                 if self.segment_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1
-                                 else (self.wing_semi_span_planform1 * np.tan(
+        return LineSegment(quantify=self.segment_number,
+            start=Point(((self.spanwise_points_list_segments[child.index]
+                                   * self.wing_semi_span * np.tan(
+                    radians(self.wing_sweep_leading_edge_planform1)))
+                                  if self.spanwise_points_list_segments[child.index]
+                                     * self.wing_semi_span < self.wing_semi_span_planform1
+                                  else (self.wing_semi_span_planform1 * np.tan(
             radians(self.wing_sweep_leading_edge_planform1))) + ((
-                                                                         self.segment_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-            radians(self.wing_sweep_leading_edge_planform2)))) + self.chord_section*0.25, self.segment_spanwise_position * self.wing_semi_span,
-                                 10), Point(((self.segment_spanwise_position * self.wing_semi_span * np.tan(
-            radians(self.wing_sweep_leading_edge_planform1)))
-                                            if self.segment_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1
-                                            else (self.wing_semi_span_planform1 * np.tan(
+                                                                         self.spanwise_points_list_segments[child.index]
+                                                                         * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+            radians(self.wing_sweep_leading_edge_planform2)))) + self._calculate_chord_at_position(
+            self.spanwise_points_list_segments[child.index])
+                                 * 0.25, self.spanwise_points_list_segments[child.index]
+                                 * self.wing_semi_span,
+                                 10),
+                           end=Point(((self.spanwise_points_list_segments[child.index]
+                                              * self.wing_semi_span * np.tan(
+                    radians(self.wing_sweep_leading_edge_planform1)))
+                                             if self.spanwise_points_list_segments[child.index]
+                                                * self.wing_semi_span < self.wing_semi_span_planform1
+                                             else (self.wing_semi_span_planform1 * np.tan(
             radians(self.wing_sweep_leading_edge_planform1))) + ((
-                                                                         self.segment_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-            radians(self.wing_sweep_leading_edge_planform2)))) + self.chord_section*0.25, self.segment_spanwise_position * self.wing_semi_span,
+                                                                         self.spanwise_points_list_segments[
+                                                                             child.index]
+                                                                         * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+            radians(self.wing_sweep_leading_edge_planform2)))) + self._calculate_chord_at_position(
+            self.spanwise_points_list_segments[child.index])
+                                            * 0.25, self.spanwise_points_list_segments[child.index]
+                                            * self.wing_semi_span,
                                             -10),
 
                            )

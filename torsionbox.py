@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 import pandas as pd
 import numpy as np
 from sections import Section
+from segments import Segment
 import operator
 
 
@@ -178,6 +179,7 @@ class TorsionBox(Base):
     rib_thickness = Input(0.2)
     rib_number = Input(20)
     section_number = Input(14)
+    segment_number = Input(14)
 
     # Stringers
     # stringer_thickness = Input(0.01)
@@ -412,6 +414,29 @@ class TorsionBox(Base):
                        wing_twist=self.wing_twist,
 
                        section_number=self.section_number
+                       )
+
+    @Part
+    def segments(self):
+        return Segment(wing_airfoil_root=self.wing_airfoil_root,
+                       wing_airfoil_middle=self.wing_airfoil_middle,
+                       wing_airfoil_tip=self.wing_airfoil_tip,
+
+                       wing_root_chord=self.wing_root_chord,
+                       wing_middle_chord=self.wing_middle_chord,
+                       wing_tip_chord=self.wing_tip_chord,
+
+                       wing_thickness_factor_root=self.wing_thickness_factor_root,
+                       wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                       wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                       wing_semi_span_planform1=self.wing_semi_span_planform1,
+                       wing_semi_span=self.wing_semi_span,
+                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                       wing_twist=self.wing_twist,
+
+                       segment_number=self.segment_number
                        )
 
 
