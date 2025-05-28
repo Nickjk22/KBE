@@ -6,7 +6,6 @@ from reference_frame import Frame
 import numpy as np
 
 
-
 class Segment(GeomBase):
     wing_airfoil_root = Input("whitcomb.dat")
     wing_airfoil_middle = Input("whitcomb.dat")
