@@ -78,7 +78,7 @@ class CodeAster_primitives(Base):
             start=self.cp_points[child.index].translate("z", -100),
             end=self.cp_points[child.index].translate("z", 100),
             quantify=len(self.cp_points),
-            color="green"  # optional for visual clarity
+            color="green"  # for visual clarity
         )
 
     @Attribute
