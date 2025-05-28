@@ -94,7 +94,8 @@ class FinalMesh(Base):
                       self.torsionbox.rear_spar
                   ] + [rib.rib_surface for rib in self.torsionbox.ribs],
 
-            transparency=0.5
+            transparency=0.5,
+            fuzzy_value=0.001
         )
 
     @Part
