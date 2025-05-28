@@ -6,6 +6,8 @@ from wing_surfaces import WingSurfaces
 from reference_frame import Frame
 from spars_surface import SparSurface
 from ribs_surface import RibSurface
+from segments import Segment
+from sections import Section
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -98,6 +100,10 @@ class TorsionBox(Base):
     # stringer_thickness = Input(0.01)
     # stringer_number = Input(10)
 
+    section_number = Input(30)
+    segment_number = Input(30)
+
+
     @Part
     def wing_frame(self):
         return Frame(pos=self.position,
@@ -106,6 +112,14 @@ class TorsionBox(Base):
     @Attribute
     def spanwise_points_list(self):
         return np.linspace(0, 1, self.rib_number)
+
+    @Attribute
+    def spanwise_points_list_sections(self):
+        return np.linspace(0, 1, self.section_number)
+
+    @Attribute
+    def spanwise_points_list_segments(self):
+        return np.linspace(0, 1, self.segment_number)
 
     # Chordwise points for stringers (fraction of chord)
     @Attribute
@@ -278,6 +292,55 @@ class TorsionBox(Base):
                           quantify=self.rib_number,
                           rib_spanwise_position=self.spanwise_points_list[child.index]
                           )
+
+    @Part
+    def segments(self):
+        return Segment(wing_airfoil_root=self.wing_airfoil_root,
+                       wing_airfoil_middle=self.wing_airfoil_middle,
+                       wing_airfoil_tip=self.wing_airfoil_tip,
+
+                       wing_root_chord=self.wing_root_chord,
+                       wing_middle_chord=self.wing_middle_chord,
+                       wing_tip_chord=self.wing_tip_chord,
+
+                       wing_thickness_factor_root=self.wing_thickness_factor_root,
+                       wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                       wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                       wing_semi_span_planform1=self.wing_semi_span_planform1,
+                       wing_semi_span=self.wing_semi_span,
+                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                       wing_twist=self.wing_twist,
+
+                       quantify=self.segment_number,
+                       segment_spanwise_position=self.spanwise_points_list_segments[child.index]
+
+        )
+
+    @Part
+    def sections(self):
+        return Section(wing_airfoil_root=self.wing_airfoil_root,
+                       wing_airfoil_middle=self.wing_airfoil_middle,
+                       wing_airfoil_tip=self.wing_airfoil_tip,
+
+                       wing_root_chord=self.wing_root_chord,
+                       wing_middle_chord=self.wing_middle_chord,
+                       wing_tip_chord=self.wing_tip_chord,
+
+                       wing_thickness_factor_root=self.wing_thickness_factor_root,
+                       wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                       wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                       wing_semi_span_planform1=self.wing_semi_span_planform1,
+                       wing_semi_span=self.wing_semi_span,
+                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                       wing_twist=self.wing_twist,
+
+                       quantify=self.section_number,
+                       section_spanwise_position=self.spanwise_points_list_sections[child.index]
+                       )
 
 
 if __name__ == '__main__':
