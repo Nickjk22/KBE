@@ -14,7 +14,9 @@ from torsionbox import TorsionBox
 from parapy.geom import LineSegment
 from parapy.geom import Point
 from sections import Section
-from meshing import FinalMesh
+from meshing_riks import FinalMesh
+from aircraft_fem.contrib.parapy.visualisation import Arrow
+
 
 
 class Skin(Base):
@@ -78,8 +80,6 @@ class CodeAster_primitives(Base):
             quantify=len(self.cp_points),
             color="green"  # optional for visual clarity
         )
-
-
 
     @Attribute
     def strip_force_meshable_shape_intersection_pts(self):

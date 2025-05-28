@@ -25,8 +25,12 @@ class Section(GeomBase):
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
 
-    section_spanwise_position = Input(0.7)
+    # section_spanwise_position = Input(0.7)
+    section_number = Input(14)
 
+    @Attribute
+    def spanwise_points_list_sections(self):
+        return np.linspace(0, 1, self.section_number)
 
     @Part
     def section_frame(self):
@@ -46,33 +50,33 @@ class Section(GeomBase):
                     (self.wing_tip_chord - self.wing_middle_chord) / (
                     self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
-    @Attribute
-    def chord_section(self):
-        return self._calculate_chord_at_position(self.section_spanwise_position)
-
+    # @Attribute
+    # def chord_section(self):
+    #     return self._calculate_chord_at_position(self.spanwise_points_list_sections[child.index])
 
     @Part
     def section_airfoil(self):
         return Airfoil(
             airfoil_name=self.wing_airfoil_root,
-            chord=self.chord_section,
+            quantify = self.section_number,
+            chord= self._calculate_chord_at_position(self.spanwise_points_list_sections[child.index]),
             thickness_factor=self.wing_thickness_factor_root,
             position=rotate(
                 translate(
                     self.position,
-                    "y", self.section_spanwise_position * self.wing_semi_span,
+                    "y", self.spanwise_points_list_sections[child.index] * self.wing_semi_span,
                     "x",
-                    (self.section_spanwise_position * self.wing_semi_span * np.tan(
+                    (self.spanwise_points_list_sections[child.index] * self.wing_semi_span * np.tan(
                         radians(self.wing_sweep_leading_edge_planform1)))
-                    if self.section_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1
+                    if self.spanwise_points_list_sections[child.index] * self.wing_semi_span < self.wing_semi_span_planform1
                     else (self.wing_semi_span_planform1 * np.tan(radians(self.wing_sweep_leading_edge_planform1))) + ((
-                                                                                                                                  self.section_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                                                                                                                  self.spanwise_points_list_sections[child.index] * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
                         radians(self.wing_sweep_leading_edge_planform2)))
 
                 ),
                 "y",
                 radians(
-                    self.wing_twist * (self.section_spanwise_position * self.wing_semi_span) / self.wing_semi_span
+                    self.wing_twist * (self.spanwise_points_list_sections[child.index] * self.wing_semi_span) / self.wing_semi_span
                 )
             )
         )

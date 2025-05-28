@@ -6,15 +6,25 @@ from wing_surfaces import WingSurfaces
 from reference_frame import Frame
 from spars_surface import SparSurface
 from ribs_surface import RibSurface
-from segments import Segment
-from sections import Section
-import numpy as np
+from kbeutils import avl
 from scipy.interpolate import interp1d
+import pandas as pd
+import numpy as np
+from sections import Section
+import operator
 
+
+import warnings
+from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
+
+
+# Add these imports at the top of torsionbox.py if not already present
+from parapy.core import Attribute, Part
+from parapy.geom.occ.brep import BRep
 
 
 # Interpolate whitcomb airfoil
-def interpolate_airfoil(input_file, output_file, factor=5):
+def interpolate_airfoil(input_file, output_file, factor=10):
     # Read and parse the original data
     with open(input_file, 'r') as f:
         coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
@@ -61,10 +71,82 @@ def interpolate_airfoil(input_file, output_file, factor=5):
     print(f"Created {output_file} with {len(new_coords)} points")
 
 
-# Usage
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
+
+def generate_warning(warning_header, msg):
+    from tkinter import Tk, messagebox
+
+    # initialization
+    window = Tk()
+    window.withdraw()
+
+    # generates message box and waits for user to close it
+    messagebox.showwarning(warning_header, msg)
+
+    # kills the gui
+    window.deiconify()
+    window.destroy()
+    window.quit()
 
 
+
+# class MeshGenerator(Base):
+#     shape_to_mesh = Input()
+#     element_length = Input(0.2)
+#
+#     @Attribute
+#     def quad_faces(self):
+#         faces = [f for f in self.shape_to_mesh.faces if len(f.edges) == 4]
+#         lst = []
+#
+#         taper_ratio = 0.2
+#         for f in faces:
+#             e1 = f.edges[0]
+#             try:
+#                 e3 = e1.opposite_edge
+#             except Exception:
+#                 continue
+#
+#             if abs(e1.length - e3.length) > taper_ratio * e1.length:
+#                 continue
+#
+#             e2 = f.edges[1]
+#             e4 = e2.opposite_edge
+#             if abs(e2.length - e4.length) > taper_ratio * e2.length:
+#                 continue
+#
+#             lst.append(f)
+#         return lst
+#
+#     @Part(in_tree=False)
+#     def fixed_length(self):
+#         return FixedLength(shape_to_mesh=self.shape_to_mesh,
+#                           length=self.element_length)
+#
+#     @Part(in_tree=False)
+#     def quad(self):
+#         return Quad(quantify=len(self.quad_faces),
+#                     shape=self.quad_faces[child.index])
+#
+#     @Part
+#     def tri(self):
+#         return Tri(shape_to_mesh=self.shape_to_mesh,
+#                   quad_dominant=False,
+#                   only_2d=True,
+#                   min_size=0.1,
+#                   max_size=0.3)
+#
+#     @Part
+#     def mesh(self):
+#         return Mesh(shape_to_mesh=self.shape_to_mesh,
+#                     display_mode="shaded",
+#                     controls=[self.fixed_length, self.quad, self.tri])
+
+
+
+Excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Form.xlsx"
+# Input(float(pd.read_excel(Excel_directory).iloc[1, 1]), validator=GreaterThanOrEqualTo(0))
+
+# Class
 # Class
 class TorsionBox(Base):
     # Wing
@@ -94,15 +176,12 @@ class TorsionBox(Base):
 
     # Ribs
     rib_thickness = Input(0.2)
-    rib_number = Input(15)
+    rib_number = Input(20)
+    section_number = Input(14)
 
     # Stringers
     # stringer_thickness = Input(0.01)
     # stringer_number = Input(10)
-
-    section_number = Input(30)
-    segment_number = Input(30)
-
 
     @Part
     def wing_frame(self):
@@ -112,14 +191,6 @@ class TorsionBox(Base):
     @Attribute
     def spanwise_points_list(self):
         return np.linspace(0, 1, self.rib_number)
-
-    @Attribute
-    def spanwise_points_list_sections(self):
-        return np.linspace(0, 1, self.section_number)
-
-    @Attribute
-    def spanwise_points_list_segments(self):
-        return np.linspace(0, 1, self.segment_number)
 
     # Chordwise points for stringers (fraction of chord)
     @Attribute
@@ -197,23 +268,11 @@ class TorsionBox(Base):
 
     @Part
     def wing_upper_surface(self):
-        return FusedShell(
-            shape_in=self.wing_surfaces.upper_surface1,
-            tool=[self.wing_surfaces.upper_surface2],
-            mesh_deflection=0.0001,
-            transparency=0.8,
-            color="Yellow"
-        )
+        return SewnShell([self.wing_surfaces.upper_surface1, self.wing_surfaces.upper_surface2])
 
     @Part
     def wing_lower_surface(self):
-        return FusedShell(
-            shape_in=self.wing_surfaces.lower_surface1,
-            tool=[self.wing_surfaces.lower_surface2],
-            mesh_deflection=0.0001,
-            transparency=0.8,
-            color="Yellow"
-        )
+        return SewnShell([self.wing_surfaces.lower_surface1, self.wing_surfaces.lower_surface2])
 
     # Spars
     @Part
@@ -246,23 +305,11 @@ class TorsionBox(Base):
 
     @Part
     def front_spar(self):
-        return FusedShell(
-            shape_in=self.spars.front_spar_plan1,
-            tool=[self.spars.front_spar_plan2],
-            mesh_deflection=0.0001,
-            transparency=0.8,
-            color="Yellow",
-        )
+        return SewnShell([self.spars.front_spar_plan1, self.spars.front_spar_plan2])
 
     @Part
     def rear_spar(self):
-        return FusedShell(
-            shape_in=self.spars.rear_spar_plan1,
-            tool=[self.spars.rear_spar_plan2],
-            mesh_deflection=0.0001,
-            transparency=0.8,
-            color="Yellow",
-        )
+        return SewnShell([self.spars.rear_spar_plan1, self.spars.rear_spar_plan2])
 
     # Ribs
     @Part
@@ -290,33 +337,59 @@ class TorsionBox(Base):
                           rear_spar_position=self.rear_spar_position,
                           rear_spar_thickness=self.rear_spar_thickness,
                           quantify=self.rib_number,
-                          rib_spanwise_position=self.spanwise_points_list[child.index]
+                          rib_spanwise_position=self.spanwise_points_list[child.index],
                           )
 
-    @Part
-    def segments(self):
-        return Segment(wing_airfoil_root=self.wing_airfoil_root,
-                       wing_airfoil_middle=self.wing_airfoil_middle,
-                       wing_airfoil_tip=self.wing_airfoil_tip,
+    # # AVL required parts/attributes
+    # @Attribute
+    # def planform_area(self):  # We assume a trapezoid shape for the wing
+    #     area1 = (0.5 * (self.wing_root_chord + self.wing_middle_chord) * self.wing_semi_span_planform1)
+    #     area2 = (0.5 * (self.wing_middle_chord + self.wing_tip_chord) * (
+    #             self.wing_semi_span - self.wing_semi_span_planform1))
+    #     return area1 + area2
+    #
+    # @Attribute
+    # def mac(self):
+    #     return (self.wing_semi_span_planform1 / self.wing_semi_span) * (
+    #             0.5 * (self.wing_root_chord + self.wing_middle_chord)) + (
+    #             (self.wing_semi_span - self.wing_semi_span_planform1) / self.wing_semi_span) * (
+    #             0.5 * (self.wing_middle_chord + self.wing_tip_chord))
+    #
+    # @Attribute
+    # def avl_surfaces(self):  # this scans the product tree and collect all instances of the avl.Surface class
+    #     return self.find_children(lambda o: isinstance(o, avl.Surface))
+    #
+    # @Part
+    # def avl_configuration(self):
+    #     return avl.Configuration(name='aircraft',
+    #                              reference_area=self.planform_area,
+    #                              reference_span=(self.wing_semi_span * 2),
+    #                              reference_chord=self.mac,
+    #                              reference_point=self.position.point,
+    #                              surfaces=self.avl_surfaces,
+    #                              mach=self.mach)
 
-                       wing_root_chord=self.wing_root_chord,
-                       wing_middle_chord=self.wing_middle_chord,
-                       wing_tip_chord=self.wing_tip_chord,
 
-                       wing_thickness_factor_root=self.wing_thickness_factor_root,
-                       wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                       wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-
-                       wing_semi_span_planform1=self.wing_semi_span_planform1,
-                       wing_semi_span=self.wing_semi_span,
-                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                       wing_twist=self.wing_twist,
-
-                       quantify=self.segment_number,
-                       segment_spanwise_position=self.spanwise_points_list_segments[child.index]
-
-        )
+    # @Part
+    # def shape_to_mesh(self):
+    #     return GeneralFuse(
+    #         tools=[
+    #                   self.wing_upper_surface,
+    #                   self.wing_lower_surface,
+    #                   self.front_spar,
+    #                   self.rear_spar
+    #               ] + [rib.rib_surface for rib in self.ribs],
+    #
+    #         transparency=0.5
+    #     )
+    #
+    # @Part
+    # def mesh_generator(self):
+    #     return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
+    #
+    # @Attribute
+    # def mesh(self):
+    #     return self.mesh_generator.mesh
 
     @Part
     def sections(self):
@@ -338,13 +411,14 @@ class TorsionBox(Base):
                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                        wing_twist=self.wing_twist,
 
-                       quantify=self.section_number,
-                       section_spanwise_position=self.spanwise_points_list_sections[child.index]
+                       section_number=self.section_number
                        )
 
 
 if __name__ == '__main__':
     from parapy.gui import display
+
+    interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
 
     obj = TorsionBox(label="Torsion Box")
     display(obj)
