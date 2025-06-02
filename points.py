@@ -58,9 +58,7 @@ class Points(GeomBase):
 
         # Now we want to find all y-values with *exactly* the same x
         x_target = x_coords[index_closest]
-        print(x_target)
         matching_y = y_coords[np.isclose(x_coords, x_target)]
-        print(matching_y)
 
         # Return the largest of them
         return max(matching_y)
@@ -82,6 +80,26 @@ class Points(GeomBase):
                      self.point_spanwise_position * self.wing_semi_span,
 
                      (self.chord_point*self.y_at_x_025))
+    @Part
+    def visualized_point(self):
+        return Vertex(
+            point=Point(
+                ((self.point_spanwise_position * self.wing_semi_span * np.tan(
+                    radians(self.wing_sweep_leading_edge_planform1)))
+                 if self.point_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1
+                 else (self.wing_semi_span_planform1 * np.tan(
+                    radians(self.wing_sweep_leading_edge_planform1))) + (
+                              (
+                                          self.point_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                          radians(self.wing_sweep_leading_edge_planform2))))
+                + self.chord_point * 0.25,
+
+                self.point_spanwise_position * self.wing_semi_span,
+
+                (self.chord_point * self.y_at_x_025)
+            ),
+            label="Quarter Chord Point"
+        )
 
     @Part
     def wing_root_airfoil(self):
