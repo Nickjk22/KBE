@@ -46,9 +46,28 @@ class Points(GeomBase):
                     self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
     @Attribute
+    def y_at_x_025(self):
+        # Load airfoil data
+        data = np.loadtxt(self.wing_airfoil_root)
+
+        x_coords = data[:, 0]
+        y_coords = data[:, 1]
+
+        # Find index of x closest to 0.25
+        index_closest = np.argmin(np.abs(x_coords - 0.25))
+
+        # Now we want to find all y-values with *exactly* the same x
+        x_target = x_coords[index_closest]
+        print(x_target)
+        matching_y = y_coords[np.isclose(x_coords, x_target)]
+        print(matching_y)
+
+        # Return the largest of them
+        return max(matching_y)
+
+    @Attribute
     def chord_point(self):
         return self._calculate_chord_at_position(self.point_spanwise_position)
-
 
     @Attribute
     def point(self):
@@ -62,7 +81,7 @@ class Points(GeomBase):
 
                      self.point_spanwise_position * self.wing_semi_span,
 
-                     0)
+                     (self.chord_point*self.y_at_x_025))
 
     @Part
     def wing_root_airfoil(self):
