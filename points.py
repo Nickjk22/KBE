@@ -50,7 +50,7 @@ class Points(GeomBase):
         # Load airfoil data
         data = np.loadtxt(self.wing_airfoil_root)
 
-        number = (int(len(data[:, 0])) + 1) / 2
+        number = int((len(data[:, 0]) + 1) / 2)
         # slice rows 0 … mid-1  (upper surface)
         x_coords = data[:number, 0]  # first-half x column
         y_coords = data[:number, 1]  # first-half y column
@@ -63,7 +63,7 @@ class Points(GeomBase):
         matching_y = y_coords[np.isclose(x_coords, x_target)]
 
         # Return the largest of them
-        return matching_y
+        return max(matching_y)
 
     @Attribute
     def chord_point(self):

@@ -20,7 +20,6 @@ import numpy as np
 from aircraft_fem.contrib.parapy.visualisation import Arrow
 
 
-
 class Skin(Base):
     wing_shell = Input()
     faces_to_keep = Input()
@@ -67,11 +66,6 @@ class CodeAster_primitives(Base):
         return TorsionBox()
 
     @Part
-    def sections(self):
-        return Section()
-
-
-    @Part
     def finalmesh(self):
         return FinalMesh()
 
@@ -79,6 +73,7 @@ class CodeAster_primitives(Base):
     def skin(self):
         return Skin(faces_to_keep=self.torsionbox.wing_upper_surface,
                     wing_shell=self.finalmesh.shape_to_mesh)
+
     @Attribute
     def spanwise_points_list(self):
         return np.linspace(0, 1, self.points_number)
@@ -108,15 +103,14 @@ class CodeAster_primitives(Base):
     #                   hidden=False
     #                   )
 
-
-
     @Attribute
     def points_list(self):
         return [pt.point for pt in self.torsionbox.points]
 
     @Attribute
     def strip_results(self):
-        return [3.1286,3.2697,3.3305,3.3556,3.4074,3.4366,3.1775,2.9278,2.6872,2.4473,2.2004,1.9360,1.6335,1.2265]
+        return [3.1286, 3.2697, 3.3305, 3.3556, 3.4074, 3.4366, 3.1775, 2.9278, 2.6872, 2.4473, 2.2004, 1.9360, 1.6335,
+                1.2265]
 
     @Attribute
     def load_primitives(self):
@@ -168,16 +162,15 @@ class CodeAster_primitives(Base):
                 lst.append(subgrid)
         return lst
 
-
     @Attribute
     def structural_elements(self):
-        return self.torsionbox.ribs + self.spars
+        return self.torsionbox.ribs + self.torsionbox.front_spar + self.torsionbox.rear_spar
 
     @Attribute
     def structural_element_primitives(self):
         lst = []
-        history = self.shape_to_mesh.history
-        mesh = self.mesh
+        history = self.finalmesh.shape_to_mesh.history
+        mesh = self.finalmesh.mesh_generator.mesh
         get_subgrid = mesh.get_subgrid_on_the_fly
         for element in self.structural_elements:
             for face in element.faces:
@@ -202,7 +195,6 @@ class CodeAster_primitives(Base):
     def subgrids(self):
         subgrids = (prim.subgrid for prim in self.primitives if hasattr(prim, "subgrid"))
         return list(set(subgrids))  # removes duplicates, e.g. root clamps and root shell use same subgrids
-
 
 
 if __name__ == '__main__':
