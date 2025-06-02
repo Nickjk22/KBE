@@ -145,7 +145,9 @@ Excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Form
 
 # Input(float(pd.read_excel(Excel_directory).iloc[1, 1]), validator=GreaterThanOrEqualTo(0))
 
-# Class
+interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
+
+
 # Class
 class TorsionBox(Base):
     # Wing

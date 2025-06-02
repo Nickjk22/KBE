@@ -50,8 +50,10 @@ class Points(GeomBase):
         # Load airfoil data
         data = np.loadtxt(self.wing_airfoil_root)
 
-        x_coords = data[:, 0]
-        y_coords = data[:, 1]
+        number = (int(len(data[:, 0])) + 1) / 2
+        # slice rows 0 … mid-1  (upper surface)
+        x_coords = data[:number, 0]  # first-half x column
+        y_coords = data[:number, 1]  # first-half y column
 
         # Find index of x closest to 0.25
         index_closest = np.argmin(np.abs(x_coords - 0.25))
@@ -61,7 +63,7 @@ class Points(GeomBase):
         matching_y = y_coords[np.isclose(x_coords, x_target)]
 
         # Return the largest of them
-        return max(matching_y)
+        return matching_y
 
     @Attribute
     def chord_point(self):
@@ -79,7 +81,8 @@ class Points(GeomBase):
 
                      self.point_spanwise_position * self.wing_semi_span,
 
-                     (self.chord_point*self.y_at_x_025))
+                     (self.chord_point * self.y_at_x_025))
+
     @Part
     def visualized_point(self):
         return Vertex(
@@ -90,7 +93,7 @@ class Points(GeomBase):
                  else (self.wing_semi_span_planform1 * np.tan(
                     radians(self.wing_sweep_leading_edge_planform1))) + (
                               (
-                                          self.point_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                      self.point_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
                           radians(self.wing_sweep_leading_edge_planform2))))
                 + self.chord_point * 0.25,
 
