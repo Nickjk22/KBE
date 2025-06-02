@@ -12,12 +12,11 @@ import pandas as pd
 import numpy as np
 from sections import Section
 from segments import Segment
+from points import Points
 import operator
-
 
 import warnings
 from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
-
 
 # Add these imports at the top of torsionbox.py if not already present
 from parapy.core import Attribute, Part
@@ -72,7 +71,6 @@ def interpolate_airfoil(input_file, output_file, factor=10):
     print(f"Created {output_file} with {len(new_coords)} points")
 
 
-
 def generate_warning(warning_header, msg):
     from tkinter import Tk, messagebox
 
@@ -87,7 +85,6 @@ def generate_warning(warning_header, msg):
     window.deiconify()
     window.destroy()
     window.quit()
-
 
 
 # class MeshGenerator(Base):
@@ -143,8 +140,9 @@ def generate_warning(warning_header, msg):
 #                     controls=[self.fixed_length, self.quad, self.tri])
 
 
-
 Excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Form.xlsx"
+
+
 # Input(float(pd.read_excel(Excel_directory).iloc[1, 1]), validator=GreaterThanOrEqualTo(0))
 
 # Class
@@ -180,6 +178,7 @@ class TorsionBox(Base):
     rib_number = Input(20)
     section_number = Input(14)
     segment_number = Input(14)
+    points_number = Input(14)
 
     # Stringers
     # stringer_thickness = Input(0.01)
@@ -191,8 +190,12 @@ class TorsionBox(Base):
                      hidden=True)
 
     @Attribute
-    def spanwise_points_list(self):
+    def spanwise_points_list_ribs(self):
         return np.linspace(0, 1, self.rib_number)
+
+    @Attribute
+    def spanwise_points_list(self):
+        return np.linspace(0, 1, self.points_number)
 
     # Chordwise points for stringers (fraction of chord)
     @Attribute
@@ -339,7 +342,7 @@ class TorsionBox(Base):
                           rear_spar_position=self.rear_spar_position,
                           rear_spar_thickness=self.rear_spar_thickness,
                           quantify=self.rib_number,
-                          rib_spanwise_position=self.spanwise_points_list[child.index],
+                          rib_spanwise_position=self.spanwise_points_list_ribs[child.index],
                           )
 
     # # AVL required parts/attributes
@@ -370,7 +373,6 @@ class TorsionBox(Base):
     #                              reference_point=self.position.point,
     #                              surfaces=self.avl_surfaces,
     #                              mach=self.mach)
-
 
     # @Part
     # def shape_to_mesh(self):
@@ -416,28 +418,52 @@ class TorsionBox(Base):
                        section_number=self.section_number
                        )
 
+    # @Part
+    # def segments(self):
+    #     return Segment(wing_airfoil_root=self.wing_airfoil_root,
+    #                    wing_airfoil_middle=self.wing_airfoil_middle,
+    #                    wing_airfoil_tip=self.wing_airfoil_tip,
+    #
+    #                    wing_root_chord=self.wing_root_chord,
+    #                    wing_middle_chord=self.wing_middle_chord,
+    #                    wing_tip_chord=self.wing_tip_chord,
+    #
+    #                    wing_thickness_factor_root=self.wing_thickness_factor_root,
+    #                    wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+    #                    wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+    #
+    #                    wing_semi_span_planform1=self.wing_semi_span_planform1,
+    #                    wing_semi_span=self.wing_semi_span,
+    #                    wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+    #                    wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+    #                    wing_twist=self.wing_twist,
+    #
+    #                    segment_number=self.segment_number
+    #                    )
+
     @Part
-    def segments(self):
-        return Segment(wing_airfoil_root=self.wing_airfoil_root,
-                       wing_airfoil_middle=self.wing_airfoil_middle,
-                       wing_airfoil_tip=self.wing_airfoil_tip,
+    def points(self):
+        return Points(wing_airfoil_root=self.wing_airfoil_root,
+                      wing_airfoil_middle=self.wing_airfoil_middle,
+                      wing_airfoil_tip=self.wing_airfoil_tip,
 
-                       wing_root_chord=self.wing_root_chord,
-                       wing_middle_chord=self.wing_middle_chord,
-                       wing_tip_chord=self.wing_tip_chord,
+                      wing_root_chord=self.wing_root_chord,
+                      wing_middle_chord=self.wing_middle_chord,
+                      wing_tip_chord=self.wing_tip_chord,
 
-                       wing_thickness_factor_root=self.wing_thickness_factor_root,
-                       wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                       wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+                      wing_thickness_factor_root=self.wing_thickness_factor_root,
+                      wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                      wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
-                       wing_semi_span_planform1=self.wing_semi_span_planform1,
-                       wing_semi_span=self.wing_semi_span,
-                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                       wing_twist=self.wing_twist,
+                      wing_semi_span_planform1=self.wing_semi_span_planform1,
+                      wing_semi_span=self.wing_semi_span,
+                      wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                      wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                      wing_twist=self.wing_twist,
 
-                       segment_number=self.segment_number
-                       )
+                      quantify=self.points_number,
+                      point_spanwise_position=self.spanwise_points_list[child.index],
+                      )
 
 
 if __name__ == '__main__':

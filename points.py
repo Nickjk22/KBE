@@ -6,7 +6,7 @@ from reference_frame import Frame
 import numpy as np
 
 
-class Section(GeomBase):
+class Points(GeomBase):
     wing_airfoil_root = Input("whitcomb.dat")
     wing_airfoil_middle = Input("whitcomb.dat")
     wing_airfoil_tip = Input("whitcomb.dat")
@@ -25,15 +25,10 @@ class Section(GeomBase):
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
 
-    # section_spanwise_position = Input(0.7)
-    section_number = Input(14)
-
-    @Attribute
-    def spanwise_points_list_sections(self):
-        return np.linspace(0, 1, self.section_number)
+    point_spanwise_position = Input(0.7)
 
     @Part
-    def section_frame(self):
+    def point_frame(self):
         return Frame(pos=self.position,
                      hidden=True)
 
@@ -50,39 +45,23 @@ class Section(GeomBase):
                     (self.wing_tip_chord - self.wing_middle_chord) / (
                     self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
-    # @Attribute
-    # def chord_section(self):
-    #     return self._calculate_chord_at_position(self.spanwise_points_list_sections[child.index])
+    @Attribute
+    def chord_point(self):
+        return self._calculate_chord_at_position(self.point_spanwise_position)
 
     @Part
-    def section_airfoil(self):
-        return Airfoil(
-            airfoil_name=self.wing_airfoil_root,
-            quantify=self.section_number,
-            chord=self._calculate_chord_at_position(self.spanwise_points_list_sections[child.index]),
-            thickness_factor=self.wing_thickness_factor_root,
-            position=rotate(
-                translate(
-                    self.position,
-                    "y", self.spanwise_points_list_sections[child.index] * self.wing_semi_span,
-                    "x",
-                    (self.spanwise_points_list_sections[child.index] * self.wing_semi_span * np.tan(
-                        radians(self.wing_sweep_leading_edge_planform1)))
-                    if self.spanwise_points_list_sections[
-                           child.index] * self.wing_semi_span < self.wing_semi_span_planform1
-                    else (self.wing_semi_span_planform1 * np.tan(radians(self.wing_sweep_leading_edge_planform1))) + ((
-                                                                                                                              self.spanwise_points_list_sections[
-                                                                                                                                  child.index] * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                        radians(self.wing_sweep_leading_edge_planform2)))
+    def point(self):
+        return Point(((self.point_spanwise_position * self.wing_semi_span * np.tan(
+            radians(self.wing_sweep_leading_edge_planform1)))
+                      if self.point_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1
+                      else (self.wing_semi_span_planform1 * np.tan(
+            radians(self.wing_sweep_leading_edge_planform1))) + ((
+                                                                         self.point_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+            radians(self.wing_sweep_leading_edge_planform2)))) + self.chord_point * 0.25,
 
-                ),
-                "y",
-                radians(
-                    self.wing_twist * (self.spanwise_points_list_sections[
-                                           child.index] * self.wing_semi_span) / self.wing_semi_span
-                )
-            )
-        )
+                     self.point_spanwise_position * self.wing_semi_span,
+
+                     0)
 
     @Part
     def wing_root_airfoil(self):
@@ -125,5 +104,5 @@ class Section(GeomBase):
 if __name__ == '__main__':
     from parapy.gui import display
 
-    obj = Section(label="Section")
+    obj = Points(label="Points")
     display(obj)
