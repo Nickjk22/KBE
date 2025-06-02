@@ -49,7 +49,8 @@ class Points(GeomBase):
     def chord_point(self):
         return self._calculate_chord_at_position(self.point_spanwise_position)
 
-    @Part
+
+    @Attribute
     def point(self):
         return Point(((self.point_spanwise_position * self.wing_semi_span * np.tan(
             radians(self.wing_sweep_leading_edge_planform1)))
