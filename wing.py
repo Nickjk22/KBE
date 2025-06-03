@@ -4,6 +4,8 @@ from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
 import numpy as np
+import kbeutils.avl as avl
+
 
 
 class WingSurface(GeomBase):
@@ -24,6 +26,8 @@ class WingSurface(GeomBase):
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(-10)
+
+    mach = Input(0.4)
 
     @Attribute
     def profiles(self):
@@ -97,6 +101,58 @@ class WingSurface(GeomBase):
             transparency=0.8,
             color="White"
         )
+
+    @Attribute
+    def planform_area(self):
+        """Berekening van het planform-oppervlak van een samengestelde vleugel (trapeziumvormig)"""
+        span1 = self.wing_semi_span_planform1
+        span2 = self.wing_semi_span - span1
+
+        area1 = 0.5 * (self.wing_root_chord + self.wing_middle_chord) * span1
+        area2 = 0.5 * (self.wing_middle_chord + self.wing_tip_chord) * span2
+
+        return area1 + area2
+
+    @Attribute
+    def mac(self):
+        """Berekening van de Mean Aerodynamic Chord (MAC) over twee vleugeldelen"""
+        span1 = self.wing_semi_span_planform1
+        span2 = self.wing_semi_span - span1
+
+        mac1 = 0.5 * (self.wing_root_chord + self.wing_middle_chord)
+        mac2 = 0.5 * (self.wing_middle_chord + self.wing_tip_chord)
+
+        return (span1 * mac1 + span2 * mac2) / self.wing_semi_span
+
+    # AVL
+    @Attribute
+    def wing_sections(self):
+        return [self.wing_root_airfoil, self.wing_middle_airfoil, self.wing_tip_airfoil]
+
+    @Part
+    def avl_surface(self):
+        return avl.Surface(name=self.name,
+                           n_chordwise=12,
+                           chord_spacing=avl.Spacing.cosine,
+                           n_spanwise=20,
+                           span_spacing=avl.Spacing.cosine,
+                           y_duplicate=None,
+                           sections=[Airfoil.avl_section
+                                     for Airfoil in self.wing_sections])
+
+    @Attribute
+    def avl_surfaces(self):  # this scans the product tree and collect all instances of the avl.Surface class
+        return self.find_children(lambda o: isinstance(o, avl.Surface))
+
+    @Part
+    def avl_configuration(self):
+        return avl.Configuration(name='wing',
+                                 reference_area=self.planform_area,
+                                 reference_span=self.wing_semi_span,
+                                 reference_chord=self.mac,
+                                 reference_point=self.position.point,
+                                 surfaces=self.avl_surfaces,
+                                 mach=self.mach)
 
 
 if __name__ == '__main__':

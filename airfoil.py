@@ -27,10 +27,10 @@ class Airfoil(FittedCurve):
         return Frame(pos=self.position,
                      hidden=False)
 
-    # # AVL required parts/attributes
-    # @Part
-    # def avl_section(self):
-    #     return avl.SectionFromCurve(curve_in=self)
+    # AVL required parts/attributes
+    @Part
+    def avl_section(self):
+        return avl.SectionFromCurve(curve_in=self)
 
 
 if __name__ == '__main__':
