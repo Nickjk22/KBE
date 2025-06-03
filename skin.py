@@ -17,7 +17,15 @@ from sections import Section
 from meshing_riks import FinalMesh
 from points import Points
 import numpy as np
+
+# from parapy.lib.code_aster.mesh import AsterWriter
+
+from parapy.lib.code_aster.run import run_code_aster
+# from parapy.lib.code_aster.writer import CodeAsterWriter
 from aircraft_fem.contrib.parapy.visualisation import Arrow
+import parapy.lib.code_aster.writer as writer
+print(dir(writer))
+
 
 
 class Skin(Base):
@@ -145,47 +153,55 @@ class CodeAster_primitives(Base):
         mesh = self.finalmesh.mesh_generator.mesh
         get_subgrid = mesh.get_subgrid_on_the_fly
 
-        for face in self.root_skin.shell.faces:
+        for face in self.skin.shell.faces:
             shape = history(face)
             label = 'group_ma_' + str(id(face))
             subgrid = get_subgrid(shape[0], *shape[1:], label=label)
             lst.append(subgrid)
 
-        for skin in [self.tip_skin, self.lateral_skin]:
-            for face in skin.shell.faces:
-                shapes = history(face)
-                label = 'group_ma_' + str(id(face))
-                if len(shapes) == 1:
-                    subgrid = get_subgrid(shapes[0], label=label)
-                else:
-                    subgrid = get_subgrid(shapes[0], *shapes[1:], label=label)
-                lst.append(subgrid)
         return lst
+
+    # @Attribute
+    # def foo(self):
+    #     lst = []
+    #     history = self.finalmesh.shape_to_mesh.history
+    #     mesh = self.finalmesh.mesh_generator.mesh
+    #     get_subgrid = mesh.get_subgrid_on_the_fly
+    #
+    #     for face in self.root_skin.shell.faces:
+    #         shape = history(face)
+    #         label = 'group_ma_' + str(id(face))
+    #         subgrid = get_subgrid(shape[0], *shape[1:], label=label)
+    #         lst.append(subgrid)
+    #
+    #     for skin in [self.tip_skin, self.lateral_skin]:
+    #         for face in skin.shell.faces:
+    #             shapes = history(face)
+    #             label = 'group_ma_' + str(id(face))
+    #             if len(shapes) == 1:
+    #                 subgrid = get_subgrid(shapes[0], label=label)
+    #             else:
+    #                 subgrid = get_subgrid(shapes[0], *shapes[1:], label=label)
+    #             lst.append(subgrid)
+    #     return lst
 
     @Attribute
     def structural_elements(self):
-        return self.torsionbox.ribs + self.torsionbox.front_spar + self.torsionbox.rear_spar
+        return (
+                self.torsionbox.ribs +
+                [self.torsionbox.front_spar] +
+                [self.torsionbox.rear_spar]
+        )
 
-    @Attribute
+    @property
     def structural_element_primitives(self):
-        lst = []
-        history = self.finalmesh.shape_to_mesh.history
-        mesh = self.finalmesh.mesh_generator.mesh
-        get_subgrid = mesh.get_subgrid_on_the_fly
+        elements = []
         for element in self.structural_elements:
-            for face in element.faces:
-                shapes = history(face)
-                label = 'group_ma_' + str(id(face))
-                if len(shapes) == 1:
-                    subgrid = get_subgrid(shapes[0], label=label)
-                else:
-                    subgrid = get_subgrid(shapes[0], *shapes[1:], label=label)
-
-                shell = CodeAsterShell(subgrid=subgrid,
-                                       thickness=element.thickness,
-                                       material=element.material)
-                lst.append(shell)
-        return lst
+            try:
+                elements.extend(element.faces)
+            except AttributeError:
+                elements.append(element)
+        return elements
 
     @Attribute
     def primitives(self):
@@ -197,9 +213,30 @@ class CodeAster_primitives(Base):
         return list(set(subgrids))  # removes duplicates, e.g. root clamps and root shell use same subgrids
 
 
-if __name__ == '__main__':
-    from parapy.gui import display
+if __name__ == "__main__":
+    comp = CodeAster_primitives()
 
-    obj = CodeAster_primitives()
+    writer = CodeAsterWriter(
+        mesh=comp.finalmesh.mesh_generator.mesh,
+        subgrids=comp.subgrids,
+        primitives=comp.primitives,
+        keep_files=True,
+        working_dir="output/skin_run"
+    )
 
-    display(obj)
+    writer.write()
+    run_code_aster(writer.commfile, exportfile=writer.exportfile)
+
+    print("Simulation finished.")
+    print(f"MED file: {writer.medfile}")
+
+
+
+
+
+
+
+
+
+
+
