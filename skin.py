@@ -24,7 +24,6 @@ from parapy.lib.code_aster.run import run_code_aster
 # from parapy.lib.code_aster.writer import CodeAsterWriter
 from aircraft_fem.contrib.parapy.visualisation import Arrow
 import parapy.lib.code_aster.writer as writer
-print(dir(writer))
 
 
 
@@ -190,7 +189,9 @@ class CodeAster_primitives(Base):
         return (
                 self.torsionbox.ribs +
                 [self.torsionbox.front_spar] +
-                [self.torsionbox.rear_spar]
+                [self.torsionbox.rear_spar] +
+                [self.torsionbox.wing_upper_surface] +
+                [self.torsionbox.wing_lower_surface]
         )
 
     @property

@@ -1,95 +1,98 @@
 from skin import CodeAster_primitives
-from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
-                                   AFFE_MATERIAU, AFFE_MODELE, DEFI_MATERIAU,
-                                   IMPR_RESU, LIRE_MAILLAGE, MECA_STATIQUE,
-                                   Command, CommandWriter, MeshGroup,
-                                   MeshWriter, ResultsReaderBase,
-                                   create_export_file, run_code_aster)
+from parapy.lib.code_aster import (
+    _F, AFFE_CARA_ELEM, AFFE_CHAR_MECA, AFFE_MATERIAU, AFFE_MODELE,
+    DEFI_MATERIAU, IMPR_RESU, LIRE_MAILLAGE, MECA_STATIQUE,
+    MeshWriter, CommandWriter, create_export_file, run_code_aster
+)
+from parapy.lib.code_aster import MeshGroup
+from parapy.core import *
 
 from os.path import join
 import os
 
+
 class SkinWriter:
+
     def __init__(self, instance: CodeAster_primitives, working_dir="output/skin_run"):
         self.instance = instance
         self.working_dir = working_dir
         os.makedirs(working_dir, exist_ok=True)
 
-        self.mesh = self.instance.finalmesh.mesh_generator.mesh.grid
-        self.subgrids = self.instance.subgrids
-        self.primitives = self.instance.primitives
-        self.load_primitives = self.instance.load_primitives
-
-        self.commands = []
-
     def write(self):
+        mesh = self.instance.finalmesh.mesh_generator.mesh
         mesh_path = join(self.working_dir, "mesh.med")
         comm_path = join(self.working_dir, "study.comm")
         export_path = join(self.working_dir, "study.export")
         log_path = join(self.working_dir, "study.log")
 
-        # Write mesh
-        load_nodes = [node.id for node in self.load_primitives]
-        load_group = MeshGroup("load_nodes", load_nodes, "NOEUD")
-        MeshWriter(self.mesh, groups=self.subgrids + [load_group]).write(mesh_path)
+        # Generate subgrids from the CAD-to-mesh history
+        subgrids = self.instance.subgrids
 
-        # Build commands
+        # Zet de subgrids om naar MeshGroups (nodig voor MeshWriter)
+        groups = [
+            MeshGroup(name=sg.label, elements=sg.elements, nodes=sg.nodes)
+            for sg in subgrids
+        ]
+
+        # Schrijf mesh met groepen naar bestand
+        MeshWriter(mesh.grid, groups=groups).write(mesh_path)
+
+        # Modeldefinitie
         model = AFFE_MODELE(
-            mail=self.mesh,
-            groupma=self.subgrids,
-            model="3D",
-            carac="MECANIQUE"
+            MAILLAGE=mesh,
+            AFFE=_F(GROUP_MA=[group.name for group in subgrids], MODELISATION="3D")
         )
 
-        material = DEFI_MATERIAU(elas=Elas(E=70000e6, NU=0.33))
+        # Materiaaldefinitie
+        material = DEFI_MATERIAU(ELAS=_F(E=70e9, NU=0.33))
 
         fieldmat = AFFE_MATERIAU(
-            mail=self.mesh,
+            mail=mesh,
             model=model,
-            mater=material
+            mater=_F(GROUP_MA=subgrids[0].name, MATER=material)
         )
 
-        meshfunc = AFFE_CARA_ELEM(
-            mail=self.mesh,
+        # Dikte toekennen aan elke subgrid
+        cara_elem = AFFE_CARA_ELEM(
+            mail=mesh,
             model=model,
-            penta=PENTA(epa=0.005)
+            penta=[_F(GROUP_MA=group.name, EPA=self.instance.skin.thickness)
+                   for group in subgrids]
         )
 
-        loads = [
-            LOAD(
-                groupno=load_prim,
-                fx=0,
-                fy=0,
-                fz=-1000
+        # Externe krachten
+        loads = []
+        for node, lift in zip(self.instance.load_primitives, self.instance.lift_forces):
+            loads.append(
+                _F(GROUP_NO=node.name, FX=0, FY=0, FZ=-lift)
             )
-            for load_prim in self.load_primitives
-        ]
 
         force = AFFE_CHAR_MECA(
             model=model,
             force=loads
         )
 
+        # Mechanische statische berekening
         statics = MECA_STATIQUE(
             model=model,
-            cara_elem=meshfunc,
+            cara_elem=cara_elem,
             mater=fieldmat,
             char=[force]
         )
 
+        # Resultaat wegschrijven
         result = IMPR_RESU(
             FORMAT="MED",
             RESU=[
-                Result(_resultat=statics, nom_champ="DEPL", NOM_CHAM="DEPL", RESULTAT=statics)
+                _F(RESULTAT=statics, NOM_CHAM="DEPL", NOM_CMP=("DX", "DY", "DZ"))
             ]
         )
 
-        self.commands = [model, material, fieldmat, meshfunc, force, statics, result]
+        # Commands schrijven
+        commands = [model, material, fieldmat, cara_elem, force, statics, result]
+        CommandWriter(commands).write(comm_path)
 
-        # Write .comm file
-        CommandWriter(self.commands).write(comm_path)
-
-        # Write .export file
+        # Exportfile schrijven
         create_export_file(
             comm_file=comm_path,
             mesh_file=mesh_path,
