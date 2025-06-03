@@ -30,6 +30,14 @@ class WingAVLAnalysis(avl.Interface):
                 else:
                     print(f"  {section}")
 
+    @Attribute
+    def lift_forces(self):
+        results = self.results.items()
+        ccl = results['StripForces']['c cl']
+        rho = 1200
+        v = 0.4 * 343
+        return 0.5*rho*v**2 * ccl
+
 
 if __name__ == '__main__':
     # Create wing instance
