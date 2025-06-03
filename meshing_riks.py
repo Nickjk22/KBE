@@ -7,11 +7,17 @@ from torsionbox import TorsionBox
 from parapy.core import *
 from parapy.geom.occ.brep import BRep
 from sections import Section
+from parapy.mesh import EdgeGroup, FaceGroup
+
 import numpy as np
 
 # Add these imports at the top of torsionbox.py if not already present
 from parapy.core import Attribute, Part
 
+FACE = "face_group"
+CONSTRAINED_EDGE1 = "constrained_edge1_group"
+CONSTRAINED_EDGE2 = "constrained_edge2_group"
+LOADED_EDGE = "loaded_edge_group"
 
 class Mesh(PPMesh):
     def get_subgrid_on_the_fly(self, shape, *other_shapes, label):
@@ -175,6 +181,11 @@ class FinalMesh(Base):
     @Attribute
     def number_of_faces(self):
         return len(self.shape_to_mesh.faces)
+
+    @Attribute
+    def kanker(self):
+        return self.shape_to_mesh.edges
+
 
     @Attribute
     def face_hash_map(self):
