@@ -184,8 +184,7 @@ class FinalMesh(Base):
 
     @Attribute
     def test(self):
-        return self.shape_to_mesh.edges
-
+        return self.shape_to_mesh.faces
 
     @Attribute
     def face_hash_map(self):
