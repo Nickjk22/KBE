@@ -183,7 +183,7 @@ class FinalMesh(Base):
         return len(self.shape_to_mesh.faces)
 
     @Attribute
-    def kanker(self):
+    def test(self):
         return self.shape_to_mesh.edges
 
 
