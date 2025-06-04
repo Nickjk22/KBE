@@ -121,9 +121,12 @@ class Writer:
 
     >>> instance = Plate()
     >>> obj = Writer(instance)
-    >>> obj.write_comm("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/output.comm")  # doctest: +ELLIPSIS
+    # >>> obj.write_comm("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/output.comm")  # doctest: +ELLIPSIS
+    >>> obj.write_comm("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/output.comm")  # doctest: +ELLIPSIS
     Written: ...
-    >>> obj.write_mesh("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/mesh2.aster")  # doctest: +ELLIPSIS
+    # >>> obj.write_mesh("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/mesh2.aster")  # doctest: +ELLIPSIS
+    >>> obj.write_mesh("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/mesh2.aster")  # doctest: +ELLIPSIS
+
     Written: ...
     """
 
