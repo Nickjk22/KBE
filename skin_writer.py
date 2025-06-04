@@ -26,7 +26,18 @@ class SkinWriter:
         log_path = join(self.working_dir, "study.log")
 
         # Generate subgrids from the CAD-to-mesh history
-        subgrids = self.instance.subgrids
+        # subgrids = self.instance.subgrids
+
+        print(dir(self.instance.finalmesh.shape_to_mesh))
+
+        shape = self.instance.finalmesh.shape_to_mesh.get_slot_value("TopoDS_Shape")
+        print("Shape:", shape)
+
+        if shape is None:
+            raise ValueError("Could not retrieve valid shape_in from shape_to_mesh")
+
+        history = self.instance.finalmesh.shape_to_mesh.history(shape)
+        shapes = list(history.keys())
 
         # Zet de subgrids om naar MeshGroups (nodig voor MeshWriter)
         groups = [

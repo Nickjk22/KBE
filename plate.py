@@ -19,6 +19,7 @@ from scipy.optimize import minimize
 import os
 
 from parapy.core import Attribute, Base, Input, Part, child
+from aircraft_fem.examples.aircraft.geom.glueing import GeneralFuse
 from parapy.geom import RectangularFace
 from parapy.mesh import EdgeGroup, FaceGroup
 from parapy.mesh.salome import Mesh, Tri
@@ -89,7 +90,7 @@ class Plate(Base):
         return FinalMesh()
 
     @Part
-    def shape_to_mesh(self):
+    def shape_to_mesh(self) -> GeneralFuse:
         return self.finalmesh.shape_to_mesh
 
     @Part
@@ -111,7 +112,7 @@ class Plate(Base):
                          label=FACE)
 
     @Part
-    def mesh(self):
+    def mesh(self) -> Mesh:
         return self.finalmesh.mesh
 
 
