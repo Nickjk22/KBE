@@ -35,7 +35,6 @@ from meshing_riks import FinalMesh, MeshGenerator
 from AVL_main import WingAVLAnalysis
 from skin import CodeAster_primitives
 
-
 # FACE = "face_group"
 CONSTRAINED_EDGE1 = "constrained_edge1_group"
 CONSTRAINED_EDGE2 = "constrained_edge2_group"
@@ -322,7 +321,10 @@ class Writer:
     def _generate_load_commands(self) -> None:
         self.load_commands = [AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=10,
                                                              GROUP_NO=(LOADED_EDGE,)),
-                                             MODELE=self.model_command)]
+                                             MODELE=self.model_command), AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=10,
+                                                                                                        GROUP_NO=(
+                                                                                                        LOADED_EDGE,)),
+                                                                                        MODELE=self.model_command)]
 
     def _generate_solver_settings_command(self) -> None:
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]
@@ -359,6 +361,7 @@ class ResultsReader(ResultsReaderBase):
 
 if __name__ == "__main__":
     import os
+
     instance = WingFEM()
     # display(instance)
 
