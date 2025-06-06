@@ -32,7 +32,8 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    MeshWriter, ResultsReaderBase,
                                    create_export_file, run_code_aster)
 from meshing_riks import FinalMesh, MeshGenerator
-from AVL_main import lift_forces
+from AVL_main import WingAVLAnalysis
+
 
 # FACE = "face_group"
 CONSTRAINED_EDGE1 = "constrained_edge1_group"
@@ -49,6 +50,15 @@ class WingFEM(Base):
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)
+
+    @Part
+    def avl(self):
+        return WingAVLAnalysis()
+    
+    @Attribute
+    def riks(self):
+        return self.avl.lift_forces
+
 
     # @Part
     # def shape_to_mesh(self) -> RectangularFace:
