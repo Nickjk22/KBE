@@ -32,6 +32,7 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    MeshWriter, ResultsReaderBase,
                                    create_export_file, run_code_aster)
 from meshing_riks import FinalMesh, MeshGenerator
+from AVL_main import lift_forces
 
 # FACE = "face_group"
 CONSTRAINED_EDGE1 = "constrained_edge1_group"
@@ -125,13 +126,14 @@ class WingFEM(Base):
 class Writer:
     """Writes code_aster command and mesh files.
 
-    >>> instance = WingFEM()
-    >>> obj = Writer(instance)
-    # # >>> obj.write_comm("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/output.comm")  # doctest: +ELLIPSIS
-    >>> obj.write_comm("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/output.comm")  # doctest: +ELLIPSIS
-    # Written: ...
-    # # >>> obj.write_mesh("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/mesh2.aster")  # doctest: +ELLIPSIS
-    >>> obj.write_mesh("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/mesh2.aster")  # doctest: +ELLIPSIS
+    # >>> instance = WingFEM()
+    # >>> obj = Writer(instance)
+    # >>> obj.write_comm("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/output.comm")  # doctest: +ELLIPSIS
+    # # >>> obj.write_comm("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/output.comm")  # doctest: +ELLIPSIS
+    #
+    # # Written: ...
+    # >>> obj.write_mesh("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/mesh2.aster")  # doctest: +ELLIPSIS
+    # # >>> obj.write_mesh("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/mesh2.aster")  # doctest: +ELLIPSIS
 
     Written: ...
     """
@@ -265,7 +267,7 @@ class Writer:
                                                    FORMAT="ASTER")
 
     def _generate_model_command(self) -> None:
-        shell_model = _F(GROUP_MA=(self.FACE),
+        shell_model = _F(GROUP_MA=tuple(self.FACE),
                          MODELISATION=("DKT",),
                          PHENOMENE="MECANIQUE")
         self.model_command = AFFE_MODELE(AFFE=(shell_model,),
@@ -283,11 +285,11 @@ class Writer:
             MODELE=self.model_command,
             COQUE=[_F(
                 EPAIS=self._instance.thickness,
-                GROUP_MA=(self.FACE,),
+                GROUP_MA=tuple(self.FACE),
                 VECTEUR=(vec.x, vec.y, vec.z))])
 
     def _generate_material_zone_command(self) -> None:
-        self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=(self.FACE,),
+        self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=tuple(self.FACE),
                                                             MATER=(STEEL,)),),
                                                    MAILLAGE=self.mesh_settings_command,
                                                    MODELE=self.model_command)
