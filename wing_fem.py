@@ -40,7 +40,8 @@ CONSTRAINED_EDGE1 = "constrained_edge1_group"
 CONSTRAINED_EDGE2 = "constrained_edge2_group"
 CONSTRAINED_EDGE3 = "constrained_edge3_group"
 CONSTRAINED_EDGE4 = "constrained_edge4_group"
-LOADED_EDGE = "loaded_edge_group"
+LOADED_EDGE1 = "loaded_edge1_group"
+LOADED_EDGE2 = "loaded_edge2_group"
 
 STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
 
@@ -106,8 +107,9 @@ class WingFEM(Base):
 
     @Part
     def loaded_edge_group(self) -> EdgeGroup:
-        return EdgeGroup(shape=self.shape_to_mesh.edges[157],
-                         label=LOADED_EDGE)
+        return EdgeGroup(quantify=2,
+                         shape=[self.shape_to_mesh.edges[156], self.shape_to_mesh.edges[157]][child.index],
+                         label=[LOADED_EDGE1, LOADED_EDGE2][child.index])
 
     @Attribute
     def FACE(self):
@@ -229,10 +231,18 @@ class Writer:
                            element_ids=ids,
                            element_type="node")
 
-        elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE,
+        elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE1,
                                                         shape=self._instance.shape_to_mesh.edges[157]).nodes
         ids = [elm.mesh_id for elm in elements]
-        group5 = MeshGroup(label=LOADED_EDGE,
+        group5 = MeshGroup(label=LOADED_EDGE1,
+                           header="GROUP_NO",
+                           element_ids=ids,
+                           element_type="node")
+
+        elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE2,
+                                                        shape=self._instance.shape_to_mesh.edges[156]).nodes
+        ids = [elm.mesh_id for elm in elements]
+        group6 = MeshGroup(label=LOADED_EDGE2,
                            header="GROUP_NO",
                            element_ids=ids,
                            element_type="node")
@@ -243,7 +253,7 @@ class Writer:
         #                                                                                         shape=self._instance.shape_to_mesh).faces],
         #                    element_type="face")
 
-        self.mesh_groups = [group1, group2, group3, group4, group5]
+        self.mesh_groups = [group1, group2, group3, group4, group5, group6]
 
         self.FACE = [f"face{i + 1}_group" for i in range(len(self._instance.shape_to_mesh.faces))]
 
@@ -319,11 +329,11 @@ class Writer:
             MODELE=self.model_command)]
 
     def _generate_load_commands(self) -> None:
-        self.load_commands = [AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=10,
-                                                             GROUP_NO=(LOADED_EDGE,)),
-                                             MODELE=self.model_command), AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=10,
+        self.load_commands = [AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=40,
+                                                             GROUP_NO=(LOADED_EDGE1,)),
+                                             MODELE=self.model_command), AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=1,
                                                                                                         GROUP_NO=(
-                                                                                                        LOADED_EDGE,)),
+                                                                                                            LOADED_EDGE2,)),
                                                                                         MODELE=self.model_command)]
 
     def _generate_solver_settings_command(self) -> None:
