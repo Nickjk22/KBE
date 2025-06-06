@@ -33,6 +33,7 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    create_export_file, run_code_aster)
 from meshing_riks import FinalMesh, MeshGenerator
 from AVL_main import WingAVLAnalysis
+from skin import CodeAster_primitives
 
 
 # FACE = "face_group"
@@ -50,15 +51,6 @@ class WingFEM(Base):
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)
-
-    @Part
-    def avl(self):
-        return WingAVLAnalysis()
-    
-    @Attribute
-    def riks(self):
-        return self.avl.lift_forces
-
 
     # @Part
     # def shape_to_mesh(self) -> RectangularFace:
@@ -178,6 +170,22 @@ class Writer:
         # As such, we only need to pass the root command which recursively
         # contains all other commands of the FEM model.
         self._commands: List[Command] = [self.result_settings_command]
+
+    @Part
+    def avl(self):
+        return WingAVLAnalysis()
+
+    @Part
+    def skin_writer(self):
+        return CodeAster_primitives()
+
+    @Attribute
+    def lift_forces(self):
+        return self.avl.lift_forces
+
+    @Attribute
+    def nodes(self):
+        return self.skin_writer.load_primitives
 
     def write_comm(self, pathname: str) -> None:
         writer = CommandWriter(self._commands)
