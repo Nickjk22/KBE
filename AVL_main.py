@@ -3,11 +3,14 @@ from parapy.core import *
 from wing import WingSurface
 from kbeutils import avl
 from skin import CodeAster_primitives
+import numpy as np
 
 
 class WingAVLAnalysis(avl.Interface):
     aircraft = Input(in_tree=True)
     case_settings = Input()
+
+    points_number = Input(14)
 
     @Part
     def check_nodes(self):
@@ -47,8 +50,32 @@ class WingAVLAnalysis(avl.Interface):
             print(f"Keys: {data.keys()}")
             print(f"StripForces: {data.get('StripForces')}")
 
+    # @Attribute
+    # def lift_forces(self):
+    #     # Pak eerste case
+    #     first_case_name = list(self.results.keys())[0]
+    #     result = self.results[first_case_name]
+    #
+    #     # Haal StripForces op
+    #     strip_forces = result.get('StripForces', {})
+    #
+    #     # Check op juiste sleutel
+    #     surface_data = strip_forces.get('None', {})
+    #     ccl_list = surface_data.get('c cl', [])
+    #
+    #     if not ccl_list:
+    #         print("No 'c cl' in results")
+    #         return []
+    #
+    #     # Bereken lift per strip
+    #     rho = 1200
+    #     v = 0.4 * 343
+    #     q = 0.5 * rho * v ** 2
+    #
+    #     return [q * ccl/100000 for ccl in ccl_list]
+
     @Attribute
-    def lift_forces(self):
+    def lift_forces(self) -> List[float]:
         # Pak eerste case
         first_case_name = list(self.results.keys())[0]
         result = self.results[first_case_name]
@@ -64,12 +91,29 @@ class WingAVLAnalysis(avl.Interface):
             print("No 'c cl' in results")
             return []
 
-        # Bereken lift per strip
+        # Bereken lift per strip (raw values)
         rho = 1200
         v = 0.4 * 343
         q = 0.5 * rho * v ** 2
+        raw = [q * ccl for ccl in ccl_list]
 
-        return [q * ccl/100000 for ccl in ccl_list]
+        # ---------------------------------------------------
+        # Resample/interpolate to exactly points_number values
+        # ---------------------------------------------------
+        n_raw = len(raw)
+        n_tgt = self.points_number
+
+        if n_raw == 0:
+            return []
+        if n_raw == n_tgt:
+            return raw
+
+        # position grids from 0.0 to 1.0
+        x_raw = np.linspace(0.0, 1.0, n_raw)
+        x_tgt = np.linspace(0.0, 1.0, n_tgt)
+
+        sampled = np.interp(x_tgt, x_raw, raw)
+        return sampled.tolist()
 
 
 if __name__ == '__main__':

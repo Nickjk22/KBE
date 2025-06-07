@@ -24,6 +24,7 @@ from parapy.geom import RectangularFace
 from parapy.mesh import EdgeGroup, FaceGroup
 from parapy.mesh.salome import Mesh, Tri
 from parapy.geom import Compound, Face
+from parapy.mesh.salome import MeshNode
 from parapy.mesh.salome.controls import FixedLength
 from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    AFFE_MATERIAU, AFFE_MODELE, DEFI_MATERIAU,
@@ -34,6 +35,7 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
 from meshing_riks import FinalMesh, MeshGenerator
 from AVL_main import WingAVLAnalysis
 from skin import CodeAster_primitives
+from wing import WingSurface
 
 # FACE = "face_group"
 CONSTRAINED_EDGE1 = "constrained_edge1_group"
@@ -129,15 +131,36 @@ class WingFEM(Base):
     def mesh(self) -> Mesh:
         return self.finalmesh.mesh
 
-    @Input
-    def nodes(self) -> List[int]:
-        """List of mesh‐node IDs to apply lift forces on."""
-        return []
+    # @Input
+    # def nodes(self) -> List[int]:
+    #     """List of mesh‐node IDs to apply lift forces on."""
+    #     return []
+    #
+    # @Input
+    # def liftforces(self) -> List[float]:
+    #     """Same length as `nodes`: force magnitude (FZ) per node."""
+    #     return []
 
-    @Input
+    @Part
+    def avl(self):
+        return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
+            ("alpha_5deg", {'alpha': 5.0}),
+        ])
+
+    @Part
+    def skin_writer(self):
+        return CodeAster_primitives()
+
+    @Attribute
     def liftforces(self) -> List[float]:
-        """Same length as `nodes`: force magnitude (FZ) per node."""
-        return []
+        return self.avl.lift_forces
+
+    @Attribute
+    def nodes(self) -> List[MeshNode]:
+        return self.skin_writer.load_primitives
+
+
+
 
 
 class Writer:
@@ -188,7 +211,9 @@ class Writer:
 
     @Part
     def avl(self):
-        return WingAVLAnalysis()
+        return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
+            ("alpha_5deg", {'alpha': 5.0}),
+        ])
 
     @Part
     def skin_writer(self):
@@ -299,23 +324,20 @@ class Writer:
             )
             self.mesh_groups.append(group)
 
-        # --- NEW: one single-node group per entry in instance.nodes ---
-        for i, primitive in enumerate(self._instance.nodes):
+        for i, mesh_node in enumerate(self._instance.nodes):
             grp_label = f"load_node{i + 1}_group"
-            # get the actual mesh-subgrid on that primitive (a vertex or a point)
-            subgrid = instance.mesh.get_subgrid_on_the_fly(
-                label=grp_label,
-                shape=primitive
-            )
-            ids = [node.mesh_id for node in subgrid.nodes]
-            print(f"DEBUG: {grp_label} has nodes {ids}")  # sanity check
             node_group = MeshGroup(
                 label=grp_label,
                 header="GROUP_NO",
-                element_ids=ids,
+                element_ids=[mesh_node.mesh_id],  # directly use the mesh_id
                 element_type="node"
             )
             self.mesh_groups.append(node_group)
+
+        print(">>> DEBUG: mesh_groups")
+        for grp in self.mesh_groups:
+            if grp.element_type == "node" and grp.label.startswith("load_node"):
+                print(f"    {grp.label}:  {len(grp.element_ids)} node(s) -> {grp.element_ids}")
 
     def _generate_mesh_settings_command(self) -> None:
         self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20,
@@ -365,7 +387,8 @@ class Writer:
     #                                                                                     MODELE=self.model_command)]
 
     def _generate_load_commands(self) -> None:
-        # NEW: direct nodal loads from instance.nodes & instance.liftforces
+        print(">>> DEBUG: nodes.mesh_id  =", [n.mesh_id for n in self._instance.nodes])
+        print(">>> DEBUG: liftforces      =", self._instance.liftforces)
         self.load_commands = []
         for i, force in enumerate(self._instance.liftforces):
             grp_label = f"load_node{i + 1}_group"
@@ -377,6 +400,10 @@ class Writer:
                 MODELE=self.model_command
             )
             self.load_commands.append(cmd)
+
+        print(">>> DEBUG: load_commands")
+        for cmd in self.load_commands:
+            print("   ", cmd)
 
     def _generate_solver_settings_command(self) -> None:
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]
