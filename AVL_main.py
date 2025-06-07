@@ -60,7 +60,7 @@ class WingAVLAnalysis(avl.Interface):
         v = 0.4 * 343
         q = 0.5 * rho * v ** 2
 
-        return [q * ccl for ccl in ccl_list]
+        return [q * ccl/100000 for ccl in ccl_list]
 
 
 if __name__ == '__main__':

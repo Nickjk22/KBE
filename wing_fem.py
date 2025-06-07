@@ -40,8 +40,8 @@ CONSTRAINED_EDGE1 = "constrained_edge1_group"
 CONSTRAINED_EDGE2 = "constrained_edge2_group"
 CONSTRAINED_EDGE3 = "constrained_edge3_group"
 CONSTRAINED_EDGE4 = "constrained_edge4_group"
-LOADED_EDGE1 = "loaded_edge1_group"
-LOADED_EDGE2 = "loaded_edge2_group"
+# LOADED_EDGE1 = "loaded_edge1_group"
+# LOADED_EDGE2 = "loaded_edge2_group"
 
 STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
 
@@ -100,16 +100,20 @@ class WingFEM(Base):
     @Part
     def contrained_edge_groups(self) -> EdgeGroup:
         return EdgeGroup(quantify=4,
-                         shape=[self.shape_to_mesh.edges[3], self.shape_to_mesh.edges[6], self.shape_to_mesh.edges[9],
+                         shape=[self.shape_to_mesh.edges[3],
+                                self.shape_to_mesh.edges[6],
+                                self.shape_to_mesh.edges[9],
                                 self.shape_to_mesh.edges[10]][child.index],
-                         label=[CONSTRAINED_EDGE1, CONSTRAINED_EDGE2, CONSTRAINED_EDGE3, CONSTRAINED_EDGE4][
-                             child.index])
+                         label=[CONSTRAINED_EDGE1,
+                                CONSTRAINED_EDGE2,
+                                CONSTRAINED_EDGE3,
+                                CONSTRAINED_EDGE4][child.index])
 
-    @Part
-    def loaded_edge_group(self) -> EdgeGroup:
-        return EdgeGroup(quantify=2,
-                         shape=[self.shape_to_mesh.edges[156], self.shape_to_mesh.edges[157]][child.index],
-                         label=[LOADED_EDGE1, LOADED_EDGE2][child.index])
+    # @Part
+    # def loaded_edge_group(self) -> EdgeGroup:
+    #     return EdgeGroup(quantify=2,
+    #                      shape=[self.shape_to_mesh.edges[156], self.shape_to_mesh.edges[157]][child.index],
+    #                      label=[LOADED_EDGE1, LOADED_EDGE2][child.index])
 
     @Attribute
     def FACE(self):
@@ -124,6 +128,16 @@ class WingFEM(Base):
     @Attribute
     def mesh(self) -> Mesh:
         return self.finalmesh.mesh
+
+    @Input
+    def nodes(self) -> List[int]:
+        """List of mesh‐node IDs to apply lift forces on."""
+        return []
+
+    @Input
+    def liftforces(self) -> List[float]:
+        """Same length as `nodes`: force magnitude (FZ) per node."""
+        return []
 
 
 class Writer:
@@ -181,7 +195,7 @@ class Writer:
         return CodeAster_primitives()
 
     @Attribute
-    def lift_forces(self):
+    def liftforces(self):
         return self.avl.lift_forces
 
     @Attribute
@@ -231,29 +245,25 @@ class Writer:
                            element_ids=ids,
                            element_type="node")
 
-        elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE1,
-                                                        shape=self._instance.shape_to_mesh.edges[157]).nodes
-        ids = [elm.mesh_id for elm in elements]
-        group5 = MeshGroup(label=LOADED_EDGE1,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        # elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE1,
+        #                                                 shape=self._instance.shape_to_mesh.edges[157]).nodes
+        # ids = [elm.mesh_id for elm in elements]
+        # group5 = MeshGroup(label=LOADED_EDGE1,
+        #                    header="GROUP_NO",
+        #                    element_ids=ids,
+        #                    element_type="node")
 
-        elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE2,
-                                                        shape=self._instance.shape_to_mesh.edges[156]).nodes
-        ids = [elm.mesh_id for elm in elements]
-        group6 = MeshGroup(label=LOADED_EDGE2,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        # elements = instance.mesh.get_subgrid_on_the_fly(label=LOADED_EDGE2,
+        #                                                 shape=self._instance.shape_to_mesh.edges[156]).nodes
+        # ids = [elm.mesh_id for elm in elements]
+        # group6 = MeshGroup(label=LOADED_EDGE2,
+        #                    header="GROUP_NO",
+        #                    element_ids=ids,
+        #                    element_type="node")
 
-        # group6 = MeshGroup(label=FACE,
-        #                    header="GROUP_MA",
-        #                    element_ids=[f.mesh_id for f in instance.mesh.get_subgrid_on_the_fly(label=FACE,
-        #                                                                                         shape=self._instance.shape_to_mesh).faces],
-        #                    element_type="face")
-
-        self.mesh_groups = [group1, group2, group3, group4, group5, group6]
+        self.mesh_groups = [group1, group2, group3, group4,
+                            # group5, group6
+                            ]
 
         self.FACE = [f"face{i + 1}_group" for i in range(len(self._instance.shape_to_mesh.faces))]
 
@@ -288,6 +298,24 @@ class Writer:
                 element_type="face"
             )
             self.mesh_groups.append(group)
+
+        # --- NEW: one single-node group per entry in instance.nodes ---
+        for i, primitive in enumerate(self._instance.nodes):
+            grp_label = f"load_node{i + 1}_group"
+            # get the actual mesh-subgrid on that primitive (a vertex or a point)
+            subgrid = instance.mesh.get_subgrid_on_the_fly(
+                label=grp_label,
+                shape=primitive
+            )
+            ids = [node.mesh_id for node in subgrid.nodes]
+            print(f"DEBUG: {grp_label} has nodes {ids}")  # sanity check
+            node_group = MeshGroup(
+                label=grp_label,
+                header="GROUP_NO",
+                element_ids=ids,
+                element_type="node"
+            )
+            self.mesh_groups.append(node_group)
 
     def _generate_mesh_settings_command(self) -> None:
         self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20,
@@ -328,13 +356,27 @@ class Writer:
                 LIAISON="ENCASTRE"),
             MODELE=self.model_command)]
 
+    # def _generate_load_commands(self) -> None:
+    #     self.load_commands = [AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=40,
+    #                                                          GROUP_NO=(LOADED_EDGE1,)),
+    #                                          MODELE=self.model_command), AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=1,
+    #                                                                                                     GROUP_NO=(
+    #                                                                                                         LOADED_EDGE2,)),
+    #                                                                                     MODELE=self.model_command)]
+
     def _generate_load_commands(self) -> None:
-        self.load_commands = [AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=40,
-                                                             GROUP_NO=(LOADED_EDGE1,)),
-                                             MODELE=self.model_command), AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=1,
-                                                                                                        GROUP_NO=(
-                                                                                                            LOADED_EDGE2,)),
-                                                                                        MODELE=self.model_command)]
+        # NEW: direct nodal loads from instance.nodes & instance.liftforces
+        self.load_commands = []
+        for i, force in enumerate(self._instance.liftforces):
+            grp_label = f"load_node{i + 1}_group"
+            cmd = AFFE_CHAR_MECA(
+                FORCE_NODALE=_F(
+                    GROUP_NO=(grp_label,),
+                    FZ=force,
+                ),
+                MODELE=self.model_command
+            )
+            self.load_commands.append(cmd)
 
     def _generate_solver_settings_command(self) -> None:
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]
