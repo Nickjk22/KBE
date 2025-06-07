@@ -1,4 +1,4 @@
-from skin import CodeAster_primitives
+from find_nodes import CodeAster_primitives
 from parapy.lib.code_aster import (
     _F, AFFE_CARA_ELEM, AFFE_CHAR_MECA, AFFE_MATERIAU, AFFE_MODELE,
     DEFI_MATERIAU, IMPR_RESU, LIRE_MAILLAGE, MECA_STATIQUE,

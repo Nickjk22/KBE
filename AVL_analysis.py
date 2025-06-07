@@ -2,7 +2,7 @@ from parapy.gui import display
 from parapy.core import *
 from wing import WingSurface
 from kbeutils import avl
-from skin import CodeAster_primitives
+from find_nodes import CodeAster_primitives
 import numpy as np
 
 

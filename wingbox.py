@@ -102,6 +102,8 @@ class Wingbox(Base):
     # Sections
     section_number = Input(30)
 
+    show_internals = Input(False)
+
     @Part
     def wing_frame(self):
         return Frame(pos=self.position,
@@ -213,7 +215,8 @@ class Wingbox(Base):
                      front_spar_position=self.front_spar_position,
 
                      rear_spar_thickness=self.rear_spar_thickness,
-                     rear_spar_position=self.rear_spar_position
+                     rear_spar_position=self.rear_spar_position,
+                     hidden=not self.show_internals
                      )
 
     # @Part
@@ -284,7 +287,8 @@ class Wingbox(Base):
 
                    rib_thickness=self.rib_thickness,
                    quantify=self.rib_number,
-                   rib_spanwise_position=self.spanwise_points_list[child.index]
+                   rib_spanwise_position=self.spanwise_points_list[child.index],
+                   hidden=not self.show_internals
                    )
 
     @Part
@@ -309,7 +313,8 @@ class Wingbox(Base):
 
                         stringer_thickness=self.stringer_thickness,
                         quantify=self.stringer_number,
-                        stringer_position=self.chordwise_points_list[child.index]
+                        stringer_position=self.chordwise_points_list[child.index],
+                        hidden=not self.show_internals
                         )
 
     @Part
@@ -333,7 +338,8 @@ class Wingbox(Base):
                        wing_twist=self.wing_twist,
 
                        quantify=self.section_number,
-                       section_spanwise_position=self.spanwise_points_list_sections[child.index]
+                       section_spanwise_position=self.spanwise_points_list_sections[child.index],
+                       hidden=True
                        )
 
 

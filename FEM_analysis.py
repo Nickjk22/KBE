@@ -32,9 +32,9 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    Command, CommandWriter, MeshGroup,
                                    MeshWriter, ResultsReaderBase,
                                    create_export_file, run_code_aster)
-from meshing_riks import FinalMesh, MeshGenerator
-from AVL_main import WingAVLAnalysis
-from skin import CodeAster_primitives
+from meshing import FinalMesh, MeshGenerator
+from AVL_analysis import WingAVLAnalysis
+from find_nodes import CodeAster_primitives
 from wing import WingSurface
 
 # FACE = "face_group"
@@ -158,9 +158,6 @@ class WingFEM(Base):
     @Attribute
     def nodes(self) -> List[MeshNode]:
         return self.skin_writer.load_primitives
-
-
-
 
 
 class Writer:

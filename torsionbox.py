@@ -417,7 +417,8 @@ class TorsionBox(Base):
                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                        wing_twist=self.wing_twist,
 
-                       section_number=self.section_number
+                       section_number=self.section_number,
+                       hidden=True
                        )
 
     # @Part

@@ -14,7 +14,7 @@ from torsionbox import TorsionBox
 from parapy.geom import LineSegment
 from parapy.geom import Point
 from sections import Section
-from meshing_riks import FinalMesh
+from meshing import FinalMesh
 from points import Points
 import numpy as np
 

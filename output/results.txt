@@ -1,6 +1,6 @@
 
  --------------------------------------------------------------------------------
- ASTER 14.04.00 CONCEPT MEC56 CALCULE LE 07/06/2025 A 16:47:58 DE TYPE EVOL_ELAS 
+ ASTER 14.04.00 CONCEPT MEC56 CALCULE LE 07/06/2025 A 21:53:54 DE TYPE EVOL_ELAS 
 
 
  ======>
