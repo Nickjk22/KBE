@@ -115,15 +115,10 @@ class CodeAster_primitives(Base):
         return [pt.point for pt in self.torsionbox.points]
 
     @Attribute
-    def strip_results(self):
-        return [3.1286, 3.2697, 3.3305, 3.3556, 3.4074, 3.4366, 3.1775, 2.9278, 2.6872, 2.4473, 2.2004, 1.9360, 1.6335,
-                1.2265]
-
-    @Attribute
     def load_primitives(self):
         lst = []
         mesh = self.finalmesh.mesh_generator.mesh
-        for strip_result, pt in zip(self.strip_results, self.points_list):
+        for pt in self.points_list:
             label = 'group_no_' + str(id(pt))
             # node = mesh.grid.find_node_at(pt)
             tolerance = self.finalmesh.mesh_generator.element_length * 2
@@ -217,27 +212,5 @@ class CodeAster_primitives(Base):
 if __name__ == "__main__":
     comp = CodeAster_primitives()
 
-    writer = CodeAsterWriter(
-        mesh=comp.finalmesh.mesh_generator.mesh,
-        subgrids=comp.subgrids,
-        primitives=comp.primitives,
-        keep_files=True,
-        working_dir="output/skin_run"
-    )
-
-    writer.write()
-    run_code_aster(writer.commfile, exportfile=writer.exportfile)
-
-    print("Simulation finished.")
-    print(f"MED file: {writer.medfile}")
-
-
-
-
-
-
-
-
-
-
+    print(comp.load_primitives)
 

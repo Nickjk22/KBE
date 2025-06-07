@@ -2,11 +2,20 @@ from parapy.gui import display
 from parapy.core import *
 from wing import WingSurface
 from kbeutils import avl
+from skin import CodeAster_primitives
 
 
 class WingAVLAnalysis(avl.Interface):
     aircraft = Input(in_tree=True)
     case_settings = Input()
+
+    @Part
+    def check_nodes(self):
+        return CodeAster_primitives()
+
+    @Attribute
+    def check(self):
+        return self.check_nodes.load_primitives
 
     @Attribute
     def configuration(self):
