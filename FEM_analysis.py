@@ -435,125 +435,124 @@ class ResultsReader(ResultsReaderBase):
         return max(deflections)
 
 
-if __name__ == "__main__":
-    import os
-
-    instance = WingFEM()
-    # display(instance)
-
-    current_path = os.path.dirname(__file__)
-    output_dir = os.path.join(current_path, "output")
-
-    writer = Writer(instance)
-    mesh_path = os.path.join(output_dir, "mesh2.aster")
-    writer.write_mesh(mesh_path)
-
-    comm_path = os.path.join(output_dir, "wing_fem.comm")
-    writer.write_comm(comm_path)
-
-    export_path = os.path.join(output_dir, "case2.export")
-    results_path = os.path.join(output_dir, "results.txt")
-    create_export_file(
-        target_path=export_path,
-        mesh_path=mesh_path,
-        comm_path=comm_path,
-        results_path=results_path,
-    )
-
-    log_file = os.path.join(output_dir, "aster_log.txt")
-    run_code_aster(export_path, log_file=log_file)
-
-    results_reader = ResultsReader(file_path=results_path)
-    print(f"maximum deflection from FEM: {float(results_reader.max_deflection)}")
-
+# if __name__ == "__main__":
+#     import os
 #
-# def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0.5)):
-#     """
-#     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
+#     instance = WingFEM()
+#     # display(instance)
 #
-#     Args:
-#         target_deflection (float): Maximum allowed deflection (e.g., 0.01 meters).
-#         thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
+#     current_path = os.path.dirname(__file__)
+#     output_dir = os.path.join(current_path, "output")
 #
-#     Returns:
-#         dict: Contains optimized thickness, max deflection, success status, and optimizer info.
-#     """
+#     writer = Writer(instance)
+#     mesh_path = os.path.join(output_dir, "mesh2.aster")
+#     writer.write_mesh(mesh_path)
 #
-#     def objective(thickness):
-#         """Objective: minimize thickness."""
-#         return thickness[0]  # minimize thickness itself
+#     comm_path = os.path.join(output_dir, "wing_fem.comm")
+#     writer.write_comm(comm_path)
 #
-#     def constraint(thickness):
-#         """Constraint: deflection must be <= target_deflection."""
-#         # --- Set up new Plate ---
-#         instance = Plate(thickness=thickness[0])
-#
-#         # --- Set up writer ---
-#         writer = Writer(instance)
-#
-#         # --- Paths ---
-#         current_path = os.path.dirname(__file__)
-#         output_dir = os.path.join(current_path, "output")
-#         os.makedirs(output_dir, exist_ok=True)
-#
-#         mesh_path = os.path.join(output_dir, "mesh2.aster")
-#         comm_path = os.path.join(output_dir, "rectangular_plate.comm")
-#         export_path = os.path.join(output_dir, "case2.export")
-#         results_path = os.path.join(output_dir, "results.txt")
-#         log_file = os.path.join(output_dir, "aster_log.txt")
-#
-#         # --- Write new files ---
-#         writer.write_mesh(mesh_path)
-#         writer.write_comm(comm_path)
-#         create_export_file(
-#             target_path=export_path,
-#             mesh_path=mesh_path,
-#             comm_path=comm_path,
-#             results_path=results_path,
-#         )
-#
-#         # --- Run Code_Aster ---
-#         run_code_aster(export_path, log_file=log_file)
-#
-#         # --- Read results ---
-#         results_reader = ResultsReader(file_path=results_path)
-#         max_deflection = float(results_reader.max_deflection)
-#
-#         # Constraint: max_deflection must be <= target_deflection
-#         return target_deflection - max_deflection
-#
-#     # --- Define constraints for minimize ---
-#     constraints = ({
-#         'type': 'ineq',  # constraint >= 0
-#         'fun': constraint
-#     })
-#
-#     # --- Initial guess ---
-#     x0 = [0.1]  # start at 0.1 meters thickness
-#
-#     # --- Run the optimization ---
-#     result = minimize(
-#         objective,
-#         x0,
-#         method='SLSQP',  # good for constraints
-#         bounds=[thickness_bounds],
-#         constraints=constraints,
-#         options={'disp': True}
+#     export_path = os.path.join(output_dir, "case2.export")
+#     results_path = os.path.join(output_dir, "results.txt")
+#     create_export_file(
+#         target_path=export_path,
+#         mesh_path=mesh_path,
+#         comm_path=comm_path,
+#         results_path=results_path,
 #     )
 #
-#     return {
-#         'optimized_thickness': result.x[0],
-#         'max_deflection': target_deflection - constraint([result.x[0]]),
-#         'success': result.success,
-#         'message': result.message,
-#         'result': result
-#     }
+#     log_file = os.path.join(output_dir, "aster_log.txt")
+#     run_code_aster(export_path, log_file=log_file)
 #
-#
-# if __name__ == "plate":
-#     # Example: target deflection 0.01 meters (10 mm)
-#     result = optimize_plate_thickness(target_deflection=0.0001)
-#
-#     print(f"Optimized thickness: {result['optimized_thickness']} m")
-#     print(f"Max deflection achieved: {result['max_deflection']} m")
-#     print(f"Optimization success: {result['success']}")
+#     results_reader = ResultsReader(file_path=results_path)
+#     print(f"maximum deflection from FEM: {float(results_reader.max_deflection)}")
+
+
+def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0.5)):
+    """
+    Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
+
+    Args:
+        target_deflection (float): Maximum allowed deflection (e.g., 0.01 meters).
+        thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
+
+    Returns:
+        dict: Contains optimized thickness, max deflection, success status, and optimizer info.
+    """
+
+    def objective(thickness):
+        """Objective: minimize thickness."""
+        return thickness[0]  # minimize thickness itself
+
+    def constraint(thickness):
+        """Constraint: deflection must be <= target_deflection."""
+        # --- Set up new Plate ---
+        instance = WingFEM(thickness=thickness[0])
+
+        # --- Set up writer ---
+        writer = Writer(instance)
+
+        # --- Paths ---
+        current_path = os.path.dirname(__file__)
+        output_dir = os.path.join(current_path, "output")
+        os.makedirs(output_dir, exist_ok=True)
+
+        mesh_path = os.path.join(output_dir, "mesh2.aster")
+        comm_path = os.path.join(output_dir, "wing_fem.comm")
+        export_path = os.path.join(output_dir, "case2.export")
+        results_path = os.path.join(output_dir, "results.txt")
+        log_file = os.path.join(output_dir, "aster_log.txt")
+
+        # --- Write new files ---
+        writer.write_mesh(mesh_path)
+        writer.write_comm(comm_path)
+        create_export_file(
+            target_path=export_path,
+            mesh_path=mesh_path,
+            comm_path=comm_path,
+            results_path=results_path,
+        )
+
+        # --- Run Code_Aster ---
+        run_code_aster(export_path, log_file=log_file)
+
+        # --- Read results ---
+        results_reader = ResultsReader(file_path=results_path)
+        max_deflection = float(results_reader.max_deflection)
+
+        # Constraint: max_deflection must be <= target_deflection
+        return target_deflection - max_deflection
+
+    # --- Define constraints for minimize ---
+    constraints = ({
+        'type': 'ineq',  # constraint >= 0
+        'fun': constraint
+    })
+
+    # --- Initial guess ---
+    x0 = [0.1]  # start at 0.1 meters thickness
+
+    # --- Run the optimization ---
+    result = minimize(
+        objective,
+        x0,
+        method='SLSQP',  # good for constraints
+        bounds=[thickness_bounds],
+        constraints=constraints,
+        options={'disp': True}
+    )
+
+    return {
+        'optimized_thickness': result.x[0],
+        'max_deflection': target_deflection - constraint([result.x[0]]),
+        'success': result.success,
+        'message': result.message,
+        'result': result
+    }
+
+
+if __name__ == "__main__":
+    result = optimize_plate_thickness(target_deflection=8)
+
+    print(f"Optimized thickness: {result['optimized_thickness']} m")
+    print(f"Max deflection achieved: {result['max_deflection']} m")
+    print(f"Optimization success: {result['success']}")

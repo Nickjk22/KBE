@@ -337,8 +337,7 @@ class Wingbox(Base):
                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                        wing_twist=self.wing_twist,
 
-                       quantify=self.section_number,
-                       section_spanwise_position=self.spanwise_points_list_sections[child.index],
+                       section_number=self.section_number,
                        hidden=True
                        )
 
