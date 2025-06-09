@@ -220,6 +220,10 @@ class Writer:
     def liftforces(self):
         return self.avl.lift_forces
 
+    # @Input
+    # def liftforces(self):
+    #     return self.avl.lift_forces
+
     @Attribute
     def nodes(self):
         return self.skin_writer.load_primitives

@@ -137,6 +137,7 @@ class WingSurface(GeomBase):
                            n_spanwise=20,
                            span_spacing=avl.Spacing.cosine,
                            y_duplicate=None,
+                           transparency=1,
                            sections=[Airfoil.avl_section
                                      for Airfoil in self.wing_sections])
 
