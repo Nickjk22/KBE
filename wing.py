@@ -13,19 +13,19 @@ class WingSurface(GeomBase):
     wing_airfoil_middle = Input("whitcomb.dat")
     wing_airfoil_tip = Input("whitcomb.dat")
 
-    wing_root_chord = Input(12)
-    wing_middle_chord = Input(7)
-    wing_tip_chord = Input(3)
+    wing_root_chord = Input(6)
+    wing_middle_chord = Input(4)
+    wing_tip_chord = Input(1.5)
 
     wing_thickness_factor_root = Input(1)
     wing_thickness_factor_middle = Input(1)
     wing_thickness_factor_tip = Input(1)
 
-    wing_semi_span_planform1 = Input(10)
-    wing_semi_span = Input(30)
+    wing_semi_span_planform1 = Input(5)
+    wing_semi_span = Input(16)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(-10)
+    wing_twist = Input(0)
 
     mach = Input(0.4)
 

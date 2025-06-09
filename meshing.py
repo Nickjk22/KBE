@@ -99,29 +99,29 @@ class FinalMesh(Base):
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
     wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
-    wing_root_chord = Input(12)
-    wing_middle_chord = Input(7)
-    wing_tip_chord = Input(3)
+    wing_root_chord = Input(6)
+    wing_middle_chord = Input(4)
+    wing_tip_chord = Input(1.5)
 
     wing_thickness_factor_root = Input(1)
     wing_thickness_factor_middle = Input(1)
     wing_thickness_factor_tip = Input(1)
 
-    wing_semi_span_planform1 = Input(10)
-    wing_semi_span = Input(30)
+    wing_semi_span_planform1 = Input(5)
+    wing_semi_span = Input(16)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
 
     # Spars
-    front_spar_thickness = Input(0.05)
+    front_spar_thickness = Input(1)
     front_spar_position = Input(0.2)
-    rear_spar_thickness = Input(0.05)
+    rear_spar_thickness = Input(1)
     rear_spar_position = Input(0.6)
 
     # Ribs
     rib_thickness = Input(0.2)
-    rib_number = Input(20)
+    rib_number = Input(12)
 
     @Part
     def sections(self):
@@ -184,7 +184,7 @@ class FinalMesh(Base):
 
     @Attribute
     def test(self):
-        return self.shape_to_mesh
+        return self.shape_to_mesh.edges
 
     @Attribute
     def face_hash_map(self):

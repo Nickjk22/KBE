@@ -26,10 +26,10 @@ class Spars(GeomBase):
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(-10)
 
-    front_spar_thickness = Input(0.05)
+    front_spar_thickness = Input(1)
     front_spar_position = Input(0.2)
 
-    rear_spar_thickness = Input(0.05)
+    rear_spar_thickness = Input(1)
     rear_spar_position = Input(0.6)
 
     @Part
@@ -187,30 +187,31 @@ class Spars(GeomBase):
 
     @Part
     def front_spar_plan1(self):
-        return LoftedSolid(profiles=self.profiles_front_plan1,
-                           color="Blue")
+        return LoftedShell(profiles=self.profiles_front_plan1,
+                           color="Blue",
+                           hidden=True)
 
     @Part
     def front_spar_plan2(self):
-        return LoftedSolid(profiles=self.profiles_front_plan2,
+        return LoftedShell(profiles=self.profiles_front_plan2,
                            color="Blue",
                            hidden=True)
 
     @Part
     def rear_spar_plan1(self):
-        return LoftedSolid(profiles=self.profiles_rear_plan1,
+        return LoftedShell(profiles=self.profiles_rear_plan1,
                            color="Blue",
                            hidden=True)
 
     @Part
     def rear_spar_plan2(self):
-        return LoftedSolid(profiles=self.profiles_rear_plan2,
+        return LoftedShell(profiles=self.profiles_rear_plan2,
                            color="Blue",
                            hidden=True)
 
     @Part
     def front_spar(self):
-        return FusedSolid(
+        return FusedShell(
             shape_in=self.front_spar_plan1,
             tool=[self.front_spar_plan2],
             mesh_deflection=0.0001,
@@ -219,7 +220,7 @@ class Spars(GeomBase):
 
     @Part
     def rear_spar(self):
-        return FusedSolid(
+        return FusedShell(
             shape_in=self.rear_spar_plan1,
             tool=[self.rear_spar_plan2],
             mesh_deflection=0.0001,

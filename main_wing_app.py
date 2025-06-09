@@ -18,14 +18,14 @@ class IntegratedWingAnalysis(Base):
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
     wing_airfoil_tip = Input("whitcomb_interpolated.dat")
-    wing_root_chord = Input(12)
-    wing_middle_chord = Input(7)
-    wing_tip_chord = Input(3)
+    wing_root_chord = Input(6)
+    wing_middle_chord = Input(4)
+    wing_tip_chord = Input(1.5)
     wing_thickness_factor_root = Input(1)
     wing_thickness_factor_middle = Input(1)
     wing_thickness_factor_tip = Input(1)
-    wing_semi_span_planform1 = Input(10)
-    wing_semi_span = Input(30)
+    wing_semi_span_planform1 = Input(5)
+    wing_semi_span = Input(16)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
@@ -37,6 +37,10 @@ class IntegratedWingAnalysis(Base):
 
     stringer_thickness = Input(0.01)
     stringer_number = Input(10)
+
+    target_deflection = Input(5)
+    initial_thickness = Input(0.3)
+    thickness_bounds = Input([0.1, 0.5])
 
     # Results Storage
     # avl_results = Attribute()
@@ -69,18 +73,22 @@ class IntegratedWingAnalysis(Base):
     @Attribute
     def avl_analysis(self):
         return WingAVLAnalysis(
-            aircraft=self.wingbox.wing_surface,
+            aircraft=self.wing_surface,
             case_settings=[("alpha_5deg", {'alpha': 5.0})]
         )
 
     @Attribute
-    def avl_lift_forces(self):
+    def avl_lift_forces_normalized(self):
         lift_forces = []
         max_value = max(self.avl_analysis.lift_forces)
         for i in (self.avl_analysis.lift_forces):
             norm = i / max_value
             lift_forces.append(norm)
         return lift_forces
+
+    @Attribute
+    def avl_lift_forces(self):
+        return self.avl_analysis.lift_forces
 
     # @Attribute
     # def torsionbox(self):
@@ -97,11 +105,11 @@ class IntegratedWingAnalysis(Base):
     @Part
     def lift_arrows(self):
         return LiftArrowArray(points_list=[pt.point for pt in TorsionBox(hidden=True).points],
-                              lift_forces=self.avl_lift_forces)
+                              lift_forces=self.avl_lift_forces_normalized)
 
     @Attribute
     def run_fem_analysis(self):
-        result = optimize_plate_thickness(target_deflection=9)
+        result = optimize_plate_thickness(target_deflection=self.target_deflection, initial_thickness=self.initial_thickness, thickness_bounds=self.thickness_bounds)
         print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
             f"Max deflection achieved: {result['max_deflection']} m"), print(
             f"Optimization success: {result['success']}")
@@ -124,12 +132,12 @@ class IntegratedWingAnalysis(Base):
             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
             wing_twist=self.wing_twist,
-            front_spar_thickness=self.run_fem_analysis['optimized_thickness'],
+            front_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
             front_spar_position=self.front_spar_position,
-            rear_spar_thickness=self.run_fem_analysis['optimized_thickness'],
-            rear_spar_position=Input(0.6),
+            rear_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
+            rear_spar_position=self.rear_spar_position,
 
-            rib_thickness=self.run_fem_analysis['optimized_thickness'],
+            rib_thickness=float(self.run_fem_analysis['optimized_thickness']),
             rib_number=self.rib_number,
 
             stringer_thickness=self.stringer_thickness,

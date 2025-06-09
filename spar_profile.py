@@ -20,7 +20,7 @@ class SparProfile(Polygon):
             points_list = []
             for line in f:
                 x, z = line.split(' ', 1)
-                if float(self.spar_position) <= float(x) <= float(self.spar_position) + float(self.spar_thickness):
+                if float(self.spar_position) <= float(x) <= float(self.spar_position) + self.spar_thickness/float(self.chord):
                     points_list.append(self.position.translate(
                         "x", float(x) * self.chord,
                         "z", float(z) * self.chord * self.thickness_factor))

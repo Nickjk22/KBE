@@ -471,7 +471,7 @@ class ResultsReader(ResultsReaderBase):
 #     print(f"maximum deflection from FEM: {float(results_reader.max_deflection)}")
 
 
-def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0.5)):
+def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, thickness_bounds=(0.01, 0.5)):
     """
     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
 
@@ -481,6 +481,7 @@ def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0
 
     Returns:
         dict: Contains optimized thickness, max deflection, success status, and optimizer info.
+        :param initial_thickness:
     """
 
     def objective(thickness):
@@ -533,7 +534,7 @@ def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0
     })
 
     # --- Initial guess ---
-    x0 = [0.1]  # start at 0.1 meters thickness
+    x0 = [initial_thickness]  # start at 0.1 meters thickness
 
     # --- Run the optimization ---
     result = minimize(
@@ -555,7 +556,7 @@ def optimize_plate_thickness(target_deflection: float, thickness_bounds=(0.01, 0
 
 
 if __name__ == "__main__":
-    result = optimize_plate_thickness(target_deflection=8)
+    result = optimize_plate_thickness(target_deflection=0.10)
 
     print(f"Optimized thickness: {result['optimized_thickness']} m")
     print(f"Max deflection achieved: {result['max_deflection']} m")

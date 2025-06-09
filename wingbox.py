@@ -61,7 +61,7 @@ def interpolate_airfoil(input_file, output_file, factor=5):
 
 
 # Usage
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
+interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
 
 
 # Class
@@ -86,9 +86,9 @@ class Wingbox(GeomBase):
     wing_twist = Input(0)
 
     # Spars
-    front_spar_thickness = Input(0.05)
+    front_spar_thickness = Input(1)
     front_spar_position = Input(0.2)
-    rear_spar_thickness = Input(0.05)
+    rear_spar_thickness = Input(1)
     rear_spar_position = Input(0.6)
 
     # Ribs
@@ -101,8 +101,6 @@ class Wingbox(GeomBase):
 
     # Sections
     section_number = Input(30)
-
-    show_internals = Input(True)
 
     @Part
     def wing_frame(self):
@@ -216,7 +214,6 @@ class Wingbox(GeomBase):
 
                      rear_spar_thickness=self.rear_spar_thickness,
                      rear_spar_position=self.rear_spar_position,
-                     hidden=not self.show_internals
                      )
 
     # @Part
@@ -288,7 +285,6 @@ class Wingbox(GeomBase):
                    rib_thickness=self.rib_thickness,
                    quantify=self.rib_number,
                    rib_spanwise_position=self.spanwise_points_list[child.index],
-                   hidden=not self.show_internals
                    )
 
     @Part
@@ -314,7 +310,6 @@ class Wingbox(GeomBase):
                         stringer_thickness=self.stringer_thickness,
                         quantify=self.stringer_number,
                         stringer_position=self.chordwise_points_list[child.index],
-                        hidden=not self.show_internals
                         )
 
     @Part

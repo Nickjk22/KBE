@@ -92,8 +92,9 @@ class WingAVLAnalysis(avl.Interface):
             return []
 
         # Bereken lift per strip (raw values)
-        rho = 1200
-        v = 0.4 * 343
+        rho = 1.200
+        Mach = 0.7
+        v = Mach * 343
         q = 0.5 * rho * v ** 2
         raw = [q * ccl for ccl in ccl_list]
 
