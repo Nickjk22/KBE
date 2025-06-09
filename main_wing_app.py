@@ -101,7 +101,7 @@ class IntegratedWingAnalysis(Base):
 
     @Attribute
     def run_fem_analysis(self):
-        result = optimize_plate_thickness(target_deflection=8.8)
+        result = optimize_plate_thickness(target_deflection=9)
         print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
             f"Max deflection achieved: {result['max_deflection']} m"), print(
             f"Optimization success: {result['success']}")
