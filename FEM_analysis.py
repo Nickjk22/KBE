@@ -335,10 +335,10 @@ class Writer:
             )
             self.mesh_groups.append(node_group)
 
-        print(">>> DEBUG: mesh_groups")
-        for grp in self.mesh_groups:
-            if grp.element_type == "node" and grp.label.startswith("load_node"):
-                print(f"    {grp.label}:  {len(grp.element_ids)} node(s) -> {grp.element_ids}")
+        # print(">>> DEBUG: mesh_groups")
+        # for grp in self.mesh_groups:
+        #     if grp.element_type == "node" and grp.label.startswith("load_node"):
+        #         print(f"    {grp.label}:  {len(grp.element_ids)} node(s) -> {grp.element_ids}")
 
     def _generate_mesh_settings_command(self) -> None:
         self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20,
@@ -388,8 +388,8 @@ class Writer:
     #                                                                                     MODELE=self.model_command)]
 
     def _generate_load_commands(self) -> None:
-        print(">>> DEBUG: nodes.mesh_id  =", [n.mesh_id for n in self._instance.nodes])
-        print(">>> DEBUG: liftforces      =", self._instance.liftforces)
+        # print(">>> DEBUG: nodes.mesh_id  =", [n.mesh_id for n in self._instance.nodes])
+        # print(">>> DEBUG: liftforces      =", self._instance.liftforces)
         self.load_commands = []
         for i, force in enumerate(self._instance.liftforces):
             grp_label = f"load_node{i + 1}_group"
@@ -401,10 +401,10 @@ class Writer:
                 MODELE=self.model_command
             )
             self.load_commands.append(cmd)
-
-        print(">>> DEBUG: load_commands")
-        for cmd in self.load_commands:
-            print("   ", cmd)
+        #
+        # print(">>> DEBUG: load_commands")
+        # for cmd in self.load_commands:
+        #     print("   ", cmd)
 
     def _generate_solver_settings_command(self) -> None:
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]

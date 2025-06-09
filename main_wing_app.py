@@ -106,9 +106,10 @@ class IntegratedWingAnalysis(Base):
     @Attribute
     def run_fem_analysis(self):
         result = optimize_plate_thickness(target_deflection=8.8)
-        return print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
+        print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
             f"Max deflection achieved: {result['max_deflection']} m"), print(
             f"Optimization success: {result['success']}")
+        return result
 
     @Part
     def wingbox(self):
@@ -127,49 +128,17 @@ class IntegratedWingAnalysis(Base):
             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
             wing_twist=self.wing_twist,
-            front_spar_thickness=result['optimized_thickness'],
+            front_spar_thickness=self.run_fem_analysis['optimized_thickness'],
             front_spar_position=self.front_spar_position,
-            rear_spar_thickness=result['optimized_thickness'],
+            rear_spar_thickness=self.run_fem_analysis['optimized_thickness'],
             rear_spar_position=Input(0.6),
 
-            rib_thickness=result['optimized_thickness'],
+            rib_thickness=self.run_fem_analysis['optimized_thickness'],
             rib_number=self.rib_number,
 
             stringer_thickness=self.stringer_thickness,
             stringer_number=self.stringer_number
         )
-
-    # @Attribute
-    # def avl_analysis(self):
-    #     """Triggered when expanded in GUI tree"""
-    #     if self.run_avl and not hasattr(self, 'avl_results'):
-    #         self.avl_results = WingAVLAnalysis(
-    #             aircraft=self.wingbox,
-    #             case_settings=[("cruise", {'alpha': 5.0})]
-    #         )
-    #         return self.avl_results
-    #     return "Run AVL by setting 'run_avl=True'"
-
-    # @Attribute
-    # def fem_analysis(self):
-    #     """Triggered when expanded in GUI tree"""
-    #     if self.run_fem and hasattr(self, 'avl_results'):
-    #         if not hasattr(self, 'fem_results'):
-    #             self.fem_results = WingFEM(
-    #                 wing=self.wingbox,
-    #                 avl=self.avl_results,
-    #                 element_length=0.2,
-    #                 thickness=0.1
-    #             )
-    #             # Update geometry with FEM results (example values)
-    #             self.optimized_parameters = {
-    #                 'front_spar_thickness': 0.07,
-    #                 'rear_spar_thickness': 0.06,
-    #                 'rib_thickness': 0.15,
-    #                 'stringer_thickness': 0.02
-    #             }
-    #         return self.fem_results
-    #     return "Run FEM by setting 'run_fem=True' (requires AVL first)"
 
     # @Attribute
     # def design_report(self):
@@ -185,11 +154,10 @@ class IntegratedWingAnalysis(Base):
     #     self.wingbox.show_internals = True
     #     return report
 
-
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
         label="Wing Analysis",
-        run_avl=True,  # Set to True in GUI to run AVL
+        run_avl=False,  # Set to True in GUI to run AVL
         run_fem=False  # Set to True in GUI to run FEM
     )
     display(obj)

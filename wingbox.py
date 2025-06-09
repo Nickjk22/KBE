@@ -65,7 +65,7 @@ interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
 
 
 # Class
-class Wingbox(Base):
+class Wingbox(GeomBase):
     # Wing
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
@@ -102,7 +102,7 @@ class Wingbox(Base):
     # Sections
     section_number = Input(30)
 
-    show_internals = Input(False)
+    show_internals = Input(True)
 
     @Part
     def wing_frame(self):

@@ -7,7 +7,7 @@ from spar_profile import SparProfile
 import numpy as np
 
 
-class Spars(LoftedSolid):
+class Spars(GeomBase):
     wing_airfoil_root = Input("whitcomb.dat")
     wing_airfoil_middle = Input("whitcomb.dat")
     wing_airfoil_tip = Input("whitcomb.dat")
@@ -230,5 +230,5 @@ class Spars(LoftedSolid):
 if __name__ == '__main__':
     from parapy.gui import display
 
-    obj = Spars(label="Spars", mesh_deflection=0.0001)
+    obj = Spars(label="Spars")
     display(obj)

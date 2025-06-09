@@ -59,7 +59,7 @@ from parapy.core import *
 from parapy.geom import *
 from math import isclose
 
-class LiftArrowArray(VisualizationBase):
+class LiftArrowArray(GeomBase):
     __initargs__ = ["points_list", "lift_forces"]
 
     points_list = Input()
@@ -129,7 +129,4 @@ class CylinderArrow(VisualizationBase):
             pos_ = translate(pos, 'z', lbase + i * lh)
             cone = Cone(radius1=rhead, radius2=0, height=lh, position=pos_)
             lst.append(cone)
-
-
-        print(lst)
         return lst

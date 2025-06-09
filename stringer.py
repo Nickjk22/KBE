@@ -8,7 +8,7 @@ import numpy as np
 from stringer_profile import StringerProfile
 
 
-class Stringer(LoftedSolid):
+class Stringer(GeomBase):
     wing_airfoil_root = Input("whitcomb.dat")
     wing_airfoil_middle = Input("whitcomb.dat")
     wing_airfoil_tip = Input("whitcomb.dat")
@@ -243,5 +243,5 @@ class Stringer(LoftedSolid):
 if __name__ == '__main__':
     from parapy.gui import display
 
-    obj = Stringer(label="Stringer", mesh_deflection=0.0001)
+    obj = Stringer(label="Stringer")
     display(obj)
