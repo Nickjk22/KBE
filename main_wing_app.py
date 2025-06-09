@@ -7,6 +7,7 @@ from FEM_analysis import WingFEM, Writer, ResultsReader
 from torsionbox import TorsionBox
 from visualisation_arrows import LiftArrowArray
 import warnings
+from FEM_analysis import optimize_plate_thickness
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
@@ -97,32 +98,38 @@ class IntegratedWingAnalysis(Base):
     def lift_arrows(self):
         return LiftArrowArray(points_list=self.points_list, lift_forces=self.avl_lift_forces)
 
+    # @Attribute
+    # def fem_analysis(self):
+    #     fem_instance = WingFEM(
+    #         thickness=0.1,
+    #     )
+    #     writer = Writer(fem_instance)
+    #
+    #     # Write + Run
+    #     import os
+    #     base_path = os.path.dirname(__file__)
+    #     output_dir = os.path.join(base_path, "output")
+    #     os.makedirs(output_dir, exist_ok=True)
+    #
+    #     mesh_path = os.path.join(output_dir, "mesh2.aster")
+    #     comm_path = os.path.join(output_dir, "wing_fem.comm")
+    #     export_path = os.path.join(output_dir, "case2.export")
+    #     results_path = os.path.join(output_dir, "results.txt")
+    #     log_path = os.path.join(output_dir, "aster_log.txt")
+    #
+    #     writer.write_mesh(mesh_path)
+    #     writer.write_comm(comm_path)
+    #     from parapy.lib.code_aster import create_export_file, run_code_aster
+    #     create_export_file(export_path, mesh_path, comm_path, results_path)
+    #     run_code_aster(export_path, log_file=log_path)
+    #
+    #     return ResultsReader(file_path=results_path)
+    #
     @Attribute
-    def fem_analysis(self):
-        fem_instance = WingFEM(
-            thickness=0.1,
-        )
-        writer = Writer(fem_instance)
+    def run_fem_analysis(self):
+        result = optimize_plate_thickness(target_deflection=8.8)
+        return print(f"Optimized thickness: {result['optimized_thickness']} m"), print(f"Max deflection achieved: {result['max_deflection']} m"), print(f"Optimization success: {result['success']}")
 
-        # Write + Run
-        import os
-        base_path = os.path.dirname(__file__)
-        output_dir = os.path.join(base_path, "output")
-        os.makedirs(output_dir, exist_ok=True)
-
-        mesh_path = os.path.join(output_dir, "mesh2.aster")
-        comm_path = os.path.join(output_dir, "wing_fem.comm")
-        export_path = os.path.join(output_dir, "case2.export")
-        results_path = os.path.join(output_dir, "results.txt")
-        log_path = os.path.join(output_dir, "aster_log.txt")
-
-        writer.write_mesh(mesh_path)
-        writer.write_comm(comm_path)
-        from parapy.lib.code_aster import create_export_file, run_code_aster
-        create_export_file(export_path, mesh_path, comm_path, results_path)
-        run_code_aster(export_path, log_file=log_path)
-
-        return ResultsReader(file_path=results_path)
 
     # @Attribute
     # def avl_analysis(self):
@@ -169,6 +176,8 @@ class IntegratedWingAnalysis(Base):
         # Make internals visible in wingbox
         self.wingbox.show_internals = True
         return report
+
+
 
 
 if __name__ == '__main__':
