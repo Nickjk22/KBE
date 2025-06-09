@@ -38,10 +38,6 @@ class IntegratedWingAnalysis(Base):
     stringer_thickness = Input(0.01)
     stringer_number = Input(10)
 
-    # Analysis Control Flags
-    run_avl = Input(False)
-    run_fem = Input(False)
-
     # Results Storage
     # avl_results = Attribute()
     # fem_results = Attribute()
@@ -157,7 +153,5 @@ class IntegratedWingAnalysis(Base):
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
         label="Wing Analysis",
-        run_avl=False,  # Set to True in GUI to run AVL
-        run_fem=False  # Set to True in GUI to run FEM
     )
     display(obj)
