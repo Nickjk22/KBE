@@ -1,4 +1,6 @@
 from parapy.core import *
+import os
+from parapy.exchange import STEPWriter
 from parapy.gui import display
 from parapy.geom import *
 from wingbox import Wingbox
@@ -14,10 +16,15 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 
+DIR = os.path.expanduser("~/Documents")
+# DIR = os.path.dirname(__file__)
+
+
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
@@ -97,7 +104,7 @@ class IntegratedWingAnalysis(Base):
     rib_number = Input(int(pd.read_excel(excel_directory).iloc[17, 1]))
 
     stringer_thickness = Input(float(pd.read_excel(excel_directory).iloc[19, 1]))
-    stringer_number = Input(float(pd.read_excel(excel_directory).iloc[20, 1]))
+    stringer_number = Input(int(pd.read_excel(excel_directory).iloc[20, 1]))
 
     target_deflection = Input(float(pd.read_excel(excel_directory).iloc[23, 5]))
     initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]))
@@ -316,8 +323,21 @@ class IntegratedWingAnalysis(Base):
             stringer_number=self.stringer_number
         )
 
-        # Step file creation here!!!
+    # Step file creation here!!!
 
+    @Attribute
+    def check_shape(self):
+        shape = self.wingbox
+        print("Valid:", shape.shape is not None)
+        print("Bounding Box:", shape.bbox if hasattr(shape, 'bbox') else "No bbox")
+        return shape
+
+    @Part
+    def step_writer_fused(self):
+        return STEPWriter(
+            default_directory=DIR,
+            nodes=[self.check_shape]
+        )
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
