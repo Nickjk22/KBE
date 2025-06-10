@@ -141,13 +141,13 @@ class WingFEM(Base):
     #     """Same length as `nodes`: force magnitude (FZ) per node."""
     #     return []
 
-    @Part
+    @Input
     def avl(self):
         return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
             ("alpha_5deg", {'alpha': 5.0}),
         ])
 
-    @Part
+    @Input
     def skin_writer(self):
         return CodeAster_primitives()
 
@@ -175,8 +175,16 @@ class Writer:
     Written: ...
     """
 
-    def __init__(self, instance: WingFEM) -> None:
-        self._instance: WingFEM = instance
+    # @Input
+    # def avl(self):
+    #     return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
+    #         ("alpha_5deg", {'alpha': 5.0}),
+    #     ])
+
+    def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None) -> None:
+        self._instance: WingFEM = instance or self._default_instance()
+        self.avl: WingAVLAnalysis = avl or self._default_avl()
+
         self.mesh_settings_command: LIRE_MAILLAGE = None
         self.mesh_groups: List[MeshGroup] = None
         self.model_command: AFFE_MODELE = None
@@ -206,15 +214,22 @@ class Writer:
         # contains all other commands of the FEM model.
         self._commands: List[Command] = [self.result_settings_command]
 
-    @Part
-    def avl(self):
-        return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
-            ("alpha_5deg", {'alpha': 5.0}),
-        ])
-
     # @Part
     # def skin_writer(self):
     #     return CodeAster_primitives()
+
+    @staticmethod
+    def _default_instance() -> WingFEM:
+        """Fallback WingFEM setup for standalone execution."""
+        # Example placeholder — replace with actual logic or test setup
+        return WingFEM()
+
+    @staticmethod
+    def _default_avl() -> WingAVLAnalysis:
+        """Fallback AVL setup for standalone execution."""
+        # You’ll likely need to provide a minimal working AVL configuration
+        wing = WingSurface(label="wing")
+        return WingAVLAnalysis(aircraft=wing, case_settings=[("alpha_5deg", {'alpha': 5.0})])
 
     @Attribute
     def liftforces(self):
@@ -471,17 +486,107 @@ class ResultsReader(ResultsReaderBase):
 #     print(f"maximum deflection from FEM: {float(results_reader.max_deflection)}")
 
 
-def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, thickness_bounds=(0.01, 0.5)):
+# def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, thickness_bounds=(0.01, 0.5)):
+#     """
+#     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
+#
+#     Args:
+#         target_deflection (float): Maximum allowed deflection (e.g., 0.01 meters).
+#         thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
+#
+#     Returns:
+#         dict: Contains optimized thickness, max deflection, success status, and optimizer info.
+#         :param initial_thickness:
+#     """
+#
+#     def objective(thickness):
+#         """Objective: minimize thickness."""
+#         return thickness[0]  # minimize thickness itself
+#
+#     def constraint(thickness):
+#         """Constraint: deflection must be <= target_deflection."""
+#         # --- Set up new Plate ---
+#         instance = WingFEM(thickness=thickness[0])
+#
+#         # --- Set up writer ---
+#         writer = Writer(instance)
+#
+#         # --- Paths ---
+#         current_path = os.path.dirname(__file__)
+#         output_dir = os.path.join(current_path, "output")
+#         os.makedirs(output_dir, exist_ok=True)
+#
+#         mesh_path = os.path.join(output_dir, "mesh2.aster")
+#         comm_path = os.path.join(output_dir, "wing_fem.comm")
+#         export_path = os.path.join(output_dir, "case2.export")
+#         results_path = os.path.join(output_dir, "results.txt")
+#         log_file = os.path.join(output_dir, "aster_log.txt")
+#
+#         # --- Write new files ---
+#         writer.write_mesh(mesh_path)
+#         writer.write_comm(comm_path)
+#         create_export_file(
+#             target_path=export_path,
+#             mesh_path=mesh_path,
+#             comm_path=comm_path,
+#             results_path=results_path,
+#         )
+#
+#         # --- Run Code_Aster ---
+#         run_code_aster(export_path, log_file=log_file)
+#
+#         # --- Read results ---
+#         results_reader = ResultsReader(file_path=results_path)
+#         max_deflection = float(results_reader.max_deflection)
+#
+#         # Constraint: max_deflection must be <= target_deflection
+#         return target_deflection - max_deflection
+#
+#     # --- Define constraints for minimize ---
+#     constraints = ({
+#         'type': 'ineq',  # constraint >= 0
+#         'fun': constraint
+#     })
+#
+#     # --- Initial guess ---
+#     x0 = [initial_thickness]  # start at 0.1 meters thickness
+#
+#     # --- Run the optimization ---
+#     result = minimize(
+#         objective,
+#         x0,
+#         method='SLSQP',  # good for constraints
+#         bounds=[thickness_bounds],
+#         constraints=constraints,
+#         options={'disp': True}
+#     )
+#
+#     return {
+#         'optimized_thickness': result.x[0],
+#         'max_deflection': target_deflection - constraint([result.x[0]]),
+#         'success': result.success,
+#         'message': result.message,
+#         'result': result
+#     }
+
+
+def optimize_plate_thickness(target_deflection: float,
+                             wing_fem_instance,  # New argument for WingFEM instance
+                             writer_instance,  # New argument for Writer instance
+                             initial_thickness=0.1,
+                             thickness_bounds=(0.01, 0.5)):
     """
     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
 
     Args:
-        target_deflection (float): Maximum allowed deflection (e.g., 0.01 meters).
+        target_deflection (float): Maximum allowed deflection (e.0.01 meters).
+        wing_fem_instance: An instance of the WingFEM class.
+        writer_instance: An instance of the Writer class.
+        initial_thickness (float): Initial guess for the plate thickness.
         thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
 
     Returns:
         dict: Contains optimized thickness, max deflection, success status, and optimizer info.
-        :param initial_thickness:
     """
 
     def objective(thickness):
@@ -490,11 +595,12 @@ def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, th
 
     def constraint(thickness):
         """Constraint: deflection must be <= target_deflection."""
-        # --- Set up new Plate ---
-        instance = WingFEM(thickness=thickness[0])
+        # --- Update WingFEM instance with new thickness ---
+        wing_fem_instance.thickness = thickness[0]
 
-        # --- Set up writer ---
-        writer = Writer(instance)
+        # --- Set up writer (use the provided instance) ---
+        # No need to create a new writer instance here, just use the provided one.
+        writer = writer_instance
 
         # --- Paths ---
         current_path = os.path.dirname(__file__)
@@ -556,7 +662,7 @@ def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, th
 
 
 if __name__ == "__main__":
-    result = optimize_plate_thickness(target_deflection=0.10)
+    result = optimize_plate_thickness(target_deflection=0.10, wing_fem_instance=WingFEM, writer_instance=Writer)
 
     print(f"Optimized thickness: {result['optimized_thickness']} m")
     print(f"Max deflection achieved: {result['max_deflection']} m")

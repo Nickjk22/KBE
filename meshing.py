@@ -85,37 +85,37 @@ class MeshGenerator(Base):
 
 
 class FinalMesh(Base):
-    check_element = Input(0)
+    check_element = Input()
 
-    wing_airfoil_root = Input("whitcomb_interpolated.dat")
-    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
-    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
+    wing_airfoil_root = Input()
+    wing_airfoil_middle = Input()
+    wing_airfoil_tip = Input()
 
-    wing_root_chord = Input(6)
-    wing_middle_chord = Input(4)
-    wing_tip_chord = Input(1.5)
+    wing_root_chord = Input()
+    wing_middle_chord = Input()
+    wing_tip_chord = Input()
 
-    wing_thickness_factor_root = Input(1)
-    wing_thickness_factor_middle = Input(1)
-    wing_thickness_factor_tip = Input(1)
+    wing_thickness_factor_root = Input()
+    wing_thickness_factor_middle = Input()
+    wing_thickness_factor_tip = Input()
 
-    wing_semi_span_planform1 = Input(5)
-    wing_semi_span = Input(16)
-    wing_sweep_leading_edge_planform1 = Input(20)
-    wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(0)
+    wing_semi_span_planform1 = Input()
+    wing_semi_span = Input()
+    wing_sweep_leading_edge_planform1 = Input()
+    wing_sweep_leading_edge_planform2 = Input()
+    wing_twist = Input()
 
     # Spars
-    front_spar_position = Input(0.2)
-    rear_spar_position = Input(0.6)
+    front_spar_position = Input()
+    rear_spar_position = Input()
 
     # Ribs
-    rib_number = Input(12)
+    rib_number = Input()
 
     #Extra
-    section_number = Input(14)
-    segment_number = Input(14)
-    points_number = Input(14)
+    section_number = Input()
+    segment_number = Input()
+    points_number = Input()
 
     # @Part
     # def sections(self):
@@ -191,11 +191,11 @@ class FinalMesh(Base):
     def mesh(self):
         return self.mesh_generator.mesh
 
-    @Part
-    def highlighted_face(self):
-        return BRep(TopoDS_Shape=self.shape_to_mesh.faces[self.check_element].TopoDS_Shape,
-                    color="red",
-                    transparency=0)
+    # @Part
+    # def highlighted_face(self):
+    #     return BRep(TopoDS_Shape=self.shape_to_mesh.faces[self.check_element].TopoDS_Shape,
+    #                 color="red",
+    #                 transparency=0)
 
     @Attribute
     def number_of_faces(self):
@@ -213,6 +213,33 @@ class FinalMesh(Base):
 if __name__ == '__main__':
     from parapy.gui import display
 
-    obj = FinalMesh(label="Mesh Torsion Box")
+    obj = FinalMesh(label="Mesh Torsion Box",
+                    check_element=0,
+                    wing_airfoil_root="whitcomb_interpolated.dat",
+                    wing_airfoil_middle="whitcomb_interpolated.dat",
+                    wing_airfoil_tip="whitcomb_interpolated.dat",
+
+                    wing_root_chord=6,
+                    wing_middle_chord=4,
+                    wing_tip_chord=1.5,
+
+                    wing_thickness_factor_root=1,
+                    wing_thickness_factor_middle=1,
+                    wing_thickness_factor_tip=1,
+
+                    wing_semi_span_planform1=5,
+                    wing_semi_span=16,
+                    wing_sweep_leading_edge_planform1=20,
+                    wing_sweep_leading_edge_planform2=20,
+                    wing_twist=0,
+
+                    front_spar_position=0.2,
+                    rear_spar_position=0.6,
+                    rib_number=12,
+
+                    section_number=14,
+                    segment_number=14,
+                    points_number=14
+                    )
 
     display(obj)

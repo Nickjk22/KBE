@@ -108,7 +108,8 @@ class Points(GeomBase):
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,
                        chord=self.wing_root_chord,
-                       thickness_factor=self.wing_thickness_factor_root)
+                       thickness_factor=self.wing_thickness_factor_root,
+                       hidden=True)
 
     @Part
     def wing_middle_airfoil(self):
@@ -138,7 +139,8 @@ class Points(GeomBase):
                                                  #                   tan(radians(
                                                  # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
                                                  ),
-                                       "y", radians(self.wing_twist))
+                                       "y", radians(self.wing_twist)),
+                       hidden=True
                        )
 
 

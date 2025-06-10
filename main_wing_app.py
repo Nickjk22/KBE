@@ -10,11 +10,64 @@ from wing import WingSurface
 from meshing import FinalMesh
 from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
+import numpy as np
+from scipy.interpolate import interp1d
+
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
 
-#Hier de airfoil coordinates interpoleren ipv torsionbox!!!!
+# Interpolate whitcomb airfoil
+def interpolate_airfoil(input_file, output_file, factor=5):
+    # Read and parse the original data
+    with open(input_file, 'r') as f:
+        coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
+
+    # Split into upper and lower surfaces
+    # Find index where y first becomes negative (start of lower surface)
+    transition_idx = next(i for i, (x, y) in enumerate(coords) if y < 0)
+
+    upper = coords[:transition_idx]  # Upper surface (including leading edge)
+    lower = coords[transition_idx:]  # Lower surface (including trailing edge)
+
+    # Reverse the lower surface for proper parameterization
+    lower = lower[::-1]
+
+    # Create separate interpolation functions for upper and lower
+    x_upper, y_upper = zip(*upper)
+    x_lower, y_lower = zip(*lower)
+
+    # Generate new parameter values (5x denser)
+    t_upper = np.linspace(0, 1, len(upper))
+    t_lower = np.linspace(0, 1, len(lower))
+
+    new_t = np.linspace(0, 1, len(upper) * factor)
+
+    # Interpolate both x and y coordinates
+    fx_upper = interp1d(t_upper, x_upper, kind='cubic')
+    fy_upper = interp1d(t_upper, y_upper, kind='cubic')
+
+    fx_lower = interp1d(t_lower, x_lower, kind='cubic')
+    fy_lower = interp1d(t_lower, y_lower, kind='cubic')
+
+    # Generate new coordinates
+    new_upper = list(zip(fx_upper(new_t), fy_upper(new_t)))
+    new_lower = list(zip(fx_lower(new_t), fy_lower(new_t)))[::-1]  # Reverse back
+
+    # Combine while maintaining correct order (upper TE -> LE -> lower LE -> TE)
+    new_coords = new_upper + new_lower[1:]
+
+    # Write to file (maintaining original format)
+    with open(output_file, 'w') as f:
+        for x, y in new_coords:
+            f.write(f"{x:.5f} {y:.5f}\n")
+
+    print(f"Created {output_file} with {len(new_coords)} points")
+
+
+# Usage
+interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
+
 
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
@@ -50,6 +103,11 @@ class IntegratedWingAnalysis(Base):
     # fem_results = Attribute()
     # optimized_parameters = Attribute()
     points_number = Input(14)
+    section_number = Input(14)
+    segment_number = Input(14)
+
+    Mach = Input(0.7)
+    rho = Input(1.200)
 
     @Part
     def wing_surface(self):
@@ -70,6 +128,7 @@ class IntegratedWingAnalysis(Base):
                            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                            wing_twist=self.wing_twist,
+                           mach=self.Mach,
                            points_number=self.points_number
                            )
 
@@ -77,40 +136,40 @@ class IntegratedWingAnalysis(Base):
     @Attribute
     def avl_analysis(self):
         return WingAVLAnalysis(
-            aircraft=self.wing_surface(label="wing"),
+            aircraft=self.wing_surface
+            # (label="wing")
+            ,
             case_settings=[("alpha_5deg", {'alpha': 5.0})],
             points_number=self.points_number,
-            rho=1.2,
-            Mach=0.7,
+            rho=self.rho,
+            Mach=self.Mach,
             check_nodes=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
-                                                        wing_airfoil_middle=self.wing_airfoil_middle,
-                                                        wing_airfoil_tip=self.wing_airfoil_tip,
+                                             wing_airfoil_middle=self.wing_airfoil_middle,
+                                             wing_airfoil_tip=self.wing_airfoil_tip,
 
-                                                        wing_root_chord=self.wing_root_chord,
-                                                        wing_middle_chord=self.wing_middle_chord,
-                                                        wing_tip_chord=self.wing_tip_chord,
+                                             wing_root_chord=self.wing_root_chord,
+                                             wing_middle_chord=self.wing_middle_chord,
+                                             wing_tip_chord=self.wing_tip_chord,
 
-                                                        wing_thickness_factor_root=self.wing_thickness_factor_root,
-                                                        wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                                                        wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+                                             wing_thickness_factor_root=self.wing_thickness_factor_root,
+                                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
-                                                        wing_semi_span_planform1=self.wing_semi_span_planform1,
-                                                        wing_semi_span=self.wing_semi_span,
-                                                        wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                                                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                                                        wing_twist=self.wing_twist,
+                                             wing_semi_span_planform1=self.wing_semi_span_planform1,
+                                             wing_semi_span=self.wing_semi_span,
+                                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                                             wing_twist=self.wing_twist,
 
-                                                        front_spar_position=self.front_spar_position,
-                                                        rear_spar_position=self.rear_spar_position,
-                                                        rib_number=self.rib_number,
+                                             front_spar_position=self.front_spar_position,
+                                             rear_spar_position=self.rear_spar_position,
+                                             rib_number=self.rib_number,
 
-                                                        section_number=self.section_number,
-                                                        segment_number=self.segment_number,
-                                                        points_number=self.points_number,
+                                             section_number=self.section_number,
+                                             segment_number=self.segment_number,
+                                             points_number=self.points_number,
 
-                                                        finalmesh=self.mesh)),
-
-        )
+                                             finalmesh=self.mesh))
 
     @Attribute
     def avl_lift_forces_normalized(self):
@@ -137,9 +196,13 @@ class IntegratedWingAnalysis(Base):
     # def lift_arrows(self):
     #     return LiftArrowArray(points_list=self.points_list, lift_forces=self.avl_lift_forces)
 
+    @Attribute
+    def points_list(self):
+        return self.wing_surface.points
+
     @Part
     def lift_arrows(self):
-        return LiftArrowArray(points_list=[pt.point for pt in self.wing_surface(hidden=True).points],
+        return LiftArrowArray(points_list=[pt.point for pt in self.points_list],
                               lift_forces=self.avl_lift_forces_normalized)
 
     # FEM Analysis Code
@@ -207,24 +270,20 @@ class IntegratedWingAnalysis(Base):
 
     @Attribute
     def fem_writer(self):
-        return Writer(
+        return Writer(instance=self.fem_setup, avl=self.avl_analysis)
 
-
-
-
-
-        )
-
-
-#Hier inputs erbij van de 2 classes!
     @Attribute
     def run_fem_analysis(self):
-        result = optimize_plate_thickness(target_deflection=self.target_deflection,
-                                          initial_thickness=self.initial_thickness,
-                                          thickness_bounds=self.thickness_bounds)
-        print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
-            f"Max deflection achieved: {result['max_deflection']} m"), print(
-            f"Optimization success: {result['success']}")
+        result = optimize_plate_thickness(
+            target_deflection=self.target_deflection,
+            wing_fem_instance=self.fem_setup,  # Pass your FEM instance
+            writer_instance=self.fem_writer,  # Pass your Writer instance
+            initial_thickness=self.initial_thickness,
+            thickness_bounds=self.thickness_bounds
+        )
+        print(f"Optimized thickness: {result['optimized_thickness']} m")
+        print(f"Max deflection achieved: {result['max_deflection']} m")
+        print(f"Optimization success: {result['success']}")
         return result
 
     # Showcase optimized thicknesses, and generate stepfile
