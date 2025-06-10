@@ -114,7 +114,6 @@ class FinalMesh(Base):
 
     #Extra
     section_number = Input()
-    segment_number = Input()
     points_number = Input()
 
     # @Part
@@ -159,15 +158,13 @@ class FinalMesh(Base):
                           wing_semi_span=self.wing_semi_span,
                           wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                           wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                          wing_twist=self.wing_twist,
 
                           front_spar_position=self.front_spar_position,
                           rear_spar_position =self.rear_spar_position,
                           rib_number = self.rib_number,
 
                           section_number=self.section_number,
-                          segment_number=self.segment_number,
-                          points_number = self.points_number,
+                          points_number=self.points_number,
                           hidden=True)
 
     @Part
@@ -238,7 +235,6 @@ if __name__ == '__main__':
                     rib_number=12,
 
                     section_number=14,
-                    segment_number=14,
                     points_number=14
                     )
 

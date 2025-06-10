@@ -23,7 +23,6 @@ class Rib(LoftedSolid):
     wing_semi_span = Input(30)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(-10)
 
     rib_thickness = Input(0.2)
     rib_spanwise_position = Input(0.7)
@@ -94,8 +93,7 @@ class Rib(LoftedSolid):
             airfoil_name=self.wing_airfoil_root,
             chord=self.root_chord_rib,
             thickness_factor=self.wing_thickness_factor_root,
-            position=rotate(
-                translate(
+            position=translate(
                     self.position,
                     "y", self.rib_spanwise_position * self.wing_semi_span,
                     "x",
@@ -106,17 +104,15 @@ class Rib(LoftedSolid):
                                                                                                                                   self.rib_spanwise_position * self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
                         radians(self.wing_sweep_leading_edge_planform2)))
 
-                    # (self.rib_spanwise_position * self.wing_semi_span * tan(
-                    #     radians(self.wing_sweep_leading_edge_planform1* (self.wing_semi_span_planform1/(self.rib_spanwise_position * self.wing_semi_span)) + (((self.rib_spanwise_position * self.wing_semi_span) - self.wing_semi_span_planform1)/(self.rib_spanwise_position * self.wing_semi_span))* self.wing_sweep_leading_edge_planform2))
-                    # - (self.wing_semi_span_planform1 * tan(radians(self.wing_sweep_leading_edge_planform2 - self.wing_sweep_leading_edge_planform1)))
-
-                ),
-                "y",
-                radians(
-                    self.wing_twist * (self.rib_spanwise_position * self.wing_semi_span) / self.wing_semi_span
+                    # (self.rib_spanwise_position * self.wing_semi_span * tan( radians(
+                # self.wing_sweep_leading_edge_planform1* (self.wing_semi_span_planform1/(self.rib_spanwise_position
+                # * self.wing_semi_span)) + (((self.rib_spanwise_position * self.wing_semi_span) -
+                # self.wing_semi_span_planform1)/(self.rib_spanwise_position * self.wing_semi_span))*
+                # self.wing_sweep_leading_edge_planform2)) - (self.wing_semi_span_planform1 * tan(radians(
+                # self.wing_sweep_leading_edge_planform2 - self.wing_sweep_leading_edge_planform1)))
                 )
+
             )
-        )
 
     @Part
     def rib_tip_airfoil(self):
@@ -124,8 +120,7 @@ class Rib(LoftedSolid):
             airfoil_name=self.wing_airfoil_root,
             chord=self.tip_chord_rib if self.rib_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1 else self.root_chord_rib,
             thickness_factor=self.wing_thickness_factor_root,
-            position=rotate(
-                translate(
+            position=translate(
                     self.position,
                     "y", self.rib_spanwise_position * self.wing_semi_span + self.rib_thickness,
                     "x",
@@ -140,14 +135,8 @@ class Rib(LoftedSolid):
                     #         (self.rib_spanwise_position * self.wing_semi_span + self.rib_thickness) * tan(
                     #     radians(self.wing_sweep_leading_edge_planform2))
                     # - self.wing_semi_span_planform1 * tan(radians(self.wing_sweep_leading_edge_planform1))
+
                 )
-                ,
-                "y",
-                radians(
-                    self.wing_twist * (
-                            self.rib_spanwise_position * self.wing_semi_span + self.rib_thickness) / self.wing_semi_span
-                )
-            )
         )
 
 
@@ -162,10 +151,9 @@ class Rib(LoftedSolid):
         return Airfoil(airfoil_name=self.wing_airfoil_middle,
                        chord=self.wing_middle_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
-                       position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
+                       position=translate(self.position, "y", self.wing_semi_span_planform1,
                                                  "x", self.wing_semi_span_planform1 * tan(
-                               radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-                           self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span))),
+                               radians(self.wing_sweep_leading_edge_planform1))),
                        hidden=True)
 
     @Part
@@ -173,7 +161,7 @@ class Rib(LoftedSolid):
         return Airfoil(airfoil_name=self.wing_airfoil_tip,
                        chord=self.wing_tip_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
-                       position=rotate(translate(self.position,
+                       position=translate(self.position,
                                                  "y", self.wing_semi_span,
                                                  "x",
                                                  self.wing_semi_span_planform1 * np.tan(radians(
@@ -184,8 +172,7 @@ class Rib(LoftedSolid):
 
                                                  #                   tan(radians(
                                                  # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                 ),
-                                       "y", radians(self.wing_twist))
+                                                 )
                        )
 
     @Part

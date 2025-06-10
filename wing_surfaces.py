@@ -25,7 +25,6 @@ class WingSurfaces(GeomBase):
     wing_semi_span = Input(30)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(0)
 
     front_spar_position = Input(0.2)
     rear_spar_position = Input(0.6)
@@ -83,10 +82,9 @@ class WingSurfaces(GeomBase):
                        chord=self.wing_middle_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
                        hidden=True,
-                       position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
+                       position=translate(self.position, "y", self.wing_semi_span_planform1,
                                                  "x", self.wing_semi_span_planform1 * tan(
-                               radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-                           self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span))))
+                               radians(self.wing_sweep_leading_edge_planform1))))
 
     @Part
     def wing_middle(self):
@@ -96,10 +94,9 @@ class WingSurfaces(GeomBase):
 
                             front_spar_position=self.front_spar_position,
                             rear_spar_position=self.rear_spar_position,
-                            position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
+                            position=translate(self.position, "y", self.wing_semi_span_planform1,
                                                       "x", self.wing_semi_span_planform1 * tan(
-                                    radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-                                self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span)))
+                                    radians(self.wing_sweep_leading_edge_planform1)))
                             )
 
     @Attribute
@@ -116,7 +113,7 @@ class WingSurfaces(GeomBase):
         return Airfoil(airfoil_name=self.wing_airfoil_tip,
                        chord=self.wing_tip_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
-                       position=rotate(translate(self.position,
+                       position=translate(self.position,
                                                  "y", self.wing_semi_span,
                                                  "x",
                                                  self.wing_semi_span_planform1 * np.tan(radians(
@@ -127,8 +124,7 @@ class WingSurfaces(GeomBase):
 
                                                  #                   tan(radians(
                                                  # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                 ),
-                                       "y", radians(self.wing_twist))
+                                                 )
                        )
 
     @Part
@@ -139,7 +135,7 @@ class WingSurfaces(GeomBase):
 
                             front_spar_position=self.front_spar_position,
                             rear_spar_position=self.rear_spar_position,
-                            position=rotate(translate(self.position,
+                            position=translate(self.position,
                                                       "y", self.wing_semi_span,
                                                       "x",
                                                       self.wing_semi_span_planform1 * np.tan(radians(
@@ -151,8 +147,7 @@ class WingSurfaces(GeomBase):
 
                                                       #                   tan(radians(
                                                       # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                      ),
-                                            "y", radians(self.wing_twist))
+                                                      )
                             )
 
     @Attribute

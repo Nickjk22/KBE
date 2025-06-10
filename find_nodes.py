@@ -57,7 +57,6 @@ class CodeAster_primitives(Base):
     wing_semi_span = Input(16)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(0)
 
     # Spars
     front_spar_position = Input(0.2)
@@ -68,7 +67,6 @@ class CodeAster_primitives(Base):
 
     # Extra
     section_number = Input(14)
-    segment_number = Input(14)
     points_number = Input(14)
 
     @Input
@@ -89,14 +87,12 @@ class CodeAster_primitives(Base):
                           wing_semi_span=self.wing_semi_span,
                           wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                           wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                          wing_twist=self.wing_twist,
 
                           front_spar_position=self.front_spar_position,
                           rear_spar_position =self.rear_spar_position,
                           rib_number = self.rib_number,
 
                           section_number=self.section_number,
-                          segment_number=self.segment_number,
                           points_number = self.points_number,
                           hidden=True)
 

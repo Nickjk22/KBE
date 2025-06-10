@@ -17,7 +17,7 @@ from scipy.interpolate import interp1d
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Project\KBE\Parameters.xlsm"
+excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
@@ -90,7 +90,6 @@ class IntegratedWingAnalysis(Base):
     wing_semi_span = Input(float(pd.read_excel(excel_directory).iloc[9, 1]))
     wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]))
     wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]))
-    wing_twist = Input(0)
 
     front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]))
     rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]))
@@ -110,7 +109,6 @@ class IntegratedWingAnalysis(Base):
     # optimized_parameters = Attribute()
     points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]))
     section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]))
-    segment_number = Input(int(pd.read_excel(excel_directory).iloc[24, 1]))
 
     Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]))
     rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]))
@@ -135,7 +133,6 @@ class IntegratedWingAnalysis(Base):
                            wing_semi_span=self.wing_semi_span,
                            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                           wing_twist=self.wing_twist,
                            mach=self.Mach,
                            points_number=self.points_number
                            )
@@ -167,14 +164,12 @@ class IntegratedWingAnalysis(Base):
                                              wing_semi_span=self.wing_semi_span,
                                              wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                                              wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                                             wing_twist=self.wing_twist,
 
                                              front_spar_position=self.front_spar_position,
                                              rear_spar_position=self.rear_spar_position,
                                              rib_number=self.rib_number,
 
                                              section_number=self.section_number,
-                                             segment_number=self.segment_number,
                                              points_number=self.points_number,
 
                                              finalmesh=self.mesh))
@@ -234,14 +229,12 @@ class IntegratedWingAnalysis(Base):
                          wing_semi_span=self.wing_semi_span,
                          wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                          wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                         wing_twist=self.wing_twist,
 
                          front_spar_position=self.front_spar_position,
                          rear_spar_position=self.rear_spar_position,
                          rib_number=self.rib_number,
 
                          section_number=self.section_number,
-                         segment_number=self.segment_number,
                          points_number=self.points_number,
                          mesh_generator=MeshGenerator(element_length=self.element_length, shape_to_mesh=self.mesh.shape_to_mesh)
                          )
@@ -266,14 +259,12 @@ class IntegratedWingAnalysis(Base):
                                                         wing_semi_span=self.wing_semi_span,
                                                         wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                                                         wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                                                        wing_twist=self.wing_twist,
 
                                                         front_spar_position=self.front_spar_position,
                                                         rear_spar_position=self.rear_spar_position,
                                                         rib_number=self.rib_number,
 
                                                         section_number=self.section_number,
-                                                        segment_number=self.segment_number,
                                                         points_number=self.points_number,
 
                                                         finalmesh=self.mesh))
@@ -313,7 +304,6 @@ class IntegratedWingAnalysis(Base):
             wing_semi_span=self.wing_semi_span,
             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-            wing_twist=self.wing_twist,
             front_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
             front_spar_position=self.front_spar_position,
             rear_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),

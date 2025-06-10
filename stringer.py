@@ -25,7 +25,6 @@ class Stringer(GeomBase):
     wing_semi_span = Input(30)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
-    wing_twist = Input(-10)
 
     stringer_thickness = Input(0.02)
     stringer_position = Input(0.2)
@@ -51,17 +50,15 @@ class Stringer(GeomBase):
                                stringer_position=self.stringer_position,
                                hidden=True)
 
-
     # Middle airfoil and stringer profiles
     @Part
     def wing_middle_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_middle,
                        chord=self.wing_middle_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
-                       position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
-                                                 "x", self.wing_semi_span_planform1 * tan(
-                               radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-                           self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span))),
+                       position=translate(self.position, "y", self.wing_semi_span_planform1,
+                                          "x", self.wing_semi_span_planform1 * tan(
+                               radians(self.wing_sweep_leading_edge_planform1))),
                        hidden=True)
 
     @Part
@@ -71,13 +68,11 @@ class Stringer(GeomBase):
                                thickness_factor=self.wing_thickness_factor_middle,
                                stringer_thickness=self.stringer_thickness,
                                stringer_position=self.stringer_position,
-                               position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
-                                                         "x", self.wing_semi_span_planform1 * tan(
-                                       radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-                                   self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span))),
+                               position=translate(self.position, "y", self.wing_semi_span_planform1,
+                                                  "x", self.wing_semi_span_planform1 * tan(
+                                       radians(self.wing_sweep_leading_edge_planform1))),
                                hidden=True
                                )
-
 
     # Tip airfoil and stringer profiles
     @Part
@@ -85,19 +80,18 @@ class Stringer(GeomBase):
         return Airfoil(airfoil_name=self.wing_airfoil_tip,
                        chord=self.wing_tip_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
-                       position=rotate(translate(self.position,
-                                                 "y", self.wing_semi_span,
-                                                 "x",
-                                                 self.wing_semi_span_planform1 * np.tan(radians(
-                                                     self.wing_sweep_leading_edge_planform1)) + (
-                                                         (self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                                                     radians(
-                                                         self.wing_sweep_leading_edge_planform2)))
+                       position=translate(self.position,
+                                          "y", self.wing_semi_span,
+                                          "x",
+                                          self.wing_semi_span_planform1 * np.tan(radians(
+                                              self.wing_sweep_leading_edge_planform1)) + (
+                                                  (self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                              radians(
+                                                  self.wing_sweep_leading_edge_planform2)))
 
-                                                 #                   tan(radians(
-                                                 # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                 ),
-                                       "y", radians(self.wing_twist))
+                                          #                   tan(radians(
+                                          # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                          )
                        )
 
     @Part
@@ -107,20 +101,19 @@ class Stringer(GeomBase):
                                thickness_factor=self.wing_thickness_factor_tip,
                                stringer_thickness=self.stringer_thickness,
                                stringer_position=self.stringer_position,
-                               position=rotate(translate(self.position,
-                                                         "y", self.wing_semi_span,
-                                                         "x",
-                                                         self.wing_semi_span_planform1 * np.tan(radians(
-                                                             self.wing_sweep_leading_edge_planform1)) + (
-                                                                 (
-                                                                             self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                                                             radians(
-                                                                 self.wing_sweep_leading_edge_planform2)))
+                               position=translate(self.position,
+                                                  "y", self.wing_semi_span,
+                                                  "x",
+                                                  self.wing_semi_span_planform1 * np.tan(radians(
+                                                      self.wing_sweep_leading_edge_planform1)) + (
+                                                          (
+                                                                  self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                                      radians(
+                                                          self.wing_sweep_leading_edge_planform2)))
 
-                                                         #                   tan(radians(
-                                                         # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                         ),
-                                               "y", radians(self.wing_twist)),
+                                                  #                   tan(radians(
+                                                  # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                                  ),
                                hidden=True
                                )
 
