@@ -49,7 +49,6 @@ STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
 
 
 class WingFEM(Base):
-    element_length: float = Input(0.1)
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)

@@ -7,7 +7,7 @@ from visualisation_arrows import LiftArrowArray
 import warnings
 from FEM_analysis import optimize_plate_thickness
 from wing import WingSurface
-from meshing import FinalMesh
+from meshing import FinalMesh, MeshGenerator
 from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
@@ -17,7 +17,7 @@ from scipy.interpolate import interp1d
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Project\KBE\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
@@ -75,44 +75,47 @@ interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
 
 
 class IntegratedWingAnalysis(Base):
+
     # Wing Parameters
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
     wing_airfoil_tip = Input("whitcomb_interpolated.dat")
-    wing_root_chord = Input(float(pd.read_excel(excel_directory).iloc[4, 1]))
-    wing_middle_chord = Input(4)
-    wing_tip_chord = Input(1.5)
-    wing_thickness_factor_root = Input(1)
-    wing_thickness_factor_middle = Input(1)
-    wing_thickness_factor_tip = Input(1)
-    wing_semi_span_planform1 = Input(5)
-    wing_semi_span = Input(16)
-    wing_sweep_leading_edge_planform1 = Input(20)
-    wing_sweep_leading_edge_planform2 = Input(20)
+    wing_root_chord = Input(float(pd.read_excel(excel_directory).iloc[0, 1]))
+    wing_middle_chord = Input(float(pd.read_excel(excel_directory).iloc[1, 1]))
+    wing_tip_chord = Input(float(pd.read_excel(excel_directory).iloc[2, 1]))
+    wing_thickness_factor_root = Input(float(pd.read_excel(excel_directory).iloc[4, 1]))
+    wing_thickness_factor_middle = Input(float(pd.read_excel(excel_directory).iloc[5, 1]))
+    wing_thickness_factor_tip = Input(float(pd.read_excel(excel_directory).iloc[6, 1]))
+    wing_semi_span_planform1 = Input(float(pd.read_excel(excel_directory).iloc[8, 1]))
+    wing_semi_span = Input(float(pd.read_excel(excel_directory).iloc[9, 1]))
+    wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]))
+    wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]))
     wing_twist = Input(0)
 
-    front_spar_position = Input(0.2)
-    rear_spar_position = Input(0.6)
+    front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]))
+    rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]))
 
-    rib_number = Input(15)
+    rib_number = Input(int(pd.read_excel(excel_directory).iloc[17, 1]))
 
-    stringer_thickness = Input(0.01)
-    stringer_number = Input(10)
+    stringer_thickness = Input(float(pd.read_excel(excel_directory).iloc[19, 1]))
+    stringer_number = Input(float(pd.read_excel(excel_directory).iloc[20, 1]))
 
-    target_deflection = Input(5)
-    initial_thickness = Input(0.3)
-    thickness_bounds = Input([0.1, 0.5])
+    target_deflection = Input(float(pd.read_excel(excel_directory).iloc[23, 5]))
+    initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]))
+    thickness_bounds = Input([float(pd.read_excel(excel_directory).iloc[25, 5]), float(pd.read_excel(excel_directory).iloc[26, 5])])
 
     # Results Storage
     # avl_results = Attribute()
     # fem_results = Attribute()
     # optimized_parameters = Attribute()
-    points_number = Input(14)
-    section_number = Input(14)
-    segment_number = Input(14)
+    points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]))
+    section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]))
+    segment_number = Input(int(pd.read_excel(excel_directory).iloc[24, 1]))
 
-    Mach = Input(0.7)
-    rho = Input(1.200)
+    Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]))
+    rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]))
+
+    element_length = float(pd.read_excel(excel_directory).iloc[27, 5])
 
     @Part
     def wing_surface(self):
@@ -239,7 +242,9 @@ class IntegratedWingAnalysis(Base):
 
                          section_number=self.section_number,
                          segment_number=self.segment_number,
-                         points_number=self.points_number)
+                         points_number=self.points_number,
+                         mesh_generator=MeshGenerator(element_length=self.element_length, shape_to_mesh=self.mesh.shape_to_mesh)
+                         )
 
     @Attribute
     def fem_setup(self):
