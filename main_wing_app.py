@@ -11,10 +11,13 @@ from meshing import FinalMesh
 from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
+
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
@@ -69,12 +72,14 @@ def interpolate_airfoil(input_file, output_file, factor=5):
 interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
 
 
+
+
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
     wing_airfoil_tip = Input("whitcomb_interpolated.dat")
-    wing_root_chord = Input(6)
+    wing_root_chord = Input(float(pd.read_excel(excel_directory).iloc[4, 1]))
     wing_middle_chord = Input(4)
     wing_tip_chord = Input(1.5)
     wing_thickness_factor_root = Input(1)

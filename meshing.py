@@ -1,4 +1,4 @@
-from aircraft_fem.examples.aircraft.geom.glueing import GeneralFuse
+from glueing import GeneralFuse
 from parapy.mesh.salome import FixedLength, Mesh as PPMesh, Quad, Tri
 from parapy.mesh.salome.grid import SubGrid
 from OCC.utils.utilities import make_TopoDS_Compound

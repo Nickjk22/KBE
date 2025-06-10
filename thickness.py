@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2016-2021 ParaPy Holding B.V.
+#
+# You may use the contents of this file in your application code.
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+# KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
+# PURPOSE.
+
+RGB_TO_THICKNESS = {(255, 191, 191): 0.01,
+                    (255, 0, 0): 0.02,
+                    (0, 255, 0): 0.04,
+                    (255, 0, 255): 0.08,
+                    (0, 0, 255): 0.1,
+                    (191, 191, 255): 0.12,
+                    (255, 191, 0): 0.15}
+THICKNESS_TO_RGB = {v: k for k, v in RGB_TO_THICKNESS.items()}
+THICKNESSES = list(RGB_TO_THICKNESS.values())
+
+DEFAULT_RIB_THICKNESS = 0.02
+DEFAULT_SPAR_THICKNESS = 0.1
+DEFAULT_SKIN_THICKNESS = 0.01
+DEFAULT_CIRCULAR_FRAME_THICKNESS = 0.08
+DEFAULT_WINGBOX_FRAME_THICKNESS = DEFAULT_SPAR_THICKNESS
+DEFAULT_STRINGER_THICKNESS = 0.02
