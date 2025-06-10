@@ -183,7 +183,7 @@ class FinalMesh(Base):
             fuzzy_value=0.001
         )
 
-    @Part
+    @Input
     def mesh_generator(self):
         return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
 
