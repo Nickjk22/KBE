@@ -23,53 +23,6 @@ from parapy.core import Attribute, Part
 from parapy.geom.occ.brep import BRep
 
 
-# Interpolate whitcomb airfoil
-def interpolate_airfoil(input_file, output_file, factor=10):
-    # Read and parse the original data
-    with open(input_file, 'r') as f:
-        coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
-
-    # Split into upper and lower surfaces
-    # Find index where y first becomes negative (start of lower surface)
-    transition_idx = next(i for i, (x, y) in enumerate(coords) if y < 0)
-
-    upper = coords[:transition_idx]  # Upper surface (including leading edge)
-    lower = coords[transition_idx:]  # Lower surface (including trailing edge)
-
-    # Reverse the lower surface for proper parameterization
-    lower = lower[::-1]
-
-    # Create separate interpolation functions for upper and lower
-    x_upper, y_upper = zip(*upper)
-    x_lower, y_lower = zip(*lower)
-
-    # Generate new parameter values (5x denser)
-    t_upper = np.linspace(0, 1, len(upper))
-    t_lower = np.linspace(0, 1, len(lower))
-
-    new_t = np.linspace(0, 1, len(upper) * factor)
-
-    # Interpolate both x and y coordinates
-    fx_upper = interp1d(t_upper, x_upper, kind='cubic')
-    fy_upper = interp1d(t_upper, y_upper, kind='cubic')
-
-    fx_lower = interp1d(t_lower, x_lower, kind='cubic')
-    fy_lower = interp1d(t_lower, y_lower, kind='cubic')
-
-    # Generate new coordinates
-    new_upper = list(zip(fx_upper(new_t), fy_upper(new_t)))
-    new_lower = list(zip(fx_lower(new_t), fy_lower(new_t)))[::-1]  # Reverse back
-
-    # Combine while maintaining correct order (upper TE -> LE -> lower LE -> TE)
-    new_coords = new_upper + new_lower[1:]
-
-    # Write to file (maintaining original format)
-    with open(output_file, 'w') as f:
-        for x, y in new_coords:
-            f.write(f"{x:.5f} {y:.5f}\n")
-
-    print(f"Created {output_file} with {len(new_coords)} points")
-
 
 def generate_warning(warning_header, msg):
     from tkinter import Tk, messagebox
@@ -138,14 +91,6 @@ def generate_warning(warning_header, msg):
 #         return Mesh(shape_to_mesh=self.shape_to_mesh,
 #                     display_mode="shaded",
 #                     controls=[self.fixed_length, self.quad, self.tri])
-
-
-Excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Form.xlsx"
-
-
-# Input(float(pd.read_excel(Excel_directory).iloc[1, 1]), validator=GreaterThanOrEqualTo(0))
-
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
 
 
 # Class

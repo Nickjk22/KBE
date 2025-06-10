@@ -19,7 +19,7 @@ from scipy.optimize import minimize
 import os
 
 from parapy.core import Attribute, Base, Input, Part, child
-from aircraft_fem.examples.aircraft.geom.glueing import GeneralFuse
+from glueing import GeneralFuse
 from parapy.geom import RectangularFace
 from parapy.mesh import EdgeGroup, FaceGroup
 from parapy.mesh.salome import Mesh, Tri

@@ -2,10 +2,10 @@ from typing import List, Sequence
 
 from parapy.core import Attribute, Base, Input, Part
 from parapy.core import *
-from aircraft_fem.examples.aircraft.thickness import DEFAULT_SKIN_THICKNESS, THICKNESSES, \
+from thickness import DEFAULT_SKIN_THICKNESS, THICKNESSES, \
     THICKNESS_TO_RGB
 from parapy.core.widgets import Dropdown
-from aircraft_fem.examples.aircraft.material import STEEL
+from material import STEEL
 from parapy.gui.events import EVT_SELECTION_CHANGING
 from parapy.geom import FittedCurve, IntersectedShapes, LoftedSolid, \
     ModifiedShape, Plane, Point, RuledSurface, VZ
@@ -18,12 +18,7 @@ from meshing import FinalMesh
 from points import Points
 import numpy as np
 
-# from parapy.lib.code_aster.mesh import AsterWriter
 
-from parapy.lib.code_aster.run import run_code_aster
-# from parapy.lib.code_aster.writer import CodeAsterWriter
-from aircraft_fem.contrib.parapy.visualisation import Arrow
-import parapy.lib.code_aster.writer as writer
 
 
 
