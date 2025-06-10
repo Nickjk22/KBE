@@ -11,10 +11,13 @@ from meshing import FinalMesh
 from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
+import pandas as pd
 from scipy.interpolate import interp1d
 
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
+
+excel_directory =
 
 
 # Interpolate whitcomb airfoil
