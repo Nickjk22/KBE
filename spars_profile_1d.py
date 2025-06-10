@@ -12,10 +12,7 @@ class SparProfile1D(GeomBase):
     thickness_factor = Input(1)
 
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
-
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
 
 
     @Attribute
@@ -29,9 +26,9 @@ class SparProfile1D(GeomBase):
             lower_points = [(x, z) for x, z in all_points if z < 0]
 
             upper_in_region = [(x, z) for x, z in upper_points
-                                if self.front_spar_position + 0.5*self.front_spar_thickness <= float(x) <= self.rear_spar_position + 0.5*self.rear_spar_thickness]
+                                if self.front_spar_position <= float(x) <= self.rear_spar_position]
             lower_in_region = [(x, z) for x, z in lower_points
-                                if self.front_spar_position + 0.5 * self.front_spar_thickness <= float(x) <= self.rear_spar_position + 0.5 * self.rear_spar_thickness]
+                                if self.front_spar_position <= float(x) <= self.rear_spar_position]
 
             front_spar = []
             rear_spar = []

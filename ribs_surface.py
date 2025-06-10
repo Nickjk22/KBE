@@ -28,9 +28,7 @@ class RibSurface(GeomBase):
 
     rib_spanwise_position = Input(0.7)
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
 
     @Part
     def rib_frame(self):
@@ -61,9 +59,7 @@ class RibSurface(GeomBase):
             chord=self.chord_rib,
             thickness_factor=self.wing_thickness_factor_root,
             front_spar_position=self.front_spar_position,
-            front_spar_thickness=self.front_spar_thickness,
             rear_spar_position=self.rear_spar_position,
-            rear_spar_thickness=self.rear_spar_thickness,
             position=rotate(
                 translate(
                     self.position,

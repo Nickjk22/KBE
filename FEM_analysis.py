@@ -91,7 +91,7 @@ class WingFEM(Base):
     #                         self.loaded_edge_group] + self.contrained_edge_groups,
     #                 controls=[self.hyp_1d, self.hyp_2d])
 
-    @Part
+    @Input
     def finalmesh(self):
         return FinalMesh()
 
@@ -212,9 +212,9 @@ class Writer:
             ("alpha_5deg", {'alpha': 5.0}),
         ])
 
-    @Part
-    def skin_writer(self):
-        return CodeAster_primitives()
+    # @Part
+    # def skin_writer(self):
+    #     return CodeAster_primitives()
 
     @Attribute
     def liftforces(self):
@@ -224,9 +224,9 @@ class Writer:
     # def liftforces(self):
     #     return self.avl.lift_forces
 
-    @Attribute
-    def nodes(self):
-        return self.skin_writer.load_primitives
+    # @Attribute
+    # def nodes(self):
+    #     return self.skin_writer.load_primitives
 
     def write_comm(self, pathname: str) -> None:
         writer = CommandWriter(self._commands)
@@ -241,7 +241,7 @@ class Writer:
         instance = self._instance
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE1,
                                                         shape=self._instance.shape_to_mesh.edges[3]).nodes
-        ids = [elm.mesh_id for elm in elements if elm.y < instance.length / 2]
+        ids = [elm.mesh_id for elm in elements]
         group1 = MeshGroup(label=CONSTRAINED_EDGE1,
                            header="GROUP_NO",
                            element_ids=ids,
@@ -249,7 +249,7 @@ class Writer:
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE2,
                                                         shape=self._instance.shape_to_mesh.edges[6]).nodes
-        ids = [elm.mesh_id for elm in elements if elm.y < instance.length / 2]
+        ids = [elm.mesh_id for elm in elements]
         group2 = MeshGroup(label=CONSTRAINED_EDGE2,
                            header="GROUP_NO",
                            element_ids=ids,
@@ -257,7 +257,7 @@ class Writer:
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE3,
                                                         shape=self._instance.shape_to_mesh.edges[9]).nodes
-        ids = [elm.mesh_id for elm in elements if elm.y < instance.length / 2]
+        ids = [elm.mesh_id for elm in elements]
         group3 = MeshGroup(label=CONSTRAINED_EDGE3,
                            header="GROUP_NO",
                            element_ids=ids,
@@ -265,7 +265,7 @@ class Writer:
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE4,
                                                         shape=self._instance.shape_to_mesh.edges[10]).nodes
-        ids = [elm.mesh_id for elm in elements if elm.y < instance.length / 2]
+        ids = [elm.mesh_id for elm in elements]
         group4 = MeshGroup(label=CONSTRAINED_EDGE4,
                            header="GROUP_NO",
                            element_ids=ids,

@@ -170,13 +170,10 @@ class TorsionBox(Base):
     wing_twist = Input(0)
 
     # Spars
-    front_spar_thickness = Input(0.05)
     front_spar_position = Input(0.2)
-    rear_spar_thickness = Input(0.05)
     rear_spar_position = Input(0.6)
 
     # Ribs
-    rib_thickness = Input(0.2)
     rib_number = Input(12)
     section_number = Input(14)
     segment_number = Input(14)
@@ -266,10 +263,7 @@ class TorsionBox(Base):
                             wing_twist=self.wing_twist,
 
                             front_spar_position=self.front_spar_position,
-                            front_spar_thickness=self.front_spar_thickness,
-
                             rear_spar_position=self.rear_spar_position,
-                            rear_spar_thickness=self.rear_spar_thickness,
                             hidden=True
                             )
 
@@ -302,9 +296,7 @@ class TorsionBox(Base):
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                            wing_twist=self.wing_twist,
 
-                           front_spar_thickness=self.front_spar_thickness,
                            front_spar_position=self.front_spar_position,
-                           rear_spar_thickness=self.rear_spar_thickness,
                            rear_spar_position=self.rear_spar_position,
                            hidden=True
 
@@ -340,9 +332,7 @@ class TorsionBox(Base):
                           wing_twist=self.wing_twist,
 
                           front_spar_position=self.front_spar_position,
-                          front_spar_thickness=self.front_spar_thickness,
                           rear_spar_position=self.rear_spar_position,
-                          rear_spar_thickness=self.rear_spar_thickness,
                           quantify=self.rib_number,
                           rib_spanwise_position=self.spanwise_points_list_ribs[child.index],
                           )

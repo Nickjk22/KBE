@@ -46,33 +46,66 @@ class Skin(Base):
 
 
 class CodeAster_primitives(Base):
-    wing_airfoil_root = Input("whitcomb.dat")
-    wing_airfoil_middle = Input("whitcomb.dat")
-    wing_airfoil_tip = Input("whitcomb.dat")
+    wing_airfoil_root = Input("whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
-    section_number = Input(13)
-    wing_semi_span = Input(30)
-    wing_root_chord = Input(12)
-    wing_middle_chord = Input(7)
-    wing_tip_chord = Input(3)
+    wing_root_chord = Input(6)
+    wing_middle_chord = Input(4)
+    wing_tip_chord = Input(1.5)
 
     wing_thickness_factor_root = Input(1)
     wing_thickness_factor_middle = Input(1)
     wing_thickness_factor_tip = Input(1)
 
-    wing_semi_span_planform1 = Input(10)
-    wing_semi_span = Input(30)
+    wing_semi_span_planform1 = Input(5)
+    wing_semi_span = Input(16)
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
     wing_twist = Input(0)
 
+    # Spars
+    front_spar_position = Input(0.2)
+    rear_spar_position = Input(0.6)
+
+    # Ribs
+    rib_number = Input(12)
+
+    # Extra
+    section_number = Input(14)
+    segment_number = Input(14)
     points_number = Input(14)
 
-    @Attribute
+    @Input
     def torsionbox(self):
-        return TorsionBox()
+        return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
+                          wing_airfoil_middle=self.wing_airfoil_middle,
+                          wing_airfoil_tip=self.wing_airfoil_tip,
 
-    @Part
+                          wing_root_chord=self.wing_root_chord,
+                          wing_middle_chord=self.wing_middle_chord,
+                          wing_tip_chord=self.wing_tip_chord,
+
+                          wing_thickness_factor_root=self.wing_thickness_factor_root,
+                          wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                          wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                          wing_semi_span_planform1=self.wing_semi_span_planform1,
+                          wing_semi_span=self.wing_semi_span,
+                          wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                          wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                          wing_twist=self.wing_twist,
+
+                          front_spar_position=self.front_spar_position,
+                          rear_spar_position =self.rear_spar_position,
+                          rib_number = self.rib_number,
+
+                          section_number=self.section_number,
+                          segment_number=self.segment_number,
+                          points_number = self.points_number,
+                          hidden=True)
+
+    @Input
     def finalmesh(self):
         return FinalMesh()
 

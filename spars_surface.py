@@ -27,10 +27,7 @@ class SparSurface(GeomBase):
     wing_twist = Input(0)
 
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
-
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
 
     @Part
     def spars_frame(self):
@@ -49,9 +46,7 @@ class SparSurface(GeomBase):
         return SparProfile1D(airfoil_name=self.wing_airfoil_root,
                              chord=self.wing_root_chord,
                              thickness_factor=self.wing_thickness_factor_root,
-                             front_spar_thickness=self.front_spar_thickness,
                              front_spar_position=self.front_spar_position,
-                             rear_spar_thickness=self.rear_spar_thickness,
                              rear_spar_position=self.rear_spar_position
                              )
 
@@ -80,9 +75,7 @@ class SparSurface(GeomBase):
         return SparProfile1D(airfoil_name=self.wing_airfoil_middle,
                              chord=self.wing_middle_chord,
                              thickness_factor=self.wing_thickness_factor_middle,
-                             front_spar_thickness=self.front_spar_thickness,
                              front_spar_position=self.front_spar_position,
-                             rear_spar_thickness=self.rear_spar_thickness,
                              rear_spar_position=self.rear_spar_position,
                              position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
                                                        "x", self.wing_semi_span_planform1 * tan(
@@ -124,9 +117,7 @@ class SparSurface(GeomBase):
         return SparProfile1D(airfoil_name=self.wing_airfoil_tip,
                              chord=self.wing_tip_chord,
                              thickness_factor=self.wing_thickness_factor_tip,
-                             front_spar_thickness=self.front_spar_thickness,
                              front_spar_position=self.front_spar_position,
-                             rear_spar_thickness=self.rear_spar_thickness,
                              rear_spar_position=self.rear_spar_position,
                              position=rotate(translate(self.position,
                                                        "y", self.wing_semi_span,

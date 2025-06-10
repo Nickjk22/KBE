@@ -12,10 +12,7 @@ class WingProfiles(GeomBase):
     thickness_factor = Input(1)
 
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
-
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
 
 
     @Attribute
@@ -30,9 +27,9 @@ class WingProfiles(GeomBase):
 
             # Get points within stringer region
             upper_in_region = [(x, z) for x, z in upper_points
-                               if self.front_spar_position + 0.5*self.front_spar_thickness <= x <= self.rear_spar_position + 0.5*self.rear_spar_thickness]
+                               if self.front_spar_position <= x <= self.rear_spar_position]
             lower_in_region = [(x, z) for x, z in lower_points
-                               if self.front_spar_position + 0.5*self.front_spar_thickness <= x <= self.rear_spar_position + 0.5*self.rear_spar_thickness]
+                               if self.front_spar_position <= x <= self.rear_spar_position]
 
             # Sort points by x-coordinate
             upper_in_region.sort(key=lambda p: p[0])

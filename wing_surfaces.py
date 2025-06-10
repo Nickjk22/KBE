@@ -5,6 +5,7 @@ from airfoil import Airfoil
 from reference_frame import Frame
 import numpy as np
 from wing_profiles import WingProfiles
+from points import Points
 
 
 class WingSurfaces(GeomBase):
@@ -27,10 +28,10 @@ class WingSurfaces(GeomBase):
     wing_twist = Input(0)
 
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
-
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
+
+    points_number = Input(14)
+
 
     @Attribute
     def profiles_upper1(self):
@@ -67,10 +68,7 @@ class WingSurfaces(GeomBase):
                             thickness_factor=self.wing_thickness_factor_root,
 
                             front_spar_position=self.front_spar_position,
-                            front_spar_thickness=self.front_spar_thickness,
-
                             rear_spar_position=self.rear_spar_position,
-                            rear_spar_thickness=self.rear_spar_thickness
                             )
 
     @Attribute
@@ -100,10 +98,7 @@ class WingSurfaces(GeomBase):
                             thickness_factor=self.wing_thickness_factor_middle,
 
                             front_spar_position=self.front_spar_position,
-                            front_spar_thickness=self.front_spar_thickness,
-
                             rear_spar_position=self.rear_spar_position,
-                            rear_spar_thickness=self.rear_spar_thickness,
                             position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
                                                       "x", self.wing_semi_span_planform1 * tan(
                                     radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
@@ -146,10 +141,7 @@ class WingSurfaces(GeomBase):
                             thickness_factor=self.wing_thickness_factor_tip,
 
                             front_spar_position=self.front_spar_position,
-                            front_spar_thickness=self.front_spar_thickness,
-
                             rear_spar_position=self.rear_spar_position,
-                            rear_spar_thickness=self.rear_spar_thickness,
                             position=rotate(translate(self.position,
                                                       "y", self.wing_semi_span,
                                                       "x",
@@ -202,6 +194,33 @@ class WingSurfaces(GeomBase):
                              color="Blue",
                              transparency=1,
                              hidden=True)
+
+    @Attribute
+    def spanwise_points_list(self):
+        return np.linspace(0, 1, self.points_number)
+    @Part
+    def points(self):
+        return Points(wing_airfoil_root=self.wing_airfoil_root,
+                      wing_airfoil_middle=self.wing_airfoil_middle,
+                      wing_airfoil_tip=self.wing_airfoil_tip,
+
+                      wing_root_chord=self.wing_root_chord,
+                      wing_middle_chord=self.wing_middle_chord,
+                      wing_tip_chord=self.wing_tip_chord,
+
+                      wing_thickness_factor_root=self.wing_thickness_factor_root,
+                      wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                      wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                      wing_semi_span_planform1=self.wing_semi_span_planform1,
+                      wing_semi_span=self.wing_semi_span,
+                      wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                      wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                      wing_twist=self.wing_twist,
+
+                      quantify=self.points_number,
+                      point_spanwise_position=self.spanwise_points_list[child.index],
+                      )
     #
     # @Part
     # def wing_upper_surface(self):

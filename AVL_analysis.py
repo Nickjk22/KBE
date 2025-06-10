@@ -11,8 +11,10 @@ class WingAVLAnalysis(avl.Interface):
     case_settings = Input()
 
     points_number = Input(14)
+    rho = Input(1.2)
+    Mach = Input(0.7)
 
-    @Part
+    @Input
     def check_nodes(self):
         return CodeAster_primitives()
 
@@ -92,10 +94,8 @@ class WingAVLAnalysis(avl.Interface):
             return []
 
         # Bereken lift per strip (raw values)
-        rho = 1.200
-        Mach = 0.7
-        v = Mach * 343
-        q = 0.5 * rho * v ** 2
+        v = self.Mach * 343
+        q = 0.5 * self.rho * v ** 2
         raw = [q * ccl for ccl in ccl_list]
 
         # ---------------------------------------------------

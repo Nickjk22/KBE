@@ -14,10 +14,7 @@ class RibProfile(GeomBase):
     thickness_factor = Input(1)
 
     front_spar_position = Input(0.2)
-    front_spar_thickness = Input(0.1)
-
     rear_spar_position = Input(0.6)
-    rear_spar_thickness = Input(0.1)
 
     @Attribute
     def points(self):
@@ -25,8 +22,8 @@ class RibProfile(GeomBase):
             points_list = []
             for line in f:
                 x, z = line.split(' ', 1)
-                if self.front_spar_position + 0.5 * self.front_spar_thickness <= float(
-                        x) <= self.rear_spar_position + 0.5 * self.rear_spar_thickness:
+                if self.front_spar_position <= float(
+                        x) <= self.rear_spar_position:
                     points_list.append(self.position.translate(
                         "x", float(x) * self.chord,
                         "z", float(z) * self.chord * self.thickness_factor))
@@ -37,12 +34,8 @@ class RibProfile(GeomBase):
         return WingProfiles(airfoil_name=self.airfoil_name,
                             chord=self.chord,
                             thickness_factor=self.thickness_factor,
-
                             front_spar_position=self.front_spar_position,
-                            front_spar_thickness=self.front_spar_thickness,
-
                             rear_spar_position=self.rear_spar_position,
-                            rear_spar_thickness=self.rear_spar_thickness,
                             hidden=True
                             )
 
@@ -51,9 +44,7 @@ class RibProfile(GeomBase):
         return SparProfile1D(airfoil_name=self.airfoil_name,
                              chord=self.chord,
                              thickness_factor=self.thickness_factor,
-                             front_spar_thickness=self.front_spar_thickness,
                              front_spar_position=self.front_spar_position,
-                             rear_spar_thickness=self.rear_spar_thickness,
                              rear_spar_position=self.rear_spar_position,
                              hidden=True
                              )

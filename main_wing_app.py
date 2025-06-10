@@ -3,15 +3,18 @@ from parapy.gui import display
 from parapy.geom import *
 from wingbox import Wingbox
 from AVL_analysis import WingAVLAnalysis
-from FEM_analysis import WingFEM, Writer, ResultsReader
-from torsionbox import TorsionBox
 from visualisation_arrows import LiftArrowArray
 import warnings
 from FEM_analysis import optimize_plate_thickness
 from wing import WingSurface
+from meshing import FinalMesh
+from FEM_analysis import WingFEM, Writer
+from find_nodes import CodeAster_primitives
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
+
+#Hier de airfoil coordinates interpoleren ipv torsionbox!!!!
 
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
@@ -46,6 +49,7 @@ class IntegratedWingAnalysis(Base):
     # avl_results = Attribute()
     # fem_results = Attribute()
     # optimized_parameters = Attribute()
+    points_number = Input(14)
 
     @Part
     def wing_surface(self):
@@ -65,16 +69,47 @@ class IntegratedWingAnalysis(Base):
                            wing_semi_span=self.wing_semi_span,
                            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-                           wing_twist=self.wing_twist
-
+                           wing_twist=self.wing_twist,
+                           points_number=self.points_number
                            )
 
     # Stap 2: AVL-analyse (pas zichtbaar in GUI wanneer aangeklikt)
     @Attribute
     def avl_analysis(self):
         return WingAVLAnalysis(
-            aircraft=self.wing_surface,
-            case_settings=[("alpha_5deg", {'alpha': 5.0})]
+            aircraft=self.wing_surface(label="wing"),
+            case_settings=[("alpha_5deg", {'alpha': 5.0})],
+            points_number=self.points_number,
+            rho=1.2,
+            Mach=0.7,
+            check_nodes=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
+                                                        wing_airfoil_middle=self.wing_airfoil_middle,
+                                                        wing_airfoil_tip=self.wing_airfoil_tip,
+
+                                                        wing_root_chord=self.wing_root_chord,
+                                                        wing_middle_chord=self.wing_middle_chord,
+                                                        wing_tip_chord=self.wing_tip_chord,
+
+                                                        wing_thickness_factor_root=self.wing_thickness_factor_root,
+                                                        wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                                                        wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                                                        wing_semi_span_planform1=self.wing_semi_span_planform1,
+                                                        wing_semi_span=self.wing_semi_span,
+                                                        wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                                                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                                                        wing_twist=self.wing_twist,
+
+                                                        front_spar_position=self.front_spar_position,
+                                                        rear_spar_position=self.rear_spar_position,
+                                                        rib_number=self.rib_number,
+
+                                                        section_number=self.section_number,
+                                                        segment_number=self.segment_number,
+                                                        points_number=self.points_number,
+
+                                                        finalmesh=self.mesh)),
+
         )
 
     @Attribute
@@ -104,17 +139,95 @@ class IntegratedWingAnalysis(Base):
 
     @Part
     def lift_arrows(self):
-        return LiftArrowArray(points_list=[pt.point for pt in TorsionBox(hidden=True).points],
+        return LiftArrowArray(points_list=[pt.point for pt in self.wing_surface(hidden=True).points],
                               lift_forces=self.avl_lift_forces_normalized)
 
+    # FEM Analysis Code
+
+    @Part
+    def mesh(self):
+        return FinalMesh(check_element=0,
+                         wing_airfoil_root=self.wing_airfoil_root,
+                         wing_airfoil_middle=self.wing_airfoil_middle,
+                         wing_airfoil_tip=self.wing_airfoil_tip,
+
+                         wing_root_chord=self.wing_root_chord,
+                         wing_middle_chord=self.wing_middle_chord,
+                         wing_tip_chord=self.wing_tip_chord,
+
+                         wing_thickness_factor_root=self.wing_thickness_factor_root,
+                         wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                         wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                         wing_semi_span_planform1=self.wing_semi_span_planform1,
+                         wing_semi_span=self.wing_semi_span,
+                         wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                         wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                         wing_twist=self.wing_twist,
+
+                         front_spar_position=self.front_spar_position,
+                         rear_spar_position=self.rear_spar_position,
+                         rib_number=self.rib_number,
+
+                         section_number=self.section_number,
+                         segment_number=self.segment_number,
+                         points_number=self.points_number)
+
+    @Attribute
+    def fem_setup(self):
+        return WingFEM(finalmesh=self.mesh,
+                       avl=self.avl_analysis,
+                       skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
+                                                        wing_airfoil_middle=self.wing_airfoil_middle,
+                                                        wing_airfoil_tip=self.wing_airfoil_tip,
+
+                                                        wing_root_chord=self.wing_root_chord,
+                                                        wing_middle_chord=self.wing_middle_chord,
+                                                        wing_tip_chord=self.wing_tip_chord,
+
+                                                        wing_thickness_factor_root=self.wing_thickness_factor_root,
+                                                        wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                                                        wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                                                        wing_semi_span_planform1=self.wing_semi_span_planform1,
+                                                        wing_semi_span=self.wing_semi_span,
+                                                        wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                                                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                                                        wing_twist=self.wing_twist,
+
+                                                        front_spar_position=self.front_spar_position,
+                                                        rear_spar_position=self.rear_spar_position,
+                                                        rib_number=self.rib_number,
+
+                                                        section_number=self.section_number,
+                                                        segment_number=self.segment_number,
+                                                        points_number=self.points_number,
+
+                                                        finalmesh=self.mesh))
+
+    @Attribute
+    def fem_writer(self):
+        return Writer(
+
+
+
+
+
+        )
+
+
+#Hier inputs erbij van de 2 classes!
     @Attribute
     def run_fem_analysis(self):
-        result = optimize_plate_thickness(target_deflection=self.target_deflection, initial_thickness=self.initial_thickness, thickness_bounds=self.thickness_bounds)
+        result = optimize_plate_thickness(target_deflection=self.target_deflection,
+                                          initial_thickness=self.initial_thickness,
+                                          thickness_bounds=self.thickness_bounds)
         print(f"Optimized thickness: {result['optimized_thickness']} m"), print(
             f"Max deflection achieved: {result['max_deflection']} m"), print(
             f"Optimization success: {result['success']}")
         return result
 
+    # Showcase optimized thicknesses, and generate stepfile
     @Part
     def wingbox(self):
         return Wingbox(
@@ -144,19 +257,8 @@ class IntegratedWingAnalysis(Base):
             stringer_number=self.stringer_number
         )
 
-    # @Attribute
-    # def design_report(self):
-    #     """Shows after FEM completes"""
-    #     report = (
-    #         f"Optimized Design Parameters:\n"
-    #         f"Front Spar Thickness: {self.optimized_parameters['front_spar_thickness']} m\n"
-    #         f"Rear Spar Thickness: {self.optimized_parameters['rear_spar_thickness']} m\n"
-    #         f"Rib Thickness: {self.optimized_parameters['rib_thickness']} m\n"
-    #         f"Max Deflection: {self.fem_results.max_deflection} m"
-    #     )
-    #     # Make internals visible in wingbox
-    #     self.wingbox.show_internals = True
-    #     return report
+        # Step file creation here!!!
+
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
