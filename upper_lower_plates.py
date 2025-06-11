@@ -130,7 +130,7 @@ class Plates(GeomBase):
                 self.plates_middle_profile.upper_plate,
             ],
             color="red",
-            hidden=False,
+            hidden=True,
         )
 
     @Part
@@ -141,7 +141,7 @@ class Plates(GeomBase):
                 self.plates_tip_profile.upper_plate,
             ],
             color="red",
-            hidden=False
+            hidden=True
         )
 
     @Part
@@ -152,7 +152,7 @@ class Plates(GeomBase):
                 self.plates_middle_profile.lower_plate,
             ],
             color="red",
-            hidden=False
+            hidden=True
         )
 
     @Part
@@ -163,26 +163,26 @@ class Plates(GeomBase):
                 self.plates_tip_profile.lower_plate,
             ],
             color="red",
-            hidden=False
+            hidden=True
         )
 
-    # @Part
-    # def upper_plate(self):
-    #     return FusedShell(
-    #         shape_in=self.upper_plate_loft,
-    #         tool=[self.upper_plate_loft2],
-    #         mesh_deflection=0.0001,
-    #         color="Blue",
-    #     )
-    #
-    # @Part
-    # def lower_plate(self):
-    #     return FusedShell(
-    #         shape_in=self.lower_plate_loft,
-    #         tool=[self.lower_plate_loft2],
-    #         mesh_deflection=0.0001,
-    #         color="Blue",
-    #     )
+    @Part
+    def upper_plate(self):
+        return FusedSolid(
+            shape_in=self.upper_plate_loft,
+            tool=[self.upper_plate_loft2],
+            mesh_deflection=0.0001,
+            color="Blue",
+        )
+
+    @Part
+    def lower_plate(self):
+        return FusedSolid(
+            shape_in=self.lower_plate_loft,
+            tool=[self.lower_plate_loft2],
+            mesh_deflection=0.0001,
+            color="Blue",
+        )
 
     # @Part
     # def lower_stringer_loft(self):

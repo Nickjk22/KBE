@@ -27,9 +27,9 @@ class UpperLowerPlateProfile(Polygon):
 
             # Get points within stringer region
             upper_in_region = [(x, z) for x, z in upper_points
-                               if self.front_spar_position + self.front_spar_thickness/self.chord <= x <= self.rear_spar_position]
+                               if float(self.front_spar_position) + self.front_spar_thickness/float(self.chord) <= float(x) <= float(self.rear_spar_position)]
             lower_in_region = [(x, z) for x, z in lower_points
-                               if self.front_spar_position + self.front_spar_thickness/self.chord <= x <= self.rear_spar_position]
+                               if float(self.front_spar_position) + self.front_spar_thickness/float(self.chord) <= float(x) <= float(self.rear_spar_position)]
 
             # Sort points by x-coordinate
             upper_in_region.sort(key=lambda p: p[0])
