@@ -221,6 +221,15 @@ class Spars(GeomBase):
             color="Blue",
         )
 
+    @Part
+    def solid_spar(self):
+        return FusedSolid(
+            shape_in=Solid(self.front_spar),
+            tool=[Solid(self.rear_spar)],
+            color="Cyan",
+            hidden=True,
+        )
+
 
 if __name__ == '__main__':
     from parapy.gui import display

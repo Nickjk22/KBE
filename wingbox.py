@@ -9,6 +9,7 @@ from ribs import Rib
 from stringer import Stringer
 from sections import Section
 import numpy as np
+from parapy.geom import Compound, FusedSolid
 from scipy.interpolate import interp1d
 
 
@@ -275,7 +276,6 @@ class Wingbox(GeomBase):
                        section_number=self.section_number,
                        hidden=True
                        )
-
 
 if __name__ == '__main__':
     from parapy.gui import display

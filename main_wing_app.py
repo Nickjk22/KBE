@@ -4,6 +4,7 @@ from parapy.exchange import STEPWriter
 from parapy.gui import display
 from parapy.geom import *
 from wingbox import Wingbox
+from parapy.geom import Compound
 from AVL_analysis import WingAVLAnalysis
 from visualisation_arrows import LiftArrowArray
 import warnings
@@ -324,20 +325,9 @@ class IntegratedWingAnalysis(Base):
         )
 
     # Step file creation here!!!
-
-    @Attribute
-    def check_shape(self):
-        shape = self.wingbox
-        print("Valid:", shape.shape is not None)
-        print("Bounding Box:", shape.bbox if hasattr(shape, 'bbox') else "No bbox")
-        return shape
-
     @Part
-    def step_writer_fused(self):
-        return STEPWriter(
-            default_directory=DIR,
-            nodes=[self.check_shape]
-        )
+    def step_writer(self):
+        return STEPWriter(nodes=[self.wingbox.spars.solid_spar, self.wingbox.ribs])
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
