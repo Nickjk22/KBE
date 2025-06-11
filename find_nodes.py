@@ -14,7 +14,7 @@ from torsionbox import TorsionBox
 from parapy.geom import LineSegment
 from parapy.geom import Point
 from sections import Section
-from meshing import FinalMesh
+from meshing import MeshGenerator
 from points import Points
 import numpy as np
 
@@ -98,7 +98,7 @@ class CodeAster_primitives(Base):
 
     @Input
     def finalmesh(self):
-        return FinalMesh()
+        return MeshGenerator()
 
     @Part
     def skin(self):

@@ -31,8 +31,77 @@ class Mesh(PPMesh):
 
 
 class MeshGenerator(Base):
-    shape_to_mesh = Input()
-    element_length = Input(0.5)
+    check_element = Input()
+
+    wing_airfoil_root = Input()
+    wing_airfoil_middle = Input()
+    wing_airfoil_tip = Input()
+
+    wing_root_chord = Input()
+    wing_middle_chord = Input()
+    wing_tip_chord = Input()
+
+    wing_thickness_factor_root = Input()
+    wing_thickness_factor_middle = Input()
+    wing_thickness_factor_tip = Input()
+
+    wing_semi_span_planform1 = Input()
+    wing_semi_span = Input()
+    wing_sweep_leading_edge_planform1 = Input()
+    wing_sweep_leading_edge_planform2 = Input()
+    wing_twist = Input()
+
+    # Spars
+    front_spar_position = Input()
+    rear_spar_position = Input()
+
+    # Ribs
+    rib_number = Input()
+
+    # Extra
+    section_number = Input()
+    points_number = Input()
+    element_length = Input()
+
+    @Attribute
+    def torsionbox(self):
+        return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
+                          wing_airfoil_middle=self.wing_airfoil_middle,
+                          wing_airfoil_tip=self.wing_airfoil_tip,
+
+                          wing_root_chord=self.wing_root_chord,
+                          wing_middle_chord=self.wing_middle_chord,
+                          wing_tip_chord=self.wing_tip_chord,
+
+                          wing_thickness_factor_root=self.wing_thickness_factor_root,
+                          wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                          wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                          wing_semi_span_planform1=self.wing_semi_span_planform1,
+                          wing_semi_span=self.wing_semi_span,
+                          wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                          wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+                          front_spar_position=self.front_spar_position,
+                          rear_spar_position=self.rear_spar_position,
+                          rib_number=self.rib_number,
+
+                          section_number=self.section_number,
+                          points_number=self.points_number,
+                          hidden=True)
+
+    @Part
+    def shape_to_mesh(self):
+        return GeneralFuse(
+            tools=[self.torsionbox.wing_upper_surface,
+                   self.torsionbox.wing_lower_surface,
+                   self.torsionbox.front_spar,
+                   self.torsionbox.rear_spar
+                   ] + [rib.rib_surface for rib in self.torsionbox.ribs],
+            transparency=0.9,
+            mesh_deflection=0.001,
+            fuzzy_value=0.001
+        )
 
     @Attribute
     def quad_faces(self):
@@ -83,167 +152,160 @@ class MeshGenerator(Base):
                     display_mode="shaded",
                     controls=[self.fixed_length, self.tri])
 
-
-class FinalMesh(Base):
-    check_element = Input()
-
-    wing_airfoil_root = Input()
-    wing_airfoil_middle = Input()
-    wing_airfoil_tip = Input()
-
-    wing_root_chord = Input()
-    wing_middle_chord = Input()
-    wing_tip_chord = Input()
-
-    wing_thickness_factor_root = Input()
-    wing_thickness_factor_middle = Input()
-    wing_thickness_factor_tip = Input()
-
-    wing_semi_span_planform1 = Input()
-    wing_semi_span = Input()
-    wing_sweep_leading_edge_planform1 = Input()
-    wing_sweep_leading_edge_planform2 = Input()
-    wing_twist = Input()
-
-    # Spars
-    front_spar_position = Input()
-    rear_spar_position = Input()
-
-    # Ribs
-    rib_number = Input()
-
-    #Extra
-    section_number = Input()
-    points_number = Input()
-    mesh_generator_cls = Input(MeshGenerator)
-    element_length = Input()
-
-    # @Part
-    # def sections(self):
-    #     return Section(wing_airfoil_root=self.wing_airfoil_root,
-    #                    wing_airfoil_middle=self.wing_airfoil_middle,
-    #                    wing_airfoil_tip=self.wing_airfoil_tip,
-    #
-    #                    wing_root_chord=self.wing_root_chord,
-    #                    wing_middle_chord=self.wing_middle_chord,
-    #                    wing_tip_chord=self.wing_tip_chord,
-    #
-    #                    wing_thickness_factor_root=self.wing_thickness_factor_root,
-    #                    wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-    #                    wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-    #
-    #                    wing_semi_span_planform1=self.wing_semi_span_planform1,
-    #                    wing_semi_span=self.wing_semi_span,
-    #                    wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-    #                    wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-    #                    wing_twist=self.wing_twist,
-    #
-    #                    section_number=self.section_number,
-    #                    hidden=True
-    #                    )
-
-    @Attribute
-    def torsionbox(self):
-        return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
-                          wing_airfoil_middle=self.wing_airfoil_middle,
-                          wing_airfoil_tip=self.wing_airfoil_tip,
-
-                          wing_root_chord=self.wing_root_chord,
-                          wing_middle_chord=self.wing_middle_chord,
-                          wing_tip_chord=self.wing_tip_chord,
-
-                          wing_thickness_factor_root=self.wing_thickness_factor_root,
-                          wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                          wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-
-                          wing_semi_span_planform1=self.wing_semi_span_planform1,
-                          wing_semi_span=self.wing_semi_span,
-                          wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                          wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-
-                          front_spar_position=self.front_spar_position,
-                          rear_spar_position =self.rear_spar_position,
-                          rib_number = self.rib_number,
-
-                          section_number=self.section_number,
-                          points_number=self.points_number,
-                          hidden=True)
-
-    @Part
-    def shape_to_mesh(self):
-        return GeneralFuse(
-            tools=[self.torsionbox.wing_upper_surface,
-                   self.torsionbox.wing_lower_surface,
-                   self.torsionbox.front_spar,
-                   self.torsionbox.rear_spar
-                   ] + [rib.rib_surface for rib in self.torsionbox.ribs],
-            transparency=0.9,
-            mesh_deflection=0.001,
-            fuzzy_value=0.001
-        )
-
-    # @Input
-    # def mesh_generator(self):
-    #     return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
-
-    @Part
-    def mesh_generator(self):
-        return self.mesh_generator_cls(shape_to_mesh=self.shape_to_mesh, element_length=self.element_length)
-
-    @Attribute
-    def mesh(self):
-        return self.mesh_generator.mesh
-
-    # @Part
-    # def highlighted_face(self):
-    #     return BRep(TopoDS_Shape=self.shape_to_mesh.faces[self.check_element].TopoDS_Shape,
-    #                 color="red",
-    #                 transparency=0)
-
-    @Attribute
-    def number_of_faces(self):
-        return len(self.shape_to_mesh.faces)
-
-    @Attribute
-    def test(self):
-        return self.shape_to_mesh.edges
-
     @Attribute
     def face_hash_map(self):
         return [(i, hash(face.TopoDS_Shape)) for i, face in enumerate(self.shape_to_mesh.faces)]
 
 
+# class FinalMesh(Base):
+#     check_element = Input()
+#
+#     wing_airfoil_root = Input()
+#     wing_airfoil_middle = Input()
+#     wing_airfoil_tip = Input()
+#
+#     wing_root_chord = Input()
+#     wing_middle_chord = Input()
+#     wing_tip_chord = Input()
+#
+#     wing_thickness_factor_root = Input()
+#     wing_thickness_factor_middle = Input()
+#     wing_thickness_factor_tip = Input()
+#
+#     wing_semi_span_planform1 = Input()
+#     wing_semi_span = Input()
+#     wing_sweep_leading_edge_planform1 = Input()
+#     wing_sweep_leading_edge_planform2 = Input()
+#     wing_twist = Input()
+#
+#     # Spars
+#     front_spar_position = Input()
+#     rear_spar_position = Input()
+#
+#     # Ribs
+#     rib_number = Input()
+#
+#     # Extra
+#     section_number = Input()
+#     points_number = Input()
+#     mesh_generator_cls = Input(MeshGenerator)
+#     element_length = Input()
+#
+#     # @Part
+#     # def sections(self):
+#     #     return Section(wing_airfoil_root=self.wing_airfoil_root,
+#     #                    wing_airfoil_middle=self.wing_airfoil_middle,
+#     #                    wing_airfoil_tip=self.wing_airfoil_tip,
+#     #
+#     #                    wing_root_chord=self.wing_root_chord,
+#     #                    wing_middle_chord=self.wing_middle_chord,
+#     #                    wing_tip_chord=self.wing_tip_chord,
+#     #
+#     #                    wing_thickness_factor_root=self.wing_thickness_factor_root,
+#     #                    wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+#     #                    wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+#     #
+#     #                    wing_semi_span_planform1=self.wing_semi_span_planform1,
+#     #                    wing_semi_span=self.wing_semi_span,
+#     #                    wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+#     #                    wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+#     #                    wing_twist=self.wing_twist,
+#     #
+#     #                    section_number=self.section_number,
+#     #                    hidden=True
+#     #                    )
+#
+#     @Attribute
+#     def torsionbox(self):
+#         return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
+#                           wing_airfoil_middle=self.wing_airfoil_middle,
+#                           wing_airfoil_tip=self.wing_airfoil_tip,
+#
+#                           wing_root_chord=self.wing_root_chord,
+#                           wing_middle_chord=self.wing_middle_chord,
+#                           wing_tip_chord=self.wing_tip_chord,
+#
+#                           wing_thickness_factor_root=self.wing_thickness_factor_root,
+#                           wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+#                           wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+#
+#                           wing_semi_span_planform1=self.wing_semi_span_planform1,
+#                           wing_semi_span=self.wing_semi_span,
+#                           wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+#                           wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+#
+#                           front_spar_position=self.front_spar_position,
+#                           rear_spar_position=self.rear_spar_position,
+#                           rib_number=self.rib_number,
+#
+#                           section_number=self.section_number,
+#                           points_number=self.points_number,
+#                           hidden=True)
+#
+#     @Part
+#     def shape_to_mesh(self):
+#         return GeneralFuse(
+#             tools=[self.torsionbox.wing_upper_surface,
+#                    self.torsionbox.wing_lower_surface,
+#                    self.torsionbox.front_spar,
+#                    self.torsionbox.rear_spar
+#                    ] + [rib.rib_surface for rib in self.torsionbox.ribs],
+#             transparency=0.9,
+#             mesh_deflection=0.001,
+#             fuzzy_value=0.001
+#         )
+#
+#     # @Input
+#     # def mesh_generator(self):
+#     #     return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
+#
+#     @Part
+#     def mesh_generator(self):
+#         return self.mesh_generator_cls(shape_to_mesh=self.shape_to_mesh, element_length=self.element_length)
+#
+#     @Attribute
+#     def mesh(self):
+#         return self.mesh_generator.mesh
+#
+#     @Attribute
+#     def number_of_faces(self):
+#         return len(self.shape_to_mesh.faces)
+#
+#     @Attribute
+#     def face_hash_map(self):
+#         return [(i, hash(face.TopoDS_Shape)) for i, face in enumerate(self.shape_to_mesh.faces)]
+
+
 if __name__ == '__main__':
     from parapy.gui import display
 
-    obj = FinalMesh(label="Mesh Torsion Box",
-                    check_element=0,
-                    wing_airfoil_root="whitcomb_interpolated.dat",
-                    wing_airfoil_middle="whitcomb_interpolated.dat",
-                    wing_airfoil_tip="whitcomb_interpolated.dat",
+    obj = MeshGenerator(label="Mesh Torsion Box",
+                        check_element=0,
+                        wing_airfoil_root="whitcomb_interpolated.dat",
+                        wing_airfoil_middle="whitcomb_interpolated.dat",
+                        wing_airfoil_tip="whitcomb_interpolated.dat",
 
-                    wing_root_chord=6,
-                    wing_middle_chord=4,
-                    wing_tip_chord=1.5,
+                        wing_root_chord=6,
+                        wing_middle_chord=4,
+                        wing_tip_chord=1.5,
 
-                    wing_thickness_factor_root=1,
-                    wing_thickness_factor_middle=1,
-                    wing_thickness_factor_tip=1,
+                        wing_thickness_factor_root=1,
+                        wing_thickness_factor_middle=1,
+                        wing_thickness_factor_tip=1,
 
-                    wing_semi_span_planform1=5,
-                    wing_semi_span=16,
-                    wing_sweep_leading_edge_planform1=20,
-                    wing_sweep_leading_edge_planform2=20,
-                    wing_twist=0,
+                        wing_semi_span_planform1=5,
+                        wing_semi_span=16,
+                        wing_sweep_leading_edge_planform1=20,
+                        wing_sweep_leading_edge_planform2=20,
+                        wing_twist=0,
 
-                    front_spar_position=0.2,
-                    rear_spar_position=0.6,
-                    rib_number=12,
+                        front_spar_position=0.2,
+                        rear_spar_position=0.6,
+                        rib_number=12,
 
-                    section_number=14,
-                    points_number=14,
-                    mesh_generator_cls=MeshGenerator,
-                    element_length=0.1
-                    )
+                        section_number=14,
+                        points_number=14,
+                        element_length=0.1
+                        )
 
     display(obj)

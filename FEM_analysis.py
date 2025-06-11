@@ -32,7 +32,7 @@ from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    Command, CommandWriter, MeshGroup,
                                    MeshWriter, ResultsReaderBase,
                                    create_export_file, run_code_aster)
-from meshing import FinalMesh, MeshGenerator
+from meshing import MeshGenerator
 from AVL_analysis import WingAVLAnalysis
 from find_nodes import CodeAster_primitives
 from wing import WingSurface
@@ -92,7 +92,7 @@ class WingFEM(Base):
 
     @Input
     def finalmesh(self):
-        return FinalMesh()
+        return MeshGenerator()
 
     @Attribute
     def shape_to_mesh(self) -> GeneralFuse:

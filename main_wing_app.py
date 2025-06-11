@@ -10,7 +10,7 @@ from visualisation_arrows import LiftArrowArray
 import warnings
 from FEM_analysis import optimize_plate_thickness
 from wing import WingSurface
-from meshing import FinalMesh, MeshGenerator
+from meshing import MeshGenerator
 from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
@@ -259,35 +259,32 @@ class IntegratedWingAnalysis(Base):
 
     @Part
     def mesh(self):
-        return FinalMesh(check_element=0,
-                         wing_airfoil_root=self.wing_airfoil_root,
-                         wing_airfoil_middle=self.wing_airfoil_middle,
-                         wing_airfoil_tip=self.wing_airfoil_tip,
+        return MeshGenerator(check_element=0,
+                             wing_airfoil_root=self.wing_airfoil_root,
+                             wing_airfoil_middle=self.wing_airfoil_middle,
+                             wing_airfoil_tip=self.wing_airfoil_tip,
 
-                         wing_root_chord=self.wing_root_chord,
-                         wing_middle_chord=self.wing_middle_chord,
-                         wing_tip_chord=self.wing_tip_chord,
+                             wing_root_chord=self.wing_root_chord,
+                             wing_middle_chord=self.wing_middle_chord,
+                             wing_tip_chord=self.wing_tip_chord,
 
-                         wing_thickness_factor_root=self.wing_thickness_factor_root,
-                         wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                         wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+                             wing_thickness_factor_root=self.wing_thickness_factor_root,
+                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
-                         wing_semi_span_planform1=self.wing_semi_span_planform1,
-                         wing_semi_span=self.wing_semi_span,
-                         wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                         wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                             wing_semi_span_planform1=self.wing_semi_span_planform1,
+                             wing_semi_span=self.wing_semi_span,
+                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                         front_spar_position=self.front_spar_position,
-                         rear_spar_position=self.rear_spar_position,
-                         rib_number=self.rib_number,
+                             front_spar_position=self.front_spar_position,
+                             rear_spar_position=self.rear_spar_position,
+                             rib_number=self.rib_number,
 
-                         section_number=self.section_number,
-                         points_number=self.points_number,
-                         # mesh_generator=MeshGenerator(element_length=self.element_length,
-                         #                              shape_to_mesh=self.mesh.shape_to_mesh),
-                         mesh_generator_cls=MeshGenerator,
-                         element_length=self.element_length
-                         )
+                             section_number=self.section_number,
+                             points_number=self.points_number,
+                             element_length=self.element_length
+                             )
 
     @Attribute
     def fem_setup(self):
