@@ -27,7 +27,7 @@ class Plates(GeomBase):
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
 
-    plate_thickness = Input(0.4)
+    plate_thickness = Input(0.1)
     front_spar_position = Input(0.2)
     rear_spar_position = Input(0.6)
 
@@ -124,7 +124,7 @@ class Plates(GeomBase):
 
     @Part
     def upper_plate_loft(self):
-        return LoftedShell(
+        return LoftedSolid(
             profiles=[
                 self.plates_root_profile.upper_plate,
                 self.plates_middle_profile.upper_plate,
@@ -135,7 +135,7 @@ class Plates(GeomBase):
 
     @Part
     def upper_plate_loft2(self):
-        return LoftedShell(
+        return LoftedSolid(
             profiles=[
                 self.plates_middle_profile.upper_plate,
                 self.plates_tip_profile.upper_plate,
@@ -146,7 +146,7 @@ class Plates(GeomBase):
 
     @Part
     def lower_plate_loft(self):
-        return LoftedShell(
+        return LoftedSolid(
             profiles=[
                 self.plates_root_profile.lower_plate,
                 self.plates_middle_profile.lower_plate,
@@ -157,7 +157,7 @@ class Plates(GeomBase):
 
     @Part
     def lower_plate_loft2(self):
-        return LoftedShell(
+        return LoftedSolid(
             profiles=[
                 self.plates_middle_profile.lower_plate,
                 self.plates_tip_profile.lower_plate,
