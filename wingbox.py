@@ -10,7 +10,11 @@ from stringer import Stringer
 from sections import Section
 import numpy as np
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from parapy.geom import Compound, FusedSolid
+=======
+from upper_lower_plates import Plates
+>>>>>>> Stashed changes
 =======
 from upper_lower_plates import Plates
 >>>>>>> Stashed changes
