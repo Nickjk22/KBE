@@ -45,9 +45,6 @@ CONSTRAINED_EDGE4 = "constrained_edge4_group"
 # LOADED_EDGE1 = "loaded_edge1_group"
 # LOADED_EDGE2 = "loaded_edge2_group"
 
-STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
-ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
-
 
 class WingFEM(Base):
     thickness: float = Input(0.1)
@@ -159,7 +156,6 @@ class WingFEM(Base):
     def nodes(self) -> List[MeshNode]:
         return self.skin_writer.load_primitives
 
-
 class Writer:
     """Writes code_aster command and mesh files.
 
@@ -181,11 +177,10 @@ class Writer:
     #         ("alpha_5deg", {'alpha': 5.0}),
     #     ])
 
-    material = Input()
-
-    def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None) -> None:
+    def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None, material: DEFI_MATERIAU = None) -> None:
         self._instance: WingFEM = instance or self._default_instance()
         self.avl: WingAVLAnalysis = avl or self._default_avl()
+        self.material: DEFI_MATERIAU = material or self._default_material()
 
         self.mesh_settings_command: LIRE_MAILLAGE = None
         self.mesh_groups: List[MeshGroup] = None
@@ -220,6 +215,7 @@ class Writer:
     # def skin_writer(self):
     #     return CodeAster_primitives()
 
+
     @staticmethod
     def _default_instance() -> WingFEM:
         """Fallback WingFEM setup for standalone execution."""
@@ -232,6 +228,11 @@ class Writer:
         # You’ll likely need to provide a minimal working AVL configuration
         wing = WingSurface(label="wing")
         return WingAVLAnalysis(aircraft=wing, case_settings=[("alpha_5deg", {'alpha': 5.0})])
+
+    @staticmethod
+    def _default_material() -> DEFI_MATERIAU:
+        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
+        return ALUMINIUM
 
     @Attribute
     def liftforces(self):
@@ -382,6 +383,10 @@ class Writer:
                 EPAIS=self._instance.thickness,
                 GROUP_MA=tuple(self.FACE),
                 VECTEUR=(vec.x, vec.y, vec.z))])
+
+    # @Input
+    # def material(self):
+    #     return DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
 
     def _generate_material_zone_command(self) -> None:
         self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=tuple(self.FACE),

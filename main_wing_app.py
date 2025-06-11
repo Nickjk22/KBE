@@ -309,6 +309,15 @@ class IntegratedWingAnalysis(Base):
                              )
 
     @Attribute
+    def material_choice(self):
+        STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
+        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
+        if self.material == 'Steel':
+            return STEEL
+        else:
+            return ALUMINIUM
+
+    @Attribute
     def fem_setup(self):
         return WingFEM(finalmesh=self.mesh,
                        avl=self.avl_analysis,
@@ -336,16 +345,8 @@ class IntegratedWingAnalysis(Base):
                                                         section_number=self.section_number,
                                                         points_number=self.points_number,
 
-                                                        finalmesh=self.mesh))
-
-    @Attribute
-    def material_choice(self):
-        STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
-        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
-        if self.material == 'Steel':
-            return STEEL
-        else:
-            return ALUMINIUM
+                                                        finalmesh=self.mesh
+                                                        ))
 
 
     @Attribute
@@ -400,7 +401,7 @@ class IntegratedWingAnalysis(Base):
     # Step file creation here!!!
     @Part
     def step_writer(self):
-        return STEPWriter(nodes=[self.wingbox.spars.solid_spar, self.wingbox.ribs])
+        return STEPWriter(nodes=[self.wingbox.spars.solid_spar, self.wingbox.ribs, self.wingbox.plates])
 
 
 if __name__ == '__main__':
