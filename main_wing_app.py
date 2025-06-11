@@ -18,6 +18,8 @@ import pandas as pd
 from scipy.interpolate import interp1d
 from kbeutils import avl
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
+from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
+
 
 
 DIR = os.path.expanduser("~/Documents")
@@ -26,58 +28,11 @@ DIR = os.path.expanduser("~/Documents")
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
 
 
-# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
-
-# Interpolate whitcomb airfoil
-# def interpolate_airfoil(input_file, output_file, factor=5):
-#     # Read and parse the original data
-#     with open(input_file, 'r') as f:
-#         coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
-#
-#     # Split into upper and lower surfaces
-#     # Find index where y first becomes negative (start of lower surface)
-#     transition_idx = next(i for i, (x, y) in enumerate(coords) if y < 0)
-#
-#     upper = coords[:transition_idx]  # Upper surface (including leading edge)
-#     lower = coords[transition_idx:]  # Lower surface (including trailing edge)
-#
-#     # Reverse the lower surface for proper parameterization
-#     lower = lower[::-1]
-#
-#     # Create separate interpolation functions for upper and lower
-#     x_upper, y_upper = zip(*upper)
-#     x_lower, y_lower = zip(*lower)
-#
-#     # Generate new parameter values (5x denser)
-#     t_upper = np.linspace(0, 1, len(upper))
-#     t_lower = np.linspace(0, 1, len(lower))
-#
-#     new_t = np.linspace(0, 1, len(upper) * factor)
-#
-#     # Interpolate both x and y coordinates
-#     fx_upper = interp1d(t_upper, x_upper, kind='cubic')
-#     fy_upper = interp1d(t_upper, y_upper, kind='cubic')
-#
-#     fx_lower = interp1d(t_lower, x_lower, kind='cubic')
-#     fy_lower = interp1d(t_lower, y_lower, kind='cubic')
-#
-#     # Generate new coordinates
-#     new_upper = list(zip(fx_upper(new_t), fy_upper(new_t)))
-#     new_lower = list(zip(fx_lower(new_t), fy_lower(new_t)))[::-1]  # Reverse back
-#
-#     # Combine while maintaining correct order (upper TE -> LE -> lower LE -> TE)
-#     new_coords = new_upper + new_lower[1:]
-#
-#     # Write to file (maintaining original format)
-#     with open(output_file, 'w') as f:
-#         for x, y in new_coords:
-#             f.write(f"{x:.5f} {y:.5f}\n")
-#
-#     print(f"Created {output_file} with {len(new_coords)} points")
 def interpolate_airfoil(input_file, output_file, factor=5):
     # Read and parse the original data
     with open(input_file, 'r') as f:
@@ -123,47 +78,166 @@ def interpolate_airfoil(input_file, output_file, factor=5):
 # Usage
 interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
 
+def generate_warning(warning_header, msg):
+    from tkinter import Tk, messagebox
+
+    # initialization
+    window = Tk()
+    window.withdraw()
+
+    # generates message box and waits for user to close it
+    messagebox.showwarning(warning_header, msg)
+
+    # kills the gui
+    window.deiconify()
+    window.destroy()
+    window.quit()
 
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
     wing_airfoil_tip = Input("whitcomb_interpolated.dat")
-    wing_root_chord = Input(float(pd.read_excel(excel_directory).iloc[0, 1]))
-    wing_middle_chord = Input(float(pd.read_excel(excel_directory).iloc[1, 1]))
-    wing_tip_chord = Input(float(pd.read_excel(excel_directory).iloc[2, 1]))
-    wing_thickness_factor_root = Input(float(pd.read_excel(excel_directory).iloc[4, 1]))
-    wing_thickness_factor_middle = Input(float(pd.read_excel(excel_directory).iloc[5, 1]))
-    wing_thickness_factor_tip = Input(float(pd.read_excel(excel_directory).iloc[6, 1]))
-    wing_semi_span_planform1 = Input(float(pd.read_excel(excel_directory).iloc[8, 1]))
-    wing_semi_span = Input(float(pd.read_excel(excel_directory).iloc[9, 1]))
-    wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]))
-    wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]))
 
-    front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]))
-    rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]))
+    # Warnings
+    popup_gui_semi_span = Input(True)
+    popup_gui_front_spar_position = Input(True)
+    popup_gui_rear_spar_position = Input(True)
+    popup_gui_rib_number = Input(True)
+    popup_gui_thickness_bounds = Input(True)
+    popup_gui_initial_thickness = Input(True)
+    popup_gui_root_chord = Input(True)
+    popup_gui_middle_chord = Input(True)
 
-    rib_number = Input(int(pd.read_excel(excel_directory).iloc[17, 1]))
+    wing_root_chord = Input(float(pd.read_excel(excel_directory).iloc[0, 1]), validator=GreaterThan(0))
+    wing_middle_chord = Input(float(pd.read_excel(excel_directory).iloc[1, 1]), validator=GreaterThan(0))
+    wing_tip_chord = Input(float(pd.read_excel(excel_directory).iloc[2, 1]), validator=GreaterThan(0))
 
-    stringer_thickness = Input(float(pd.read_excel(excel_directory).iloc[19, 1]))
-    stringer_number = Input(int(pd.read_excel(excel_directory).iloc[20, 1]))
+    @Attribute
+    def corrected_root_chord(self):
+        if self.wing_root_chord < self.wing_middle_chord:
+            msg = f"Root chord ({self.wing_root_chord}) cannot be smaller than middle chord ({self.wing_middle_chord}). Input will be ignored and root chord will be set equal to middle chord."
+            warnings.warn(msg)
+            if self.popup_gui_root_chord:
+                generate_warning("Warning: Value changed", msg)
+            return self.wing_middle_chord
+        else:
+            return self.wing_root_chord
 
-    target_deflection = Input(float(pd.read_excel(excel_directory).iloc[23, 5]))
-    initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]))
+    @Attribute
+    def corrected_middle_chord(self):
+        if self.wing_middle_chord < self.wing_tip_chord:
+            msg = f"Middle chord ({self.wing_middle_chord}) cannot be smaller than tip chord ({self.wing_tip_chord}). Input will be ignored and middle chord will be set equal to tip chord."
+            warnings.warn(msg)
+            if self.popup_gui_middle_chord:
+                generate_warning("Warning: Value changed", msg)
+            return self.wing_tip_chord
+        else:
+            return self.wing_middle_chord
+
+    wing_thickness_factor_root = Input(float(pd.read_excel(excel_directory).iloc[4, 1]), validator=GreaterThan(0))
+    wing_thickness_factor_middle = Input(float(pd.read_excel(excel_directory).iloc[5, 1]), validator=GreaterThan(0))
+    wing_thickness_factor_tip = Input(float(pd.read_excel(excel_directory).iloc[6, 1]), validator=GreaterThan(0))
+
+    wing_semi_span_planform1 = Input(float(pd.read_excel(excel_directory).iloc[8, 1]), validator=GreaterThan(0))
+    wing_semi_span = Input(float(pd.read_excel(excel_directory).iloc[9, 1]), validator=GreaterThan(0))
+
+    @Attribute
+    def corrected_semi_span(self):
+        if self.wing_semi_span < self.wing_semi_span_planform1:
+            msg = f"Wing semi-span ({self.wing_semi_span}) should be larger than or equal to the semi-span of planform 1 ({self.wing_semi_span}). Input will be ignored and will be set equal to each other."
+            warnings.warn(msg)
+            if self.popup_gui_semi_span:
+                generate_warning("Warning: Value changed", msg)
+            return self.wing_semi_span_planform1
+        else:
+            return self.wing_semi_span
+
+    wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]), validator=Between(-60, 60))
+    wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]), validator=Between(-60,60))
+
+    front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]), validator=Between(0,1))
+    rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]), validator=Between(0,1))
+
+    @Attribute
+    def corrected_front_spar_position(self):
+        if self.front_spar_position + self.corrected_thickness_bounds[1]/self.wing_tip_chord > self.rear_spar_position:
+            msg = f"Front spar position ({self.front_spar_position}) plus its maximum thickness should be smaller than the rear spar position ({self.rear_spar_position}). Input will be ignored and front spar position will be placed to the front."
+            warnings.warn(msg)
+            if self.popup_gui_front_spar_position:
+                generate_warning("Warning: Value changed", msg)
+            return self.rear_spar_position-self.corrected_thickness_bounds[1]/self.wing_tip_chord
+        else:
+            return self.front_spar_position
+
+    @Attribute
+    def corrected_rear_spar_position(self):
+        if self.rear_spar_position + self.corrected_thickness_bounds[1]/self.wing_tip_chord > 1:
+            msg = f"Rear spar position ({self.rear_spar_position}) plus its maximum thickness should be smaller than the chord length. Input will be ignored and rear spar position will be placed to the front."
+            warnings.warn(msg)
+            if self.popup_gui_rear_spar_position:
+                generate_warning("Warning: Value changed", msg)
+            return 1-self.corrected_thickness_bounds[1]/self.wing_tip_chord
+        else:
+            return self.rear_spar_position
+
+    stringer_thickness = Input(float(pd.read_excel(excel_directory).iloc[19, 1]), validator=GreaterThan(0))
+    stringer_number = Input(int(pd.read_excel(excel_directory).iloc[20, 1]), validator=GreaterThan(0))
+
+    target_deflection = Input(float(pd.read_excel(excel_directory).iloc[23, 5]), validator=GreaterThan(0))
     thickness_bounds = Input(
         [float(pd.read_excel(excel_directory).iloc[25, 5]), float(pd.read_excel(excel_directory).iloc[26, 5])])
+    initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]), validator=GreaterThan(0))
+
+    @Attribute
+    def corrected_thickness_bounds(self):
+        if self.thickness_bounds[0] > self.thickness_bounds[1]:
+            msg = f"Lower thickness bound ({self.thickness_bounds[0]}) should be smaller than the upper thickness bound ({self.thickness_bounds[1]}). Input will be ignored and lower bound will be set equal to upper bound."
+            warnings.warn(msg)
+            if self.popup_gui_thickness_bounds:
+                generate_warning("Warning: Value changed", msg)
+            return [self.thickness_bounds[1], self.thickness_bounds[1]]
+        else:
+            return [self.thickness_bounds[0], self.thickness_bounds[1]]
+
+    @Attribute
+    def corrected_initial_thickness(self):
+        if not self.corrected_thickness_bounds[0] < self.initial_thickness < self.corrected_thickness_bounds[1]:
+            msg = f"Initial thickness ({self.initial_thickness}) should be in between lower and upper bound ({self.corrected_thickness_bounds}). Input will be ignored and set to average of bounds."
+            warnings.warn(msg)
+            if self.popup_gui_initial_thickness:
+                generate_warning("Warning: Value changed", msg)
+            return (self.corrected_thickness_bounds[0]+self.corrected_thickness_bounds[1])/2
+        else:
+            return self.initial_thickness
+
+
+    rib_number = Input(int(pd.read_excel(excel_directory).iloc[17, 1]), validator=GreaterThan(0))
+
+    @Attribute
+    def corrected_rib_number(self):
+        if self.rib_number*self.thickness_bounds[1] > self.corrected_semi_span:
+            msg = f"Number of ribs ({self.rib_number}) times maximum rib thickness (thickness upper bound) ({self.thickness_bounds[1]}) exceeds the wing semi-span. Input will be ignored and the rib number will be set equal to wing semi-span divided by the maximum thickness."
+            warnings.warn(msg)
+            if self.popup_gui_rib_number:
+                generate_warning("Warning: Value changed", msg)
+            return self.wing_semi_span/self.thickness_bounds[1]
+        else:
+            return self.rib_number
+
+
 
     # Results Storage
     # avl_results = Attribute()
     # fem_results = Attribute()
     # optimized_parameters = Attribute()
-    points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]))
-    section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]))
+    points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]), validator=GreaterThan(0))
+    section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]), validator=GreaterThan(0))
 
-    Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]))
-    rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]))
+    Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]), validator=Between(0,1))
+    rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]), validator=GreaterThan(0))
 
-    element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]))
+    element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]), validator=Between(0,1))
     is_mirrored = Input(True)
 
     material = Input('Aluminium')
@@ -174,8 +248,8 @@ class IntegratedWingAnalysis(Base):
                            wing_airfoil_middle=self.wing_airfoil_middle,
                            wing_airfoil_tip=self.wing_airfoil_tip,
 
-                           wing_root_chord=self.wing_root_chord,
-                           wing_middle_chord=self.wing_middle_chord,
+                           wing_root_chord=self.corrected_root_chord,
+                           wing_middle_chord=self.corrected_middle_chord,
                            wing_tip_chord=self.wing_tip_chord,
 
                            wing_thickness_factor_root=self.wing_thickness_factor_root,
@@ -183,7 +257,7 @@ class IntegratedWingAnalysis(Base):
                            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
                            wing_semi_span_planform1=self.wing_semi_span_planform1,
-                           wing_semi_span=self.wing_semi_span,
+                           wing_semi_span=self.corrected_semi_span,
                            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                            mach=self.Mach,
@@ -221,8 +295,8 @@ class IntegratedWingAnalysis(Base):
                                              wing_airfoil_middle=self.wing_airfoil_middle,
                                              wing_airfoil_tip=self.wing_airfoil_tip,
 
-                                             wing_root_chord=self.wing_root_chord,
-                                             wing_middle_chord=self.wing_middle_chord,
+                                             wing_root_chord=self.corrected_root_chord,
+                                             wing_middle_chord=self.corrected_middle_chord,
                                              wing_tip_chord=self.wing_tip_chord,
 
                                              wing_thickness_factor_root=self.wing_thickness_factor_root,
@@ -230,13 +304,13 @@ class IntegratedWingAnalysis(Base):
                                              wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
                                              wing_semi_span_planform1=self.wing_semi_span_planform1,
-                                             wing_semi_span=self.wing_semi_span,
+                                             wing_semi_span=self.corrected_semi_span,
                                              wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                                              wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                                             front_spar_position=self.front_spar_position,
-                                             rear_spar_position=self.rear_spar_position,
-                                             rib_number=self.rib_number,
+                                             front_spar_position=self.corrected_front_spar_position,
+                                             rear_spar_position=self.corrected_rear_spar_position,
+                                             rib_number=self.corrected_rib_number,
 
                                              section_number=self.section_number,
                                              points_number=self.points_number,
@@ -286,8 +360,8 @@ class IntegratedWingAnalysis(Base):
                              wing_airfoil_middle=self.wing_airfoil_middle,
                              wing_airfoil_tip=self.wing_airfoil_tip,
 
-                             wing_root_chord=self.wing_root_chord,
-                             wing_middle_chord=self.wing_middle_chord,
+                             wing_root_chord=self.corrected_root_chord,
+                             wing_middle_chord=self.corrected_middle_chord,
                              wing_tip_chord=self.wing_tip_chord,
 
                              wing_thickness_factor_root=self.wing_thickness_factor_root,
@@ -295,13 +369,13 @@ class IntegratedWingAnalysis(Base):
                              wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
                              wing_semi_span_planform1=self.wing_semi_span_planform1,
-                             wing_semi_span=self.wing_semi_span,
+                             wing_semi_span=self.corrected_semi_span,
                              wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                              wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                             front_spar_position=self.front_spar_position,
-                             rear_spar_position=self.rear_spar_position,
-                             rib_number=self.rib_number,
+                             front_spar_position=self.corrected_front_spar_position,
+                             rear_spar_position=self.corrected_rear_spar_position,
+                             rib_number=self.corrected_rib_number,
 
                              section_number=self.section_number,
                              points_number=self.points_number,
@@ -325,8 +399,8 @@ class IntegratedWingAnalysis(Base):
                                                         wing_airfoil_middle=self.wing_airfoil_middle,
                                                         wing_airfoil_tip=self.wing_airfoil_tip,
 
-                                                        wing_root_chord=self.wing_root_chord,
-                                                        wing_middle_chord=self.wing_middle_chord,
+                                                        wing_root_chord=self.corrected_root_chord,
+                                                        wing_middle_chord=self.corrected_middle_chord,
                                                         wing_tip_chord=self.wing_tip_chord,
 
                                                         wing_thickness_factor_root=self.wing_thickness_factor_root,
@@ -334,13 +408,13 @@ class IntegratedWingAnalysis(Base):
                                                         wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
                                                         wing_semi_span_planform1=self.wing_semi_span_planform1,
-                                                        wing_semi_span=self.wing_semi_span,
+                                                        wing_semi_span=self.corrected_semi_span,
                                                         wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                                                         wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                                                        front_spar_position=self.front_spar_position,
-                                                        rear_spar_position=self.rear_spar_position,
-                                                        rib_number=self.rib_number,
+                                                        front_spar_position=self.corrected_front_spar_position,
+                                                        rear_spar_position=self.corrected_rear_spar_position,
+                                                        rib_number=self.corrected_rib_number,
 
                                                         section_number=self.section_number,
                                                         points_number=self.points_number,
@@ -359,8 +433,8 @@ class IntegratedWingAnalysis(Base):
             target_deflection=self.target_deflection,
             wing_fem_instance=self.fem_setup,  # Pass your FEM instance
             writer_instance=self.fem_writer,  # Pass your Writer instance
-            initial_thickness=self.initial_thickness,
-            thickness_bounds=self.thickness_bounds
+            initial_thickness=self.corrected_initial_thickness,
+            thickness_bounds=self.corrected_thickness_bounds
         )
         print(f"Optimized thickness: {result['optimized_thickness']} m")
         print(f"Max deflection achieved: {result['max_deflection']} m")
@@ -374,23 +448,23 @@ class IntegratedWingAnalysis(Base):
             wing_airfoil_root=self.wing_airfoil_root,
             wing_airfoil_middle=self.wing_airfoil_middle,
             wing_airfoil_tip=self.wing_airfoil_tip,
-            wing_root_chord=self.wing_root_chord,
-            wing_middle_chord=self.wing_middle_chord,
+            wing_root_chord=self.corrected_root_chord,
+            wing_middle_chord=self.corrected_middle_chord,
             wing_tip_chord=self.wing_tip_chord,
             wing_thickness_factor_root=self.wing_thickness_factor_root,
             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
             wing_semi_span_planform1=self.wing_semi_span_planform1,
-            wing_semi_span=self.wing_semi_span,
+            wing_semi_span=self.corrected_semi_span,
             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
             front_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            front_spar_position=self.front_spar_position,
+            front_spar_position=self.corrected_front_spar_position,
             rear_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            rear_spar_position=self.rear_spar_position,
+            rear_spar_position=self.corrected_rear_spar_position,
 
             rib_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            rib_number=self.rib_number,
+            rib_number=self.corrected_rib_number,
 
             plate_thickness=float(self.run_fem_analysis['optimized_thickness']),
 

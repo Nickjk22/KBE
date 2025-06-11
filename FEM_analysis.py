@@ -50,6 +50,7 @@ class WingFEM(Base):
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)
+    element_length: float = Input()
 
     # @Part
     # def shape_to_mesh(self) -> RectangularFace:
@@ -90,7 +91,7 @@ class WingFEM(Base):
 
     @Input
     def finalmesh(self):
-        return MeshGenerator()
+        return MeshGenerator(element_length=self.element_length)
 
     @Attribute
     def shape_to_mesh(self) -> GeneralFuse:
