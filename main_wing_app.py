@@ -20,18 +20,15 @@ from kbeutils import avl
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
 from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
 
-
-
 DIR = os.path.expanduser("~/Documents")
 # DIR = os.path.dirname(__file__)
-
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
 # excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
 
-
 excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+
 
 def interpolate_airfoil(input_file, output_file, factor=5):
     # Read and parse the original data
@@ -72,11 +69,12 @@ def interpolate_airfoil(input_file, output_file, factor=5):
         for x, y in new_coords:
             f.write(f"{x:.5f} {y:.5f}\n")
 
-    print(f"Created {output_file} with {len(new_coords)} points and shared x-coordinates")
+
 
 
 # Usage
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
+interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
+
 
 def generate_warning(warning_header, msg):
     from tkinter import Tk, messagebox
@@ -92,6 +90,7 @@ def generate_warning(warning_header, msg):
     window.deiconify()
     window.destroy()
     window.quit()
+
 
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
@@ -153,31 +152,34 @@ class IntegratedWingAnalysis(Base):
         else:
             return self.wing_semi_span
 
-    wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]), validator=Between(-60, 60))
-    wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]), validator=Between(-60,60))
+    wing_sweep_leading_edge_planform1 = Input(float(pd.read_excel(excel_directory).iloc[11, 1]),
+                                              validator=Between(-60, 60))
+    wing_sweep_leading_edge_planform2 = Input(float(pd.read_excel(excel_directory).iloc[12, 1]),
+                                              validator=Between(-60, 60))
 
-    front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]), validator=Between(0,1))
-    rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]), validator=Between(0,1))
+    front_spar_position = Input(float(pd.read_excel(excel_directory).iloc[14, 1]), validator=Between(0, 1))
+    rear_spar_position = Input(float(pd.read_excel(excel_directory).iloc[15, 1]), validator=Between(0, 1))
 
     @Attribute
     def corrected_front_spar_position(self):
-        if self.front_spar_position + self.corrected_thickness_bounds[1]/self.wing_tip_chord > self.rear_spar_position:
+        if self.front_spar_position + self.corrected_thickness_bounds2[
+            1] / self.wing_tip_chord > self.rear_spar_position:
             msg = f"Front spar position ({self.front_spar_position}) plus its maximum thickness should be smaller than the rear spar position ({self.rear_spar_position}). Input will be ignored and front spar position will be placed to the front."
             warnings.warn(msg)
             if self.popup_gui_front_spar_position:
                 generate_warning("Warning: Value changed", msg)
-            return self.rear_spar_position-self.corrected_thickness_bounds[1]/self.wing_tip_chord
+            return self.rear_spar_position - self.corrected_thickness_bounds2[1] / self.wing_tip_chord
         else:
             return self.front_spar_position
 
     @Attribute
     def corrected_rear_spar_position(self):
-        if self.rear_spar_position + self.corrected_thickness_bounds[1]/self.wing_tip_chord > 1:
+        if self.rear_spar_position + self.corrected_thickness_bounds2[1] / self.wing_tip_chord > 1:
             msg = f"Rear spar position ({self.rear_spar_position}) plus its maximum thickness should be smaller than the chord length. Input will be ignored and rear spar position will be placed to the front."
             warnings.warn(msg)
             if self.popup_gui_rear_spar_position:
                 generate_warning("Warning: Value changed", msg)
-            return 1-self.corrected_thickness_bounds[1]/self.wing_tip_chord
+            return 1 - self.corrected_thickness_bounds2[1] / self.wing_tip_chord
         else:
             return self.rear_spar_position
 
@@ -190,42 +192,89 @@ class IntegratedWingAnalysis(Base):
     initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]), validator=GreaterThan(0))
 
     @Attribute
-    def corrected_thickness_bounds(self):
-        if self.thickness_bounds[0] > self.thickness_bounds[1]:
-            msg = f"Lower thickness bound ({self.thickness_bounds[0]}) should be smaller than the upper thickness bound ({self.thickness_bounds[1]}). Input will be ignored and lower bound will be set equal to upper bound."
+    def airfoil_thickness(self):
+        # Pad naar het bestand
+        path = self.wing_airfoil_root if isinstance(self.wing_airfoil_root, str) else self.wing_airfoil_root.path
+
+        # Lees data uit bestand
+        with open(path, 'r') as f:
+            coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
+
+        # Extract X and Y separately
+        x_vals = [pt[0] for pt in coords]
+
+        # Zoek de x-coördinaat die het dichtst bij front_spar_position ligt
+        x_front = min(x_vals, key=lambda x: abs(x - self.front_spar_position))
+        x_rear = min(x_vals, key=lambda x: abs(x - self.rear_spar_position))
+
+        # Haal de y-waarden van beide kanten voor elk van deze x’s
+        front_ys = [y for x, y in coords if abs(x - x_front) < 1e-5]
+        rear_ys = [y for x, y in coords if abs(x - x_rear) < 1e-5]
+
+        # Controleer dat we per x minstens een boven- en onderpunt hebben
+        if len(front_ys) < 2 or len(rear_ys) < 2:
+            raise ValueError("Niet genoeg y-punten gevonden bij sparlocaties.")
+
+        # Sorteer y's om boven/onder te splitsen
+        front_ys.sort()
+        rear_ys.sort()
+
+        # Neem verschil tussen bovenste en onderste punt
+        front_thickness = abs(front_ys[-1] - front_ys[0])
+        rear_thickness = abs(rear_ys[-1] - rear_ys[0])
+
+        # Kies de kleinste als effectieve spardikte
+        return min(front_thickness, rear_thickness)
+
+    @Attribute
+    def corrected_thickness_bounds1(self):
+        if self.thickness_bounds[1] > self.airfoil_thickness * self.wing_tip_chord * self.wing_thickness_factor_tip:
+            msg = (f"Maximum plate thickness ({self.thickness_bounds[1]}) should be smaller than the thinnest part of "
+                   f"the airfoil between the spars. Input will be ignored and upper bound will be set equal to the "
+                   f"thinnest part")
             warnings.warn(msg)
             if self.popup_gui_thickness_bounds:
                 generate_warning("Warning: Value changed", msg)
-            return [self.thickness_bounds[1], self.thickness_bounds[1]]
+            return [self.thickness_bounds[0], (self.airfoil_thickness * self.wing_tip_chord * self.wing_thickness_factor_tip)]
         else:
             return [self.thickness_bounds[0], self.thickness_bounds[1]]
 
     @Attribute
+    def corrected_thickness_bounds2(self):
+        if self.corrected_thickness_bounds1[0] > self.corrected_thickness_bounds1[1]:
+            msg = (f"Lower thickness bound ({self.c1[0]}) should be smaller than the upper thickness "
+                   f"bound ({self.corrected_thickness_bounds1[1]}). Input will be ignored and lower bound will be set equal to "
+                   f"upper bound.")
+            warnings.warn(msg)
+            if self.popup_gui_thickness_bounds:
+                generate_warning("Warning: Value changed", msg)
+            return [self.corrected_thickness_bounds1[1], self.corrected_thickness_bounds1[1]]
+        else:
+            return [self.corrected_thickness_bounds1[0], self.corrected_thickness_bounds1[1]]
+
+    @Attribute
     def corrected_initial_thickness(self):
-        if not self.corrected_thickness_bounds[0] < self.initial_thickness < self.corrected_thickness_bounds[1]:
-            msg = f"Initial thickness ({self.initial_thickness}) should be in between lower and upper bound ({self.corrected_thickness_bounds}). Input will be ignored and set to average of bounds."
+        if not self.corrected_thickness_bounds2[0] < self.initial_thickness < self.corrected_thickness_bounds2[1]:
+            msg = f"Initial thickness ({self.initial_thickness}) should be in between lower and upper bound ({self.corrected_thickness_bounds2}). Input will be ignored and set to average of bounds."
             warnings.warn(msg)
             if self.popup_gui_initial_thickness:
                 generate_warning("Warning: Value changed", msg)
-            return (self.corrected_thickness_bounds[0]+self.corrected_thickness_bounds[1])/2
+            return (self.corrected_thickness_bounds2[0] + self.corrected_thickness_bounds2[1]) / 2
         else:
             return self.initial_thickness
-
 
     rib_number = Input(int(pd.read_excel(excel_directory).iloc[17, 1]), validator=GreaterThan(0))
 
     @Attribute
     def corrected_rib_number(self):
-        if self.rib_number*self.thickness_bounds[1] > self.corrected_semi_span:
-            msg = f"Number of ribs ({self.rib_number}) times maximum rib thickness (thickness upper bound) ({self.thickness_bounds[1]}) exceeds the wing semi-span. Input will be ignored and the rib number will be set equal to wing semi-span divided by the maximum thickness."
+        if self.rib_number * self.corrected_thickness_bounds2[1] > self.corrected_semi_span:
+            msg = f"Number of ribs ({self.rib_number}) times maximum rib thickness (thickness upper bound) ({self.corrected_thickness_bounds2[1]}) exceeds the wing semi-span. Input will be ignored and the rib number will be set equal to wing semi-span divided by the maximum thickness."
             warnings.warn(msg)
             if self.popup_gui_rib_number:
                 generate_warning("Warning: Value changed", msg)
-            return self.wing_semi_span/self.thickness_bounds[1]
+            return self.wing_semi_span / self.corrected_thickness_bounds2[1]
         else:
             return self.rib_number
-
-
 
     # Results Storage
     # avl_results = Attribute()
@@ -234,13 +283,13 @@ class IntegratedWingAnalysis(Base):
     points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]), validator=GreaterThan(0))
     section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]), validator=GreaterThan(0))
 
-    Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]), validator=Between(0,1))
+    Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]), validator=Between(0, 1))
     rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]), validator=GreaterThan(0))
 
-    element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]), validator=Between(0,1))
+    element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]), validator=Between(0, 1))
     is_mirrored = Input(True)
 
-    material = Input('Aluminium')
+    material = Input(str(pd.read_excel(excel_directory).iloc[28, 5]))
 
     @Part
     def wing_surface(self):
@@ -266,13 +315,13 @@ class IntegratedWingAnalysis(Base):
                            )
 
     # Read the settings based case number (1 = fixed CL, 2 = fixed angle of attack)
-    new_setting = Input(2)
-    new_parameter = Input(5)
+    case_setting = Input(float(pd.read_excel(excel_directory).iloc[18, 5]))
+    new_parameter = Input(float(pd.read_excel(excel_directory).iloc[19, 5]))
 
     # Write the cases based on the input
     @Attribute
     def case_inputs(self):
-        if self.new_setting == 2:
+        if self.case_setting == 2:
             case1 = ('fixed_aoa', {'alpha': self.new_parameter})
             return case1
         else:
@@ -288,7 +337,7 @@ class IntegratedWingAnalysis(Base):
             ,
             case_settings=[self.case_inputs],
             is_mirrored=self.is_mirrored,
-            points_number=(2*self.points_number) if self.is_mirrored else self.points_number,
+            points_number=(2 * self.points_number) if self.is_mirrored else self.points_number,
             rho=self.rho,
             Mach=self.Mach,
             check_nodes=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
@@ -321,7 +370,7 @@ class IntegratedWingAnalysis(Base):
     def avl_lift_forces_normalized(self):
         lift_forces = []
         max_value = max(self.avl_analysis.lift_forces)
-        for i in (self.avl_analysis.lift_forces):
+        for i in self.avl_analysis.lift_forces:
             norm = i / max_value
             lift_forces.append(norm)
         return lift_forces
@@ -422,7 +471,6 @@ class IntegratedWingAnalysis(Base):
                                                         finalmesh=self.mesh
                                                         ))
 
-
     @Attribute
     def fem_writer(self):
         return Writer(instance=self.fem_setup, avl=self.avl_analysis, material=self.material_choice)
@@ -434,7 +482,7 @@ class IntegratedWingAnalysis(Base):
             wing_fem_instance=self.fem_setup,  # Pass your FEM instance
             writer_instance=self.fem_writer,  # Pass your Writer instance
             initial_thickness=self.corrected_initial_thickness,
-            thickness_bounds=self.corrected_thickness_bounds
+            thickness_bounds=self.corrected_thickness_bounds2
         )
         print(f"Optimized thickness: {result['optimized_thickness']} m")
         print(f"Max deflection achieved: {result['max_deflection']} m")
