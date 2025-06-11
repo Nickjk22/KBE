@@ -46,6 +46,7 @@ CONSTRAINED_EDGE4 = "constrained_edge4_group"
 # LOADED_EDGE2 = "loaded_edge2_group"
 
 STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
+ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
 
 
 class WingFEM(Base):
@@ -179,6 +180,8 @@ class Writer:
     #     return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
     #         ("alpha_5deg", {'alpha': 5.0}),
     #     ])
+
+    material = Input()
 
     def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None) -> None:
         self._instance: WingFEM = instance or self._default_instance()
@@ -382,7 +385,7 @@ class Writer:
 
     def _generate_material_zone_command(self) -> None:
         self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=tuple(self.FACE),
-                                                            MATER=(STEEL,)),),
+                                                            MATER=(self.material,)),),
                                                    MAILLAGE=self.mesh_settings_command,
                                                    MODELE=self.model_command)
 
