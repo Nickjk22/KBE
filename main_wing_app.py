@@ -24,8 +24,8 @@ DIR = os.path.expanduser("~/Documents")
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil

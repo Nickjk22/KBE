@@ -1,6 +1,10 @@
 
  --------------------------------------------------------------------------------
+<<<<<<< Updated upstream
  ASTER 14.04.00 CONCEPT MEC56 CALCULE LE 11/06/2025 A 11:00:31 DE TYPE EVOL_ELAS 
+=======
+ ASTER 14.04.00 CONCEPT MEC56 CALCULE LE 11/06/2025 A 11:10:09 DE TYPE EVOL_ELAS 
+>>>>>>> Stashed changes
 
 
  ======>

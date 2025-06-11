@@ -9,16 +9,20 @@ from ribs import Rib
 from stringer import Stringer
 from sections import Section
 import numpy as np
+<<<<<<< Updated upstream
 from parapy.geom import Compound, FusedSolid
+=======
+from upper_lower_plates import Plates
+>>>>>>> Stashed changes
 from scipy.interpolate import interp1d
 
 
 # Class
 class Wingbox(GeomBase):
     # Wing
-    wing_airfoil_root = Input("whitcomb.dat")
-    wing_airfoil_middle = Input("whitcomb.dat")
-    wing_airfoil_tip = Input("whitcomb.dat")
+    wing_airfoil_root = Input("whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
     wing_root_chord = Input(12)
     wing_middle_chord = Input(7)
@@ -34,9 +38,9 @@ class Wingbox(GeomBase):
     wing_sweep_leading_edge_planform2 = Input(20)
 
     # Spars
-    front_spar_thickness = Input(1)
+    front_spar_thickness = Input(0.1)
     front_spar_position = Input(0.2)
-    rear_spar_thickness = Input(1)
+    rear_spar_thickness = Input(0.1)
     rear_spar_position = Input(0.6)
 
     # Ribs
@@ -72,7 +76,7 @@ class Wingbox(GeomBase):
     def spanwise_points_list_sections(self):
         return np.linspace(0, 1, self.section_number)
 
-    #Chordwise points for stringers (fraction of chord)
+    # Chordwise points for stringers (fraction of chord)
     @Attribute
     def chordwise_points_list(self):
         return np.linspace(0.1, 0.9, self.stringer_number)
@@ -90,7 +94,7 @@ class Wingbox(GeomBase):
                        chord=self.wing_middle_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
                        position=translate(self.position, "y", self.wing_semi_span_planform1,
-                                                 "x", self.wing_semi_span_planform1 * tan(
+                                          "x", self.wing_semi_span_planform1 * tan(
                                radians(self.wing_sweep_leading_edge_planform1))))
 
     @Part
@@ -99,17 +103,17 @@ class Wingbox(GeomBase):
                        chord=self.wing_tip_chord,
                        thickness_factor=self.wing_thickness_factor_tip,
                        position=translate(self.position,
-                                                 "y", self.wing_semi_span,
-                                                 "x",
-                                                 self.wing_semi_span_planform1 * np.tan(radians(
-                                                     self.wing_sweep_leading_edge_planform1)) + (
-                                                         (self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                                                     radians(
-                                                         self.wing_sweep_leading_edge_planform2)))
+                                          "y", self.wing_semi_span,
+                                          "x",
+                                          self.wing_semi_span_planform1 * np.tan(radians(
+                                              self.wing_sweep_leading_edge_planform1)) + (
+                                                  (self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                              radians(
+                                                  self.wing_sweep_leading_edge_planform2)))
 
-                                                 #                   tan(radians(
-                                                 # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                 )
+                                          #                   tan(radians(
+                                          # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                          )
                        )
 
     @Part
@@ -229,6 +233,30 @@ class Wingbox(GeomBase):
                    quantify=self.rib_number,
                    rib_spanwise_position=self.spanwise_points_list[child.index],
                    )
+
+    @Part
+    def plates(self):
+        return Plates(wing_airfoil_root=self.wing_airfoil_root,
+                      wing_airfoil_middle=self.wing_airfoil_middle,
+                      wing_airfoil_tip=self.wing_airfoil_tip,
+
+                      wing_root_chord=self.wing_root_chord,
+                      wing_middle_chord=self.wing_middle_chord,
+                      wing_tip_chord=self.wing_tip_chord,
+
+                      wing_thickness_factor_root=self.wing_thickness_factor_root,
+                      wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                      wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                      wing_semi_span_planform1=self.wing_semi_span_planform1,
+                      wing_semi_span=self.wing_semi_span,
+                      wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                      wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+                      plate_thickness=self.front_spar_thickness,
+                      front_spar_position=self.front_spar_position,
+                      rear_spar_position=self.rear_spar_position,
+                      )
 
     @Part
     def stringers(self):
