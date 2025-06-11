@@ -9,15 +9,9 @@ from ribs import Rib
 from stringer import Stringer
 from sections import Section
 import numpy as np
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 from parapy.geom import Compound, FusedSolid
-=======
 from upper_lower_plates import Plates
->>>>>>> Stashed changes
-=======
 from upper_lower_plates import Plates
->>>>>>> Stashed changes
 from scipy.interpolate import interp1d
 
 
@@ -54,6 +48,8 @@ class Wingbox(GeomBase):
     # Stringers
     stringer_thickness = Input(0.01)
     stringer_number = Input(10)
+
+    plate_thickness = Input(0.1)
 
     # Sections
     section_number = Input(30)
@@ -257,7 +253,7 @@ class Wingbox(GeomBase):
                       wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                       wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                      plate_thickness=self.front_spar_thickness,
+                      plate_thickness=self.plate_thickness,
                       front_spar_position=self.front_spar_position,
                       rear_spar_position=self.rear_spar_position,
                       )

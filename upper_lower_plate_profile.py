@@ -7,7 +7,7 @@ import numpy as np
 
 
 class UpperLowerPlateProfile(Polygon):
-    airfoil_name = Input("whitcomb.dat")
+    airfoil_name = Input("whitcomb_interpolated.dat")
     chord = Input(12)
     thickness_factor = Input(1)
 

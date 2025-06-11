@@ -21,69 +21,107 @@ DIR = os.path.expanduser("~/Documents")
 # DIR = os.path.dirname(__file__)
 
 
-
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
 excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+
+
 # excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
+# def interpolate_airfoil(input_file, output_file, factor=5):
+#     # Read and parse the original data
+#     with open(input_file, 'r') as f:
+#         coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
+#
+#     # Split into upper and lower surfaces
+#     # Find index where y first becomes negative (start of lower surface)
+#     transition_idx = next(i for i, (x, y) in enumerate(coords) if y < 0)
+#
+#     upper = coords[:transition_idx]  # Upper surface (including leading edge)
+#     lower = coords[transition_idx:]  # Lower surface (including trailing edge)
+#
+#     # Reverse the lower surface for proper parameterization
+#     lower = lower[::-1]
+#
+#     # Create separate interpolation functions for upper and lower
+#     x_upper, y_upper = zip(*upper)
+#     x_lower, y_lower = zip(*lower)
+#
+#     # Generate new parameter values (5x denser)
+#     t_upper = np.linspace(0, 1, len(upper))
+#     t_lower = np.linspace(0, 1, len(lower))
+#
+#     new_t = np.linspace(0, 1, len(upper) * factor)
+#
+#     # Interpolate both x and y coordinates
+#     fx_upper = interp1d(t_upper, x_upper, kind='cubic')
+#     fy_upper = interp1d(t_upper, y_upper, kind='cubic')
+#
+#     fx_lower = interp1d(t_lower, x_lower, kind='cubic')
+#     fy_lower = interp1d(t_lower, y_lower, kind='cubic')
+#
+#     # Generate new coordinates
+#     new_upper = list(zip(fx_upper(new_t), fy_upper(new_t)))
+#     new_lower = list(zip(fx_lower(new_t), fy_lower(new_t)))[::-1]  # Reverse back
+#
+#     # Combine while maintaining correct order (upper TE -> LE -> lower LE -> TE)
+#     new_coords = new_upper + new_lower[1:]
+#
+#     # Write to file (maintaining original format)
+#     with open(output_file, 'w') as f:
+#         for x, y in new_coords:
+#             f.write(f"{x:.5f} {y:.5f}\n")
+#
+#     print(f"Created {output_file} with {len(new_coords)} points")
 def interpolate_airfoil(input_file, output_file, factor=5):
     # Read and parse the original data
     with open(input_file, 'r') as f:
         coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
 
-    # Split into upper and lower surfaces
     # Find index where y first becomes negative (start of lower surface)
     transition_idx = next(i for i, (x, y) in enumerate(coords) if y < 0)
 
-    upper = coords[:transition_idx]  # Upper surface (including leading edge)
-    lower = coords[transition_idx:]  # Lower surface (including trailing edge)
+    # Upper and lower surfaces
+    upper = coords[:transition_idx]
+    lower = coords[transition_idx:]
+    lower = lower[::-1]  # Reverse for correct direction (TE to LE)
 
-    # Reverse the lower surface for proper parameterization
-    lower = lower[::-1]
-
-    # Create separate interpolation functions for upper and lower
     x_upper, y_upper = zip(*upper)
     x_lower, y_lower = zip(*lower)
 
-    # Generate new parameter values (5x denser)
-    t_upper = np.linspace(0, 1, len(upper))
-    t_lower = np.linspace(0, 1, len(lower))
+    # Create a common set of x-coordinates from LE to TE (monotonic)
+    x_min = max(min(x_upper), min(x_lower))
+    x_max = min(max(x_upper), max(x_lower))
 
-    new_t = np.linspace(0, 1, len(upper) * factor)
+    # Interpolate based on a common x-grid
+    num_points = max(len(x_upper), len(x_lower)) * factor
+    common_x = np.linspace(x_min, x_max, num_points)
 
-    # Interpolate both x and y coordinates
-    fx_upper = interp1d(t_upper, x_upper, kind='cubic')
-    fy_upper = interp1d(t_upper, y_upper, kind='cubic')
+    # Interpolate y as a function of x for both surfaces
+    f_upper = interp1d(x_upper, y_upper, kind='cubic', fill_value="extrapolate")
+    f_lower = interp1d(x_lower, y_lower, kind='cubic', fill_value="extrapolate")
 
-    fx_lower = interp1d(t_lower, x_lower, kind='cubic')
-    fy_lower = interp1d(t_lower, y_lower, kind='cubic')
+    new_upper = list(zip(common_x, f_upper(common_x)))
+    new_lower = list(zip(common_x, f_lower(common_x)))
 
-    # Generate new coordinates
-    new_upper = list(zip(fx_upper(new_t), fy_upper(new_t)))
-    new_lower = list(zip(fx_lower(new_t), fy_lower(new_t)))[::-1]  # Reverse back
+    # Combine: upper from TE to LE, lower from LE to TE
+    new_coords = new_upper[::-1] + new_lower[1:]
 
-    # Combine while maintaining correct order (upper TE -> LE -> lower LE -> TE)
-    new_coords = new_upper + new_lower[1:]
-
-    # Write to file (maintaining original format)
+    # Write to output file
     with open(output_file, 'w') as f:
         for x, y in new_coords:
             f.write(f"{x:.5f} {y:.5f}\n")
 
-    print(f"Created {output_file} with {len(new_coords)} points")
+    print(f"Created {output_file} with {len(new_coords)} points and shared x-coordinates")
 
 
 # Usage
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
-
-
+interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=10)
 
 
 class IntegratedWingAnalysis(Base):
-
     # Wing Parameters
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
@@ -109,7 +147,8 @@ class IntegratedWingAnalysis(Base):
 
     target_deflection = Input(float(pd.read_excel(excel_directory).iloc[23, 5]))
     initial_thickness = Input(float(pd.read_excel(excel_directory).iloc[24, 5]))
-    thickness_bounds = Input([float(pd.read_excel(excel_directory).iloc[25, 5]), float(pd.read_excel(excel_directory).iloc[26, 5])])
+    thickness_bounds = Input(
+        [float(pd.read_excel(excel_directory).iloc[25, 5]), float(pd.read_excel(excel_directory).iloc[26, 5])])
 
     # Results Storage
     # avl_results = Attribute()
@@ -244,7 +283,10 @@ class IntegratedWingAnalysis(Base):
 
                          section_number=self.section_number,
                          points_number=self.points_number,
-                         mesh_generator=MeshGenerator(element_length=self.element_length, shape_to_mesh=self.mesh.shape_to_mesh)
+                         # mesh_generator=MeshGenerator(element_length=self.element_length,
+                         #                              shape_to_mesh=self.mesh.shape_to_mesh),
+                         mesh_generator_cls=MeshGenerator,
+                         element_length=self.element_length
                          )
 
     @Attribute
@@ -320,6 +362,8 @@ class IntegratedWingAnalysis(Base):
             rib_thickness=float(self.run_fem_analysis['optimized_thickness']),
             rib_number=self.rib_number,
 
+            plate_thickness=float(self.run_fem_analysis['optimized_thickness']),
+
             stringer_thickness=self.stringer_thickness,
             stringer_number=self.stringer_number
         )
@@ -328,6 +372,7 @@ class IntegratedWingAnalysis(Base):
     @Part
     def step_writer(self):
         return STEPWriter(nodes=[self.wingbox.spars.solid_spar, self.wingbox.ribs])
+
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(

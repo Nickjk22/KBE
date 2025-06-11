@@ -10,9 +10,9 @@ from upper_lower_plate_profile import UpperLowerPlateProfile
 
 
 class Plates(GeomBase):
-    wing_airfoil_root = Input("whitcomb.dat")
-    wing_airfoil_middle = Input("whitcomb.dat")
-    wing_airfoil_tip = Input("whitcomb.dat")
+    wing_airfoil_root = Input("whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
     wing_root_chord = Input(12)
     wing_middle_chord = Input(7)
@@ -27,7 +27,7 @@ class Plates(GeomBase):
     wing_sweep_leading_edge_planform1 = Input(20)
     wing_sweep_leading_edge_planform2 = Input(20)
 
-    plate_thickness = Input(0.1)
+    plate_thickness = Input(0.4)
     front_spar_position = Input(0.2)
     rear_spar_position = Input(0.6)
 
@@ -130,7 +130,7 @@ class Plates(GeomBase):
                 self.plates_middle_profile.upper_plate,
             ],
             color="red",
-        hidden=True,
+            hidden=False,
         )
 
     @Part
@@ -141,7 +141,7 @@ class Plates(GeomBase):
                 self.plates_tip_profile.upper_plate,
             ],
             color="red",
-            hidden=True
+            hidden=False
         )
 
     @Part
@@ -152,7 +152,7 @@ class Plates(GeomBase):
                 self.plates_middle_profile.lower_plate,
             ],
             color="red",
-            hidden=True
+            hidden=False
         )
 
     @Part
@@ -163,26 +163,26 @@ class Plates(GeomBase):
                 self.plates_tip_profile.lower_plate,
             ],
             color="red",
-            hidden=True
+            hidden=False
         )
 
-    @Part
-    def upper_plate(self):
-        return FusedShell(
-            shape_in=self.upper_plate_loft,
-            tool=[self.upper_plate_loft2],
-            mesh_deflection=0.0001,
-            color="Blue",
-        )
-
-    @Part
-    def lower_plate(self):
-        return FusedShell(
-            shape_in=self.lower_plate_loft,
-            tool=[self.lower_plate_loft2],
-            mesh_deflection=0.0001,
-            color="Blue",
-        )
+    # @Part
+    # def upper_plate(self):
+    #     return FusedShell(
+    #         shape_in=self.upper_plate_loft,
+    #         tool=[self.upper_plate_loft2],
+    #         mesh_deflection=0.0001,
+    #         color="Blue",
+    #     )
+    #
+    # @Part
+    # def lower_plate(self):
+    #     return FusedShell(
+    #         shape_in=self.lower_plate_loft,
+    #         tool=[self.lower_plate_loft2],
+    #         mesh_deflection=0.0001,
+    #         color="Blue",
+    #     )
 
     # @Part
     # def lower_stringer_loft(self):

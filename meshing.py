@@ -115,6 +115,8 @@ class FinalMesh(Base):
     #Extra
     section_number = Input()
     points_number = Input()
+    mesh_generator_cls = Input(MeshGenerator)
+    element_length = Input()
 
     # @Part
     # def sections(self):
@@ -180,9 +182,13 @@ class FinalMesh(Base):
             fuzzy_value=0.001
         )
 
-    @Input
+    # @Input
+    # def mesh_generator(self):
+    #     return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
+
+    @Part
     def mesh_generator(self):
-        return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
+        return self.mesh_generator_cls(shape_to_mesh=self.shape_to_mesh, element_length=self.element_length)
 
     @Attribute
     def mesh(self):
@@ -235,7 +241,9 @@ if __name__ == '__main__':
                     rib_number=12,
 
                     section_number=14,
-                    points_number=14
+                    points_number=14,
+                    mesh_generator_cls=MeshGenerator,
+                    element_length=0.1
                     )
 
     display(obj)
