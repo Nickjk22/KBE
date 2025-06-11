@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 from kbeutils import avl
+from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
 
 
 DIR = os.path.expanduser("~/Documents")
@@ -164,6 +165,8 @@ class IntegratedWingAnalysis(Base):
 
     element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]))
     is_mirrored = Input(True)
+
+    material = Input('Aluminium')
 
     @Part
     def wing_surface(self):
@@ -336,8 +339,18 @@ class IntegratedWingAnalysis(Base):
                                                         finalmesh=self.mesh))
 
     @Attribute
+    def material_choice(self):
+        STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
+        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
+        if self.material == 'Steel':
+            return STEEL
+        else:
+            return ALUMINIUM
+
+
+    @Attribute
     def fem_writer(self):
-        return Writer(instance=self.fem_setup, avl=self.avl_analysis)
+        return Writer(instance=self.fem_setup, avl=self.avl_analysis, material=self.material_choice)
 
     @Attribute
     def run_fem_analysis(self):
