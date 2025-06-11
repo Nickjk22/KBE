@@ -30,6 +30,9 @@ class WingSurface(GeomBase):
     mach = Input(0.4)
     points_number = Input(14)
 
+    is_mirrored = Input(True)
+
+
     @Attribute
     def profiles(self):
         return [self.wing_root_airfoil, self.wing_middle_airfoil]
@@ -137,7 +140,7 @@ class WingSurface(GeomBase):
                            chord_spacing=avl.Spacing.cosine,
                            n_spanwise=20,
                            span_spacing=avl.Spacing.cosine,
-                           y_duplicate=None,
+                           y_duplicate=self.position.point[1] if self.is_mirrored else None,
                            transparency=1,
                            sections=[Airfoil.avl_section
                                      for Airfoil in self.wing_sections])

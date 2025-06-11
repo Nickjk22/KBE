@@ -16,6 +16,8 @@ from find_nodes import CodeAster_primitives
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
+from kbeutils import avl
+
 
 DIR = os.path.expanduser("~/Documents")
 # DIR = os.path.dirname(__file__)
@@ -23,10 +25,10 @@ DIR = os.path.expanduser("~/Documents")
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
 
 
-# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 # Interpolate whitcomb airfoil
@@ -160,7 +162,8 @@ class IntegratedWingAnalysis(Base):
     Mach = Input(float(pd.read_excel(excel_directory).iloc[17, 5]))
     rho = Input(float(pd.read_excel(excel_directory).iloc[20, 5]))
 
-    element_length = float(pd.read_excel(excel_directory).iloc[27, 5])
+    element_length = Input(float(pd.read_excel(excel_directory).iloc[27, 5]))
+    is_mirrored = Input(True)
 
     @Part
     def wing_surface(self):
@@ -181,8 +184,23 @@ class IntegratedWingAnalysis(Base):
                            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
                            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
                            mach=self.Mach,
-                           points_number=self.points_number
+                           points_number=self.points_number,
+                           is_mirrored=self.is_mirrored
                            )
+
+    # Read the settings based case number (1 = fixed CL, 2 = fixed angle of attack)
+    new_setting = Input(2)
+    new_parameter = Input(5)
+
+    # Write the cases based on the input
+    @Attribute
+    def case_inputs(self):
+        if self.new_setting == 2:
+            case1 = ('fixed_aoa', {'alpha': self.new_parameter})
+            return case1
+        else:
+            case2 = ('fixed_cl', {'alpha': avl.Parameter(name='alpha', value=self.new_parameter, setting='CL')})
+            return case2
 
     # Stap 2: AVL-analyse (pas zichtbaar in GUI wanneer aangeklikt)
     @Attribute
@@ -191,8 +209,9 @@ class IntegratedWingAnalysis(Base):
             aircraft=self.wing_surface
             # (label="wing")
             ,
-            case_settings=[("alpha_5deg", {'alpha': 5.0})],
-            points_number=self.points_number,
+            case_settings=[self.case_inputs],
+            is_mirrored=self.is_mirrored,
+            points_number=(2*self.points_number) if self.is_mirrored else self.points_number,
             rho=self.rho,
             Mach=self.Mach,
             check_nodes=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,

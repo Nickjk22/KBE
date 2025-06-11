@@ -13,6 +13,7 @@ class WingAVLAnalysis(avl.Interface):
     points_number = Input(14)
     rho = Input(1.2)
     Mach = Input(0.7)
+    is_mirrored = Input()
 
     @Input
     def check_nodes(self):
@@ -114,7 +115,7 @@ class WingAVLAnalysis(avl.Interface):
         x_tgt = np.linspace(0.0, 1.0, n_tgt)
 
         sampled = np.interp(x_tgt, x_raw, raw)
-        return sampled.tolist()
+        return sampled.tolist()[:(self.points_number // 2)] if self.is_mirrored else sampled.tolist()
 
 
 if __name__ == '__main__':

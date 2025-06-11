@@ -141,11 +141,11 @@ class CodeAster_primitives(Base):
     @Attribute
     def load_primitives(self):
         lst = []
-        mesh = self.finalmesh.mesh_generator.mesh
+        mesh = self.finalmesh.mesh
         for pt in self.points_list:
             label = 'group_no_' + str(id(pt))
             # node = mesh.grid.find_node_at(pt)
-            tolerance = self.finalmesh.mesh_generator.element_length * 2
+            tolerance = self.finalmesh.element_length * 2
             node = mesh.grid.find_node_at(pt,
                                           tolerance=tolerance)
             if node is None:
@@ -168,7 +168,7 @@ class CodeAster_primitives(Base):
     def foo(self):
         lst = []
         history = self.finalmesh.shape_to_mesh.history
-        mesh = self.finalmesh.mesh_generator.mesh
+        mesh = self.finalmesh.mesh
         get_subgrid = mesh.get_subgrid_on_the_fly
 
         for face in self.skin.shell.faces:
