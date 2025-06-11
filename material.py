@@ -22,3 +22,5 @@ class Material:
 
 
 STEEL = Material(name="steel", E=3e11, nu=0.2, density=7850)
+ALUMINIUM = Material(name="aluminium", E=7e10, nu=0.33, density=2700)
+
