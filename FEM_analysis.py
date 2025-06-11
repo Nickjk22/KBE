@@ -657,7 +657,11 @@ def optimize_plate_thickness(target_deflection: float,
         method='SLSQP',  # good for constraints
         bounds=[thickness_bounds],
         constraints=constraints,
-        options={'disp': True}
+        options={
+            'disp': True,
+            'ftol': 1e-9,
+            'maxiter': 100
+        }
     )
 
     return {
