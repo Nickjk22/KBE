@@ -118,7 +118,8 @@ class Rib(LoftedSolid):
     def rib_tip_airfoil(self):
         return Airfoil(
             airfoil_name=self.wing_airfoil_root,
-            chord=self.tip_chord_rib if self.rib_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1 else self.root_chord_rib,
+            chord=self.tip_chord_rib,
+            # if self.rib_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1 else self.root_chord_rib,
             thickness_factor=self.wing_thickness_factor_root,
             position=translate(
                     self.position,
