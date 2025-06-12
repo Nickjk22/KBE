@@ -25,9 +25,8 @@ DIR = os.path.expanduser("~/Documents")
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-
-# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 def interpolate_airfoil(input_file, output_file, factor=5):
@@ -364,7 +363,8 @@ class IntegratedWingAnalysis(Base):
                                              section_number=self.section_number,
                                              points_number=self.points_number,
 
-                                             finalmesh=self.mesh))
+                                             finalmesh=self.mesh,
+                                             element_length=self.element_length))
 
     @Attribute
     def avl_lift_forces_normalized(self):
@@ -433,18 +433,98 @@ class IntegratedWingAnalysis(Base):
 
     @Attribute
     def material_choice(self):
-        STEEL = DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
-        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
+        STEEL = DEFI_MATERIAU(ELAS=_F(E=3e11, RHO=7850, NU=0.1666))  # structural steel
+        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))  # generic aluminum
+        AL7075 = DEFI_MATERIAU(ELAS=_F(E=7.1e10, RHO=2810, NU=0.33))  # Aluminum 7075-T6
+        TI6AL4V = DEFI_MATERIAU(ELAS=_F(E=1.1e11, RHO=4430, NU=0.34))  # Titanium alloy
+        CFRP = DEFI_MATERIAU(ELAS=_F(E=1.4e11, RHO=1600, NU=0.28))  # Carbon Fiber Reinforced Polymer (average)
+        GFRP = DEFI_MATERIAU(ELAS=_F(E=3.5e10, RHO=1900, NU=0.27))  # Glass Fiber Reinforced Polymer
+
         if self.material == 'Steel':
             return STEEL
-        else:
+        elif self.material == 'Aluminium':
             return ALUMINIUM
+        elif self.material == 'AL7075':
+            return AL7075
+        elif self.material == 'Titanium':
+            return TI6AL4V
+        elif self.material == 'CFRP':
+            return CFRP
+        elif self.material == 'GFRP':
+            return GFRP
+        else:
+            raise ValueError(f"Unknown material: {self.material}")
+
+    # @Attribute
+    # def fem_setup(self):
+    #     return WingFEM(finalmesh=self.mesh,
+    #                    avl=self.avl_analysis,
+    #                    skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
+    #                                                     wing_airfoil_middle=self.wing_airfoil_middle,
+    #                                                     wing_airfoil_tip=self.wing_airfoil_tip,
+    #
+    #                                                     wing_root_chord=self.corrected_root_chord,
+    #                                                     wing_middle_chord=self.corrected_middle_chord,
+    #                                                     wing_tip_chord=self.wing_tip_chord,
+    #
+    #                                                     wing_thickness_factor_root=self.wing_thickness_factor_root,
+    #                                                     wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+    #                                                     wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+    #
+    #                                                     wing_semi_span_planform1=self.wing_semi_span_planform1,
+    #                                                     wing_semi_span=self.corrected_semi_span,
+    #                                                     wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+    #                                                     wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+    #
+    #                                                     front_spar_position=self.corrected_front_spar_position,
+    #                                                     rear_spar_position=self.corrected_rear_spar_position,
+    #                                                     rib_number=self.corrected_rib_number,
+    #
+    #                                                     section_number=self.section_number,
+    #                                                     points_number=self.points_number,
+    #
+    #                                                     finalmesh=self.mesh,
+    #                                                     element_length=self.element_length
+    #                                                     ))
+
+    # @Attribute
+    # def fem_writer(self):
+    #     return Writer(instance=self.fem_setup, avl=self.avl_analysis, material=self.material_choice)
 
     @Attribute
-    def fem_setup(self):
-        return WingFEM(finalmesh=self.mesh,
-                       avl=self.avl_analysis,
-                       skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
+    def run_fem_analysis(self):
+        result = optimize_plate_thickness(
+            target_deflection=self.target_deflection,
+            initial_thickness=self.corrected_initial_thickness,
+            thickness_bounds=self.corrected_thickness_bounds2,
+            check_element=0,
+            wing_airfoil_root=self.wing_airfoil_root,
+            wing_airfoil_middle=self.wing_airfoil_middle,
+            wing_airfoil_tip=self.wing_airfoil_tip,
+
+            wing_root_chord=self.corrected_root_chord,
+            wing_middle_chord=self.corrected_middle_chord,
+            wing_tip_chord=self.wing_tip_chord,
+
+            wing_thickness_factor_root=self.wing_thickness_factor_root,
+            wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+            wing_semi_span_planform1=self.wing_semi_span_planform1,
+            wing_semi_span=self.corrected_semi_span,
+            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+            front_spar_position=self.corrected_front_spar_position,
+            rear_spar_position=self.corrected_rear_spar_position,
+            rib_number=self.corrected_rib_number,
+
+            section_number=self.section_number,
+            points_number=self.points_number,
+            element_length=self.element_length,
+            avl_analysis=self.avl_analysis,
+            material_choice=self.material_choice,
+            skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
                                                         wing_airfoil_middle=self.wing_airfoil_middle,
                                                         wing_airfoil_tip=self.wing_airfoil_tip,
 
@@ -468,21 +548,9 @@ class IntegratedWingAnalysis(Base):
                                                         section_number=self.section_number,
                                                         points_number=self.points_number,
 
-                                                        finalmesh=self.mesh
-                                                        ))
-
-    @Attribute
-    def fem_writer(self):
-        return Writer(instance=self.fem_setup, avl=self.avl_analysis, material=self.material_choice)
-
-    @Attribute
-    def run_fem_analysis(self):
-        result = optimize_plate_thickness(
-            target_deflection=self.target_deflection,
-            wing_fem_instance=self.fem_setup,  # Pass your FEM instance
-            writer_instance=self.fem_writer,  # Pass your Writer instance
-            initial_thickness=self.corrected_initial_thickness,
-            thickness_bounds=self.corrected_thickness_bounds2
+                                                        finalmesh=self.mesh,
+                                                        element_length=self.element_length
+                                                        )
         )
         print(f"Optimized thickness: {result['optimized_thickness']} m")
         print(f"Max deflection achieved: {result['max_deflection']} m")

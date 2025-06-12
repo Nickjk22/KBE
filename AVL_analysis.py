@@ -13,7 +13,7 @@ class WingAVLAnalysis(avl.Interface):
     points_number = Input(14)
     rho = Input(1.2)
     Mach = Input(0.7)
-    is_mirrored = Input()
+    is_mirrored = Input(True)
 
     @Input
     def check_nodes(self):

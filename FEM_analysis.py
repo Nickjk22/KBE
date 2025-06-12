@@ -42,6 +42,8 @@ CONSTRAINED_EDGE1 = "constrained_edge1_group"
 CONSTRAINED_EDGE2 = "constrained_edge2_group"
 CONSTRAINED_EDGE3 = "constrained_edge3_group"
 CONSTRAINED_EDGE4 = "constrained_edge4_group"
+
+
 # LOADED_EDGE1 = "loaded_edge1_group"
 # LOADED_EDGE2 = "loaded_edge2_group"
 
@@ -50,7 +52,7 @@ class WingFEM(Base):
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)
-    element_length: float = Input()
+    element_length: float = Input(0.1)
 
     # @Part
     # def shape_to_mesh(self) -> RectangularFace:
@@ -157,6 +159,7 @@ class WingFEM(Base):
     def nodes(self) -> List[MeshNode]:
         return self.skin_writer.load_primitives
 
+
 class Writer:
     """Writes code_aster command and mesh files.
 
@@ -215,7 +218,6 @@ class Writer:
     # @Part
     # def skin_writer(self):
     #     return CodeAster_primitives()
-
 
     @staticmethod
     def _default_instance() -> WingFEM:
@@ -463,10 +465,34 @@ class ResultsReader(ResultsReaderBase):
 
 
 # if __name__ == "__main__":
-#     import os
+#     instance = WingFEM(finalmesh=MeshGenerator(
+#                        check_element=0,
+#                        wing_airfoil_root="whitcomb_interpolated.dat",
+#                        wing_airfoil_middle="whitcomb_interpolated.dat",
+#                        wing_airfoil_tip="whitcomb_interpolated.dat",
 #
-#     instance = WingFEM()
-#     # display(instance)
+#                        wing_root_chord=6,
+#                        wing_middle_chord=4,
+#                        wing_tip_chord=1.5,
+#
+#                        wing_thickness_factor_root=1,
+#                        wing_thickness_factor_middle=1,
+#                        wing_thickness_factor_tip=1,
+#
+#                        wing_semi_span_planform1=5,
+#                        wing_semi_span=16,
+#                        wing_sweep_leading_edge_planform1=20,
+#                        wing_sweep_leading_edge_planform2=20,
+#
+#                        front_spar_position=0.2,
+#                        rear_spar_position=0.6,
+#                        rib_number=12,
+#
+#                        section_number=14,
+#                        points_number=14,
+#                        element_length=0.1
+#                        ), element_length=0.1
+#     )
 #
 #     current_path = os.path.dirname(__file__)
 #     output_dir = os.path.join(current_path, "output")
@@ -492,19 +518,26 @@ class ResultsReader(ResultsReaderBase):
 #
 #     results_reader = ResultsReader(file_path=results_path)
 #     print(f"maximum deflection from FEM: {float(results_reader.max_deflection)}")
+#
 
 
-# def optimize_plate_thickness(target_deflection: float, initial_thickness=0.1, thickness_bounds=(0.01, 0.5)):
+# def optimize_plate_thickness(target_deflection: float,
+#                              wing_fem_instance,  # New argument for WingFEM instance
+#                              writer_instance,  # New argument for Writer instance
+#                              initial_thickness=0.1,
+#                              thickness_bounds=(0.02, 0.5)):
 #     """
 #     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
 #
 #     Args:
-#         target_deflection (float): Maximum allowed deflection (e.g., 0.01 meters).
+#         target_deflection (float): Maximum allowed deflection (e.0.01 meters).
+#         wing_fem_instance: An instance of the WingFEM class.
+#         writer_instance: An instance of the Writer class.
+#         initial_thickness (float): Initial guess for the plate thickness.
 #         thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
 #
 #     Returns:
 #         dict: Contains optimized thickness, max deflection, success status, and optimizer info.
-#         :param initial_thickness:
 #     """
 #
 #     def objective(thickness):
@@ -513,11 +546,42 @@ class ResultsReader(ResultsReaderBase):
 #
 #     def constraint(thickness):
 #         """Constraint: deflection must be <= target_deflection."""
-#         # --- Set up new Plate ---
-#         instance = WingFEM(thickness=thickness[0])
+#         # --- Update WingFEM instance with new thickness ---
+#         # wing_fem_instance.thickness = thickness[0]
 #
-#         # --- Set up writer ---
-#         writer = Writer(instance)
+#         print("Thickness =", thickness[0])
+#
+#         wing_fem_instance = WingFEM(finalmesh=MeshGenerator(
+#             check_element=0,
+#             wing_airfoil_root="whitcomb_interpolated.dat",
+#             wing_airfoil_middle="whitcomb_interpolated.dat",
+#             wing_airfoil_tip="whitcomb_interpolated.dat",
+#
+#             wing_root_chord=6,
+#             wing_middle_chord=4,
+#             wing_tip_chord=1.5,
+#
+#             wing_thickness_factor_root=1,
+#             wing_thickness_factor_middle=1,
+#             wing_thickness_factor_tip=1,
+#
+#             wing_semi_span_planform1=5,
+#             wing_semi_span=16,
+#             wing_sweep_leading_edge_planform1=20,
+#             wing_sweep_leading_edge_planform2=20,
+#
+#             front_spar_position=0.2,
+#             rear_spar_position=0.6,
+#             rib_number=12,
+#
+#             section_number=14,
+#             points_number=14,
+#             element_length=0.1
+#         ), element_length=0.1,
+#             thickness=thickness[0]
+#         )
+#
+#         writer_new = Writer(instance_new)
 #
 #         # --- Paths ---
 #         current_path = os.path.dirname(__file__)
@@ -530,9 +594,14 @@ class ResultsReader(ResultsReaderBase):
 #         results_path = os.path.join(output_dir, "results.txt")
 #         log_file = os.path.join(output_dir, "aster_log.txt")
 #
+#         # --- Clean old files ---
+#         for path in [mesh_path, comm_path, export_path, results_path, log_file]:
+#             if os.path.exists(path):
+#                 os.remove(path)
+#
 #         # --- Write new files ---
-#         writer.write_mesh(mesh_path)
-#         writer.write_comm(comm_path)
+#         writer_new.write_mesh(mesh_path)
+#         writer_new.write_comm(comm_path)
 #         create_export_file(
 #             target_path=export_path,
 #             mesh_path=mesh_path,
@@ -547,6 +616,8 @@ class ResultsReader(ResultsReaderBase):
 #         results_reader = ResultsReader(file_path=results_path)
 #         max_deflection = float(results_reader.max_deflection)
 #
+#         print("Max deflection =", max_deflection)
+#
 #         # Constraint: max_deflection must be <= target_deflection
 #         return target_deflection - max_deflection
 #
@@ -557,7 +628,7 @@ class ResultsReader(ResultsReaderBase):
 #     })
 #
 #     # --- Initial guess ---
-#     x0 = [initial_thickness]  # start at 0.1 meters thickness
+#     x0 = [initial_thickness]
 #
 #     # --- Run the optimization ---
 #     result = minimize(
@@ -566,7 +637,11 @@ class ResultsReader(ResultsReaderBase):
 #         method='SLSQP',  # good for constraints
 #         bounds=[thickness_bounds],
 #         constraints=constraints,
-#         options={'disp': True}
+#         options={
+#             'disp': True,
+#             'ftol': 1e-9,
+#             'maxiter': 100
+#         }
 #     )
 #
 #     return {
@@ -577,12 +652,38 @@ class ResultsReader(ResultsReaderBase):
 #         'result': result
 #     }
 
-
 def optimize_plate_thickness(target_deflection: float,
-                             wing_fem_instance,  # New argument for WingFEM instance
-                             writer_instance,  # New argument for Writer instance
+                             check_element,  # New argument for WingFEM instance
+                             wing_airfoil_root,
+                             wing_airfoil_middle,
+                             wing_airfoil_tip,
+
+                             wing_root_chord,
+                             wing_middle_chord,
+                             wing_tip_chord,
+
+                             wing_thickness_factor_root,
+                             wing_thickness_factor_middle,
+                             wing_thickness_factor_tip,
+
+                             wing_semi_span_planform1,
+                             wing_semi_span,
+                             wing_sweep_leading_edge_planform1,
+                             wing_sweep_leading_edge_planform2,
+
+                             front_spar_position,
+                             rear_spar_position,
+                             rib_number,
+
+                             section_number,
+                             points_number,
+                             element_length,
+                             avl_analysis,
+                             skin_writer,
+                             material_choice,
                              initial_thickness=0.1,
-                             thickness_bounds=(0.01, 0.5)):
+                             thickness_bounds=(0.02, 0.5),
+                             ):
     """
     Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
 
@@ -604,11 +705,43 @@ def optimize_plate_thickness(target_deflection: float,
     def constraint(thickness):
         """Constraint: deflection must be <= target_deflection."""
         # --- Update WingFEM instance with new thickness ---
-        wing_fem_instance.thickness = thickness[0]
+        # wing_fem_instance.thickness = thickness[0]
 
-        # --- Set up writer (use the provided instance) ---
-        # No need to create a new writer instance here, just use the provided one.
-        writer = writer_instance
+        print("Thickness =", thickness[0])
+
+        instance_new = WingFEM(finalmesh=MeshGenerator(
+            check_element=check_element,
+            wing_airfoil_root=wing_airfoil_root,
+            wing_airfoil_middle=wing_airfoil_middle,
+            wing_airfoil_tip=wing_airfoil_tip,
+
+            wing_root_chord=wing_root_chord,
+            wing_middle_chord=wing_middle_chord,
+            wing_tip_chord=wing_tip_chord,
+
+            wing_thickness_factor_root=wing_thickness_factor_root,
+            wing_thickness_factor_middle=wing_thickness_factor_middle,
+            wing_thickness_factor_tip=wing_thickness_factor_tip,
+
+            wing_semi_span_planform1=wing_semi_span_planform1,
+            wing_semi_span=wing_semi_span,
+            wing_sweep_leading_edge_planform1=wing_sweep_leading_edge_planform1,
+            wing_sweep_leading_edge_planform2=wing_sweep_leading_edge_planform2,
+
+            front_spar_position=front_spar_position,
+            rear_spar_position=rear_spar_position,
+            rib_number=rib_number,
+
+            section_number=section_number,
+            points_number=points_number,
+            element_length=element_length
+        ), element_length=element_length,
+            thickness=thickness[0],
+            avl=avl_analysis,
+            skin_writer=skin_writer,
+        )
+
+        writer_new = Writer(instance=instance_new, avl=avl_analysis, material=material_choice)
 
         # --- Paths ---
         current_path = os.path.dirname(__file__)
@@ -621,9 +754,14 @@ def optimize_plate_thickness(target_deflection: float,
         results_path = os.path.join(output_dir, "results.txt")
         log_file = os.path.join(output_dir, "aster_log.txt")
 
+        # --- Clean old files ---
+        for path in [mesh_path, comm_path, export_path, results_path, log_file]:
+            if os.path.exists(path):
+                os.remove(path)
+
         # --- Write new files ---
-        writer.write_mesh(mesh_path)
-        writer.write_comm(comm_path)
+        writer_new.write_mesh(mesh_path)
+        writer_new.write_comm(comm_path)
         create_export_file(
             target_path=export_path,
             mesh_path=mesh_path,
@@ -638,6 +776,8 @@ def optimize_plate_thickness(target_deflection: float,
         results_reader = ResultsReader(file_path=results_path)
         max_deflection = float(results_reader.max_deflection)
 
+        print("Max deflection =", max_deflection)
+
         # Constraint: max_deflection must be <= target_deflection
         return target_deflection - max_deflection
 
@@ -648,7 +788,7 @@ def optimize_plate_thickness(target_deflection: float,
     })
 
     # --- Initial guess ---
-    x0 = [initial_thickness]  # start at 0.1 meters thickness
+    x0 = [initial_thickness]
 
     # --- Run the optimization ---
     result = minimize(
@@ -674,7 +814,39 @@ def optimize_plate_thickness(target_deflection: float,
 
 
 if __name__ == "__main__":
-    result = optimize_plate_thickness(target_deflection=0.10, wing_fem_instance=WingFEM, writer_instance=Writer)
+    instance = WingFEM(finalmesh=MeshGenerator(
+        check_element=0,
+        wing_airfoil_root="whitcomb_interpolated.dat",
+        wing_airfoil_middle="whitcomb_interpolated.dat",
+        wing_airfoil_tip="whitcomb_interpolated.dat",
+
+        wing_root_chord=6,
+        wing_middle_chord=4,
+        wing_tip_chord=1.5,
+
+        wing_thickness_factor_root=1,
+        wing_thickness_factor_middle=1,
+        wing_thickness_factor_tip=1,
+
+        wing_semi_span_planform1=5,
+        wing_semi_span=16,
+        wing_sweep_leading_edge_planform1=20,
+        wing_sweep_leading_edge_planform2=20,
+
+        front_spar_position=0.2,
+        rear_spar_position=0.6,
+        rib_number=12,
+
+        section_number=14,
+        points_number=14,
+        element_length=0.1
+    ), element_length=0.1
+    )
+    writer = Writer(instance)
+
+    result = optimize_plate_thickness(target_deflection=0.07,
+                                      wing_fem_instance=instance,
+                                      writer_instance=writer)
 
     print(f"Optimized thickness: {result['optimized_thickness']} m")
     print(f"Max deflection achieved: {result['max_deflection']} m")
