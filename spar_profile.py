@@ -75,14 +75,6 @@ class SparProfile(Wire):
     def curves_in(self):
         return [self.uppercurve, self.rearspar, self.lowercurve, self.frontspar]
 
-    # @Part
-    # def spar_profile(self):
-    #     return Wire(curves_in=[self.uppercurve, self.frontspar, self.lowercurve,
-    #                         self.rearspar],
-    #                 transparency=0.8
-    #                 )
-
-
 if __name__ == '__main__':
     from parapy.gui import display
     obj = SparProfile(label="Spar profile")
