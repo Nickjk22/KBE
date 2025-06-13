@@ -614,8 +614,8 @@ class IntegratedWingAnalysis(Base):
 
         with open(file_path, 'a') as f:
             f.write("Lift Forces per point:\n")
-            for i, val in enumerate(self.avl_lift_forces):
-                f.write(f"Lift at point {i}: {val:.6f} N\n")
+            for i, value in enumerate(self.avl_lift_forces):
+                f.write(f"Lift at point {i}: {value:.6f} N\n")
             f.write('\n')
 
         # Print per case the totals and the stability derivatives
