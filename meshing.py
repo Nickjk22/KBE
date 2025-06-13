@@ -142,7 +142,7 @@ class MeshGenerator(Base):
         return Tri(shape_to_mesh=self.shape_to_mesh,
                    quad_dominant=False,
                    only_2d=False,
-                   min_size=0.1,
+                   min_size=0.01,
                    max_size=0.3,
                    hidden=True)
 

@@ -1,21 +1,13 @@
-from typing import List, Sequence
-
-from parapy.core import Attribute, Base, Input, Part
 from parapy.core import *
 from thickness import DEFAULT_SKIN_THICKNESS, THICKNESSES, \
     THICKNESS_TO_RGB
 from parapy.core.widgets import Dropdown
 from material import STEEL
 from parapy.gui.events import EVT_SELECTION_CHANGING
-from parapy.geom import FittedCurve, IntersectedShapes, LoftedSolid, \
-    ModifiedShape, Plane, Point, RuledSurface, VZ
+from parapy.geom import ModifiedShape
 from parapy.core.decorators import on_event
 from torsionbox import TorsionBox
-from parapy.geom import LineSegment
-from parapy.geom import Point
-from sections import Section
 from meshing import MeshGenerator
-from points import Points
 import numpy as np
 
 
@@ -92,10 +84,10 @@ class CodeAster_primitives(Base):
 
                           front_spar_position=self.front_spar_position,
                           rear_spar_position =self.rear_spar_position,
-                          rib_number = self.rib_number,
+                          rib_number=self.rib_number,
 
                           section_number=self.section_number,
-                          points_number = self.points_number,
+                          points_number=self.points_number,
                           hidden=True)
 
     @Input

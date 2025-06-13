@@ -25,8 +25,10 @@ DIR = os.path.expanduser("~/Documents")
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+
+
+# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 def interpolate_airfoil(input_file, output_file, factor=5):
@@ -67,8 +69,6 @@ def interpolate_airfoil(input_file, output_file, factor=5):
     with open(output_file, 'w') as f:
         for x, y in new_coords:
             f.write(f"{x:.5f} {y:.5f}\n")
-
-
 
 
 # Usage
@@ -234,7 +234,8 @@ class IntegratedWingAnalysis(Base):
             warnings.warn(msg)
             if self.popup_gui_thickness_bounds:
                 generate_warning("Warning: Value changed", msg)
-            return [self.thickness_bounds[0], (self.airfoil_thickness * self.wing_tip_chord * self.wing_thickness_factor_tip)]
+            return [self.thickness_bounds[0],
+                    (self.airfoil_thickness * self.wing_tip_chord * self.wing_thickness_factor_tip)]
         else:
             return [self.thickness_bounds[0], self.thickness_bounds[1]]
 
@@ -525,32 +526,32 @@ class IntegratedWingAnalysis(Base):
             avl_analysis=self.avl_analysis,
             material_choice=self.material_choice,
             skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
-                                                        wing_airfoil_middle=self.wing_airfoil_middle,
-                                                        wing_airfoil_tip=self.wing_airfoil_tip,
+                                             wing_airfoil_middle=self.wing_airfoil_middle,
+                                             wing_airfoil_tip=self.wing_airfoil_tip,
 
-                                                        wing_root_chord=self.corrected_root_chord,
-                                                        wing_middle_chord=self.corrected_middle_chord,
-                                                        wing_tip_chord=self.wing_tip_chord,
+                                             wing_root_chord=self.corrected_root_chord,
+                                             wing_middle_chord=self.corrected_middle_chord,
+                                             wing_tip_chord=self.wing_tip_chord,
 
-                                                        wing_thickness_factor_root=self.wing_thickness_factor_root,
-                                                        wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                                                        wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+                                             wing_thickness_factor_root=self.wing_thickness_factor_root,
+                                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
 
-                                                        wing_semi_span_planform1=self.wing_semi_span_planform1,
-                                                        wing_semi_span=self.corrected_semi_span,
-                                                        wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                                                        wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+                                             wing_semi_span_planform1=self.wing_semi_span_planform1,
+                                             wing_semi_span=self.corrected_semi_span,
+                                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
-                                                        front_spar_position=self.corrected_front_spar_position,
-                                                        rear_spar_position=self.corrected_rear_spar_position,
-                                                        rib_number=self.corrected_rib_number,
+                                             front_spar_position=self.corrected_front_spar_position,
+                                             rear_spar_position=self.corrected_rear_spar_position,
+                                             rib_number=self.corrected_rib_number,
 
-                                                        section_number=self.section_number,
-                                                        points_number=self.points_number,
+                                             section_number=self.section_number,
+                                             points_number=self.points_number,
 
-                                                        finalmesh=self.mesh,
-                                                        element_length=self.element_length
-                                                        )
+                                             finalmesh=self.mesh,
+                                             element_length=self.element_length
+                                             )
         )
         print(f"Optimized thickness: {result['optimized_thickness']} m")
         print(f"Max deflection achieved: {result['max_deflection']} m")
@@ -588,11 +589,16 @@ class IntegratedWingAnalysis(Base):
             stringer_number=self.stringer_number
         )
 
-    # Step file creation here!!!
     @Part
     def step_writer(self):
-        return STEPWriter(nodes=[self.wingbox.spars.solid_spar, self.wingbox.ribs, self.wingbox.plates])
-
+        """
+        Generates a STEPWriter object for exporting wingbox components.
+        """
+        return STEPWriter(nodes=[self.wingbox.spars.front_spar,
+                                 self.wingbox.spars.rear_spar,
+                                 self.wingbox.plates.upper_plate,
+                                 self.wingbox.plates.lower_plate] +
+                                [rib.lofted_solid for rib in self.wingbox.ribs])
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(

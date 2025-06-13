@@ -8,9 +8,9 @@ import numpy as np
 
 
 class Spars(GeomBase):
-    wing_airfoil_root = Input("whitcomb.dat")
-    wing_airfoil_middle = Input("whitcomb.dat")
-    wing_airfoil_tip = Input("whitcomb.dat")
+    wing_airfoil_root = Input("whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
     wing_root_chord = Input(12)
     wing_middle_chord = Input(7)
@@ -181,31 +181,31 @@ class Spars(GeomBase):
 
     @Part
     def front_spar_plan1(self):
-        return LoftedShell(profiles=self.profiles_front_plan1,
+        return LoftedSolid(profiles=self.profiles_front_plan1,
                            color="Blue",
                            hidden=True)
 
     @Part
     def front_spar_plan2(self):
-        return LoftedShell(profiles=self.profiles_front_plan2,
+        return LoftedSolid(profiles=self.profiles_front_plan2,
                            color="Blue",
                            hidden=True)
 
     @Part
     def rear_spar_plan1(self):
-        return LoftedShell(profiles=self.profiles_rear_plan1,
+        return LoftedSolid(profiles=self.profiles_rear_plan1,
                            color="Blue",
                            hidden=True)
 
     @Part
     def rear_spar_plan2(self):
-        return LoftedShell(profiles=self.profiles_rear_plan2,
+        return LoftedSolid(profiles=self.profiles_rear_plan2,
                            color="Blue",
                            hidden=True)
 
     @Part
     def front_spar(self):
-        return FusedShell(
+        return FusedSolid(
             shape_in=self.front_spar_plan1,
             tool=[self.front_spar_plan2],
             mesh_deflection=0.0001,
@@ -214,21 +214,21 @@ class Spars(GeomBase):
 
     @Part
     def rear_spar(self):
-        return FusedShell(
+        return FusedSolid(
             shape_in=self.rear_spar_plan1,
             tool=[self.rear_spar_plan2],
             mesh_deflection=0.0001,
             color="Blue",
         )
 
-    @Part
-    def solid_spar(self):
-        return FusedSolid(
-            shape_in=Solid(self.front_spar),
-            tool=[Solid(self.rear_spar)],
-            color="Cyan",
-            hidden=True,
-        )
+    # @Part
+    # def solid_spar(self):
+    #     return FusedSolid(
+    #         shape_in=Solid(self.front_spar),
+    #         tool=[Solid(self.rear_spar)],
+    #         color="Cyan",
+    #         hidden=True,
+    #     )
 
 
 if __name__ == '__main__':

@@ -3,10 +3,8 @@ from parapy.geom import *
 from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
-from spar_profile import SparProfile
 import numpy as np
-from stringer_profile import StringerProfile
-from upper_lower_plate_profile import UpperLowerPlateProfile
+from plate_profile import UpperPlateProfile, LowerPlateProfile
 
 
 class Plates(GeomBase):
@@ -44,14 +42,24 @@ class Plates(GeomBase):
                        thickness_factor=self.wing_thickness_factor_root)
 
     @Part
-    def plates_root_profile(self):
-        return UpperLowerPlateProfile(airfoil_name=self.wing_airfoil_root,
-                                      chord=self.wing_root_chord,
-                                      thickness_factor=self.wing_thickness_factor_root,
-                                      front_spar_thickness=self.plate_thickness,
-                                      front_spar_position=self.front_spar_position,
-                                      rear_spar_position=self.rear_spar_position,
-                                      hidden=True)
+    def upper_plate_root_profile(self):
+        return UpperPlateProfile(airfoil_name=self.wing_airfoil_root,
+                                 chord=self.wing_root_chord,
+                                 thickness_factor=self.wing_thickness_factor_root,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 hidden=True)
+
+    @Part
+    def lower_plate_root_profile(self):
+        return LowerPlateProfile(airfoil_name=self.wing_airfoil_root,
+                                 chord=self.wing_root_chord,
+                                 thickness_factor=self.wing_thickness_factor_root,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 hidden=True)
 
     # Middle airfoil and stringer profiles
     @Part
@@ -65,18 +73,32 @@ class Plates(GeomBase):
                        hidden=True)
 
     @Part
-    def plates_middle_profile(self):
-        return UpperLowerPlateProfile(airfoil_name=self.wing_airfoil_middle,
-                                      chord=self.wing_middle_chord,
-                                      thickness_factor=self.wing_thickness_factor_middle,
-                                      front_spar_thickness=self.plate_thickness,
-                                      front_spar_position=self.front_spar_position,
-                                      rear_spar_position=self.rear_spar_position,
-                                      position=translate(self.position, "y", self.wing_semi_span_planform1,
-                                                         "x", self.wing_semi_span_planform1 * tan(
-                                              radians(self.wing_sweep_leading_edge_planform1))),
-                                      hidden=True
-                                      )
+    def upper_plate_middle_profile(self):
+        return UpperPlateProfile(airfoil_name=self.wing_airfoil_middle,
+                                 chord=self.wing_middle_chord,
+                                 thickness_factor=self.wing_thickness_factor_middle,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 position=translate(self.position, "y", self.wing_semi_span_planform1,
+                                                    "x", self.wing_semi_span_planform1 * tan(
+                                         radians(self.wing_sweep_leading_edge_planform1))),
+                                 hidden=True
+                                 )
+
+    @Part
+    def lower_plate_middle_profile(self):
+        return LowerPlateProfile(airfoil_name=self.wing_airfoil_middle,
+                                 chord=self.wing_middle_chord,
+                                 thickness_factor=self.wing_thickness_factor_middle,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 position=translate(self.position, "y", self.wing_semi_span_planform1,
+                                                    "x", self.wing_semi_span_planform1 * tan(
+                                         radians(self.wing_sweep_leading_edge_planform1))),
+                                 hidden=True
+                                 )
 
     # Tip airfoil and stringer profiles
     @Part
@@ -99,35 +121,59 @@ class Plates(GeomBase):
                        )
 
     @Part
-    def plates_tip_profile(self):
-        return UpperLowerPlateProfile(airfoil_name=self.wing_airfoil_tip,
-                                      chord=self.wing_tip_chord,
-                                      thickness_factor=self.wing_thickness_factor_tip,
-                                      front_spar_thickness=self.plate_thickness,
-                                      front_spar_position=self.front_spar_position,
-                                      rear_spar_position=self.rear_spar_position,
-                                      position=translate(self.position,
-                                                         "y", self.wing_semi_span,
-                                                         "x",
-                                                         self.wing_semi_span_planform1 * np.tan(radians(
-                                                             self.wing_sweep_leading_edge_planform1)) + (
-                                                                 (
-                                                                         self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                                                             radians(
-                                                                 self.wing_sweep_leading_edge_planform2)))
+    def upper_plate_tip_profile(self):
+        return UpperPlateProfile(airfoil_name=self.wing_airfoil_tip,
+                                 chord=self.wing_tip_chord,
+                                 thickness_factor=self.wing_thickness_factor_tip,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 position=translate(self.position,
+                                                    "y", self.wing_semi_span,
+                                                    "x",
+                                                    self.wing_semi_span_planform1 * np.tan(radians(
+                                                        self.wing_sweep_leading_edge_planform1)) + (
+                                                            (
+                                                                    self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                                        radians(
+                                                            self.wing_sweep_leading_edge_planform2)))
 
-                                                         #                   tan(radians(
-                                                         # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                         ),
-                                      hidden=True
-                                      )
+                                                    #                   tan(radians(
+                                                    # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                                    ),
+                                 hidden=True
+                                 )
+
+    @Part
+    def lower_plate_tip_profile(self):
+        return LowerPlateProfile(airfoil_name=self.wing_airfoil_tip,
+                                 chord=self.wing_tip_chord,
+                                 thickness_factor=self.wing_thickness_factor_tip,
+                                 front_spar_thickness=self.plate_thickness,
+                                 front_spar_position=self.front_spar_position,
+                                 rear_spar_position=self.rear_spar_position,
+                                 position=translate(self.position,
+                                                    "y", self.wing_semi_span,
+                                                    "x",
+                                                    self.wing_semi_span_planform1 * np.tan(radians(
+                                                        self.wing_sweep_leading_edge_planform1)) + (
+                                                            (
+                                                                    self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                                        radians(
+                                                            self.wing_sweep_leading_edge_planform2)))
+
+                                                    #                   tan(radians(
+                                                    # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                                    ),
+                                 hidden=True
+                                 )
 
     @Part
     def upper_plate_loft(self):
         return LoftedSolid(
             profiles=[
-                self.plates_root_profile.upper_plate,
-                self.plates_middle_profile.upper_plate,
+                self.upper_plate_root_profile,
+                self.upper_plate_middle_profile,
             ],
             color="red",
             hidden=True,
@@ -137,8 +183,8 @@ class Plates(GeomBase):
     def upper_plate_loft2(self):
         return LoftedSolid(
             profiles=[
-                self.plates_middle_profile.upper_plate,
-                self.plates_tip_profile.upper_plate,
+                self.upper_plate_middle_profile,
+                self.upper_plate_tip_profile,
             ],
             color="red",
             hidden=True
@@ -148,8 +194,8 @@ class Plates(GeomBase):
     def lower_plate_loft(self):
         return LoftedSolid(
             profiles=[
-                self.plates_root_profile.lower_plate,
-                self.plates_middle_profile.lower_plate,
+                self.lower_plate_root_profile,
+                self.lower_plate_middle_profile,
             ],
             color="red",
             hidden=True
@@ -159,8 +205,8 @@ class Plates(GeomBase):
     def lower_plate_loft2(self):
         return LoftedSolid(
             profiles=[
-                self.plates_middle_profile.lower_plate,
-                self.plates_tip_profile.lower_plate,
+                self.lower_plate_middle_profile,
+                self.lower_plate_tip_profile,
             ],
             color="red",
             hidden=True

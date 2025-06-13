@@ -42,7 +42,7 @@ class Wingbox(GeomBase):
     rear_spar_position = Input(0.6)
 
     # Ribs
-    rib_thickness = Input(0.2)
+    rib_thickness = Input(0.1)
     rib_number = Input(15)
 
     # Stringers
