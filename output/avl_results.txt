@@ -1,0 +1,57 @@
+Output file for the AVL analysis
+
+Lift Forces per point:
+Lift at point 0: 71418.825450 N
+Lift at point 1: 71148.624913 N
+Lift at point 2: 70384.690740 N
+Lift at point 3: 68412.305255 N
+Lift at point 4: 64994.013560 N
+Lift at point 5: 60147.463005 N
+Lift at point 6: 55429.149860 N
+Lift at point 7: 50630.247150 N
+Lift at point 8: 45171.529632 N
+Lift at point 9: 39316.531065 N
+Lift at point 10: 33036.231363 N
+Lift at point 11: 26082.391137 N
+Lift at point 12: 17290.873530 N
+Lift at point 13: 6159.709477 N
+
+Case name = fixed_aoa
+
+Totals:
+CYtot;   -0.0
+Cmtot;   -1.7028
+CZtot;   -1.56241
+Cntot;   0.0
+CLtot;   1.5643
+CDtot;   0.04659
+CDind;   0.0465917
+CLff;   1.56832
+
+Stability derivatives:
+CLa;   10.239991
+CLb;   0.0
+CYa;   -2.8e-05
+CYb;   0.000549
+Cla;   7e-06
+Clb;   -0.319733
+Cma;   -9.646995
+Cmb;   -0.0
+Cna;   4.4e-05
+Cnb;   0.026832
+CLp;   -7e-06
+CLq;   31.654825
+CLr;   0.0
+CYp;   0.603893
+CYq;   -7.4e-05
+CYr;   -0.054678
+Clp;   -3.824599
+Clq;   1.4e-05
+Clr;   1.556711
+Cmp;   1e-06
+Cmq;   -33.05864
+Cmr;   0.0
+Cnp;   -0.67688
+Cnq;   0.000127
+Cnr;   -0.041677
+Xnp;   3.400357
