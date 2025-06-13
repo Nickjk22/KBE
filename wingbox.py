@@ -86,7 +86,8 @@ class Wingbox(GeomBase):
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,
                        chord=self.wing_root_chord,
-                       thickness_factor=self.wing_thickness_factor_root)
+                       thickness_factor=self.wing_thickness_factor_root,
+                       hidden=True)
 
     @Part
     def wing_middle_airfoil(self):
@@ -95,7 +96,8 @@ class Wingbox(GeomBase):
                        thickness_factor=self.wing_thickness_factor_tip,
                        position=translate(self.position, "y", self.wing_semi_span_planform1,
                                           "x", self.wing_semi_span_planform1 * tan(
-                               radians(self.wing_sweep_leading_edge_planform1))))
+                               radians(self.wing_sweep_leading_edge_planform1))),
+                       hidden=True)
 
     @Part
     def wing_tip_airfoil(self):
@@ -113,7 +115,8 @@ class Wingbox(GeomBase):
 
                                           #                   tan(radians(
                                           # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                          )
+                                          ),
+                       hidden=True
                        )
 
     @Part

@@ -39,7 +39,8 @@ class Plates(GeomBase):
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,
                        chord=self.wing_root_chord,
-                       thickness_factor=self.wing_thickness_factor_root)
+                       thickness_factor=self.wing_thickness_factor_root,
+                       hidden=True)
 
     @Part
     def upper_plate_root_profile(self):
@@ -117,7 +118,8 @@ class Plates(GeomBase):
 
                                           #                   tan(radians(
                                           # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                          )
+                                          ),
+                       hidden=True
                        )
 
     @Part
@@ -175,7 +177,7 @@ class Plates(GeomBase):
                 self.upper_plate_root_profile,
                 self.upper_plate_middle_profile,
             ],
-            color="red",
+            color="D3D3D3",
             hidden=True,
         )
 
@@ -186,7 +188,7 @@ class Plates(GeomBase):
                 self.upper_plate_middle_profile,
                 self.upper_plate_tip_profile,
             ],
-            color="red",
+            color="D3D3D3",
             hidden=True
         )
 
@@ -197,7 +199,7 @@ class Plates(GeomBase):
                 self.lower_plate_root_profile,
                 self.lower_plate_middle_profile,
             ],
-            color="red",
+            color="D3D3D3",
             hidden=True
         )
 
@@ -208,7 +210,7 @@ class Plates(GeomBase):
                 self.lower_plate_middle_profile,
                 self.lower_plate_tip_profile,
             ],
-            color="red",
+            color="D3D3D3",
             hidden=True
         )
 
@@ -218,7 +220,7 @@ class Plates(GeomBase):
             shape_in=self.upper_plate_loft,
             tool=[self.upper_plate_loft2],
             mesh_deflection=0.0001,
-            color="Blue",
+            color=[169,169,169]
         )
 
     @Part
@@ -227,7 +229,7 @@ class Plates(GeomBase):
             shape_in=self.lower_plate_loft,
             tool=[self.lower_plate_loft2],
             mesh_deflection=0.0001,
-            color="Blue",
+            color=[169,169,169],
         )
 
     # @Part

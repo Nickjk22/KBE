@@ -184,6 +184,7 @@ class WingSurface(GeomBase):
 
                       quantify=self.points_number,
                       point_spanwise_position=self.spanwise_points_list[child.index],
+                      hidden=True
                       )
 
 

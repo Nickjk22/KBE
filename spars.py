@@ -41,7 +41,8 @@ class Spars(GeomBase):
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,
                        chord=self.wing_root_chord,
-                       thickness_factor=self.wing_thickness_factor_root)
+                       thickness_factor=self.wing_thickness_factor_root,
+                       hidden=True)
 
     @Part
     def front_spar_root_profile(self):
@@ -115,7 +116,8 @@ class Spars(GeomBase):
 
                                           #                   tan(radians(
                                           # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                          )
+                                          ),
+                       hidden=True
                        )
 
     @Part
@@ -209,7 +211,7 @@ class Spars(GeomBase):
             shape_in=self.front_spar_plan1,
             tool=[self.front_spar_plan2],
             mesh_deflection=0.0001,
-            color="Blue",
+            color=[169,169,169],
         )
 
     @Part
@@ -218,7 +220,7 @@ class Spars(GeomBase):
             shape_in=self.rear_spar_plan1,
             tool=[self.rear_spar_plan2],
             mesh_deflection=0.0001,
-            color="Blue",
+            color=[169,169,169],
         )
 
     # @Part

@@ -39,7 +39,8 @@ class Stringer(GeomBase):
     def wing_root_airfoil(self):
         return Airfoil(airfoil_name=self.wing_airfoil_root,
                        chord=self.wing_root_chord,
-                       thickness_factor=self.wing_thickness_factor_root)
+                       thickness_factor=self.wing_thickness_factor_root,
+                       hidden=True)
 
     @Part
     def stringer_root_profile(self):
@@ -91,7 +92,8 @@ class Stringer(GeomBase):
 
                                           #                   tan(radians(
                                           # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                          )
+                                          ),
+                       hidden=True
                        )
 
     @Part
@@ -124,7 +126,7 @@ class Stringer(GeomBase):
                 self.stringer_root_profile.upper_stringer,
                 self.stringer_middle_profile.upper_stringer,
             ],
-            color="red",
+            color=[105,105,105],
         )
 
     @Part
@@ -134,7 +136,7 @@ class Stringer(GeomBase):
                 self.stringer_middle_profile.upper_stringer,
                 self.stringer_tip_profile.upper_stringer,
             ],
-            color="red",
+            color=[105,105,105],
         )
 
     @Part
@@ -144,7 +146,7 @@ class Stringer(GeomBase):
                 self.stringer_root_profile.lower_stringer,
                 self.stringer_middle_profile.lower_stringer,
             ],
-            color="red",
+            color=[105,105,105],
         )
 
     @Part
@@ -154,7 +156,7 @@ class Stringer(GeomBase):
                 self.stringer_middle_profile.lower_stringer,
                 self.stringer_tip_profile.lower_stringer,
             ],
-            color="red",
+            color=[105,105,105],
         )
 
     # @Part

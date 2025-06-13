@@ -48,7 +48,8 @@ class Rib(LoftedSolid):
                        position=translate(self.position,
                                           "y", self.rib_spanwise_position * self.wing_semi_span,
                                           "x", self.rib_spanwise_position * self.wing_semi_span * tan(radians(
-                               self.wing_sweep)))
+                               self.wing_sweep))),
+                       hidden=True
                        )
 
     @Part
@@ -62,7 +63,8 @@ class Rib(LoftedSolid):
                                           "x", (
                                                   self.wing_semi_span * self.rib_spanwise_position + self.rib_thickness) * tan(
                                radians(
-                                   self.wing_sweep)))
+                                   self.wing_sweep))),
+                       hidden=True
                        )
 
     @Part
@@ -88,7 +90,7 @@ class Rib(LoftedSolid):
     @Part
     def lofted_solid(self):
         return LoftedSolid(profiles=self.profiles,
-                           color="Blue",
+                           color=[211,211,211],
                            hidden=not (__name__ == '__main__'))
 
 
