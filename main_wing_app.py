@@ -595,7 +595,7 @@ class IntegratedWingAnalysis(Base):
     def avl_results(self):
         new_file_name = "avl_results.txt"
         directory_path = excel_directory.rsplit('\\', 1)[0]
-        file_path = directory_path + '\\' + 'Project\\KBE\\output' + '\\' + new_file_name
+        file_path = directory_path + '\\' + 'output' + '\\' + new_file_name
 
         # Clear the output file and rewrite content
         with open(file_path, 'w') as f:
