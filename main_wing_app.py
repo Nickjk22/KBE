@@ -20,14 +20,9 @@ from kbeutils import avl
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
 from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
 
-DIR = os.path.expanduser("~/Documents")
-# DIR = os.path.dirname(__file__)
-
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
 # excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-
-
 excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
@@ -72,7 +67,7 @@ def interpolate_airfoil(input_file, output_file, factor=5):
 
 
 # Usage
-interpolate_airfoil('whitcomb.dat', 'whitcomb_interpolated.dat', factor=25)
+interpolate_airfoil('airfoil_data\whitcomb.dat', 'airfoil_data\whitcomb_interpolated.dat', factor=25)
 
 
 def generate_warning(warning_header, msg):
@@ -93,9 +88,9 @@ def generate_warning(warning_header, msg):
 
 class IntegratedWingAnalysis(Base):
     # Wing Parameters
-    wing_airfoil_root = Input("whitcomb_interpolated.dat")
-    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
-    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
+    wing_airfoil_root = Input('airfoil_data\whitcomb_interpolated.dat')
+    wing_airfoil_middle = Input("airfoil_data\whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("airfoil_data\whitcomb_interpolated.dat")
 
     # Warnings
     popup_gui_semi_span = Input(True)
@@ -276,10 +271,6 @@ class IntegratedWingAnalysis(Base):
         else:
             return self.rib_number
 
-    # Results Storage
-    # avl_results = Attribute()
-    # fem_results = Attribute()
-    # optimized_parameters = Attribute()
     points_number = Input(int(pd.read_excel(excel_directory).iloc[22, 1]), validator=GreaterThan(0))
     section_number = Input(int(pd.read_excel(excel_directory).iloc[23, 1]), validator=GreaterThan(0))
 
@@ -314,7 +305,7 @@ class IntegratedWingAnalysis(Base):
                            is_mirrored=self.is_mirrored
                            )
 
-    # Read the settings based case number (1 = fixed CL, 2 = fixed angle of attack)
+    # Read the settings based on case number (1 = fixed CL, 2 = fixed angle of attack)
     case_setting = Input(float(pd.read_excel(excel_directory).iloc[18, 5]))
     new_parameter = Input(float(pd.read_excel(excel_directory).iloc[19, 5]))
 
@@ -651,6 +642,7 @@ class IntegratedWingAnalysis(Base):
 
         # return self.results.items()
         return "results generated in text file"
+
 
 if __name__ == '__main__':
     obj = IntegratedWingAnalysis(
