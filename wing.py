@@ -10,9 +10,9 @@ from points import Points
 
 
 class WingSurface(GeomBase):
-    wing_airfoil_root = Input("whitcomb.dat")
-    wing_airfoil_middle = Input("whitcomb.dat")
-    wing_airfoil_tip = Input("whitcomb.dat")
+    wing_airfoil_root = Input("whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
 
     wing_root_chord = Input(6)
     wing_middle_chord = Input(4)

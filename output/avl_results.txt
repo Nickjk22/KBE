@@ -1,58 +1,83 @@
-Output file for the AVL analysis
+Output file for the AVL and FEM analysis
 
+Inputs used in this simulation:
+Wing root chord: 7.0 m
+Wing middle chord: 4.0 m
+Wing tip chord: 1.5 m
+Wing thickness factor root: 1.0 m
+Wing thickness factor middle: 1.0 m
+Wing thickness factor tip: 1.0 m
+Wing semi span: 16.0 m
+Wing span planform 1: 5.0 m
+Wing sweep of leading edge of planform 1: 20.0 deg
+Wing sweep of leading edge of planform 2: 20.0 deg
+Front spar position: 0.2 m
+Rear spar position: 0.6 m
+Stringer number: 10 m
+Stringer thickness: 0.01 m
+
+
+Target deflection: 0.5 m
+Thickness bounds: [0.05, 0.1] m
+Initial thickness: 0.1 m
+
+
+Optimized thickness: 0.05 m
+Max deflection achieved: 0.07848154356060633 m
+Optimization success: True
 
 Lift Forces per point:
-Lift at point 0: 71418.825450 N
-Lift at point 1: 71148.624913 N
-Lift at point 2: 70384.690740 N
-Lift at point 3: 68412.305255 N
-Lift at point 4: 64994.013560 N
-Lift at point 5: 60147.463005 N
-Lift at point 6: 55429.149860 N
-Lift at point 7: 50630.247150 N
-Lift at point 8: 45171.529632 N
-Lift at point 9: 39316.531065 N
-Lift at point 10: 33036.231363 N
-Lift at point 11: 26082.391137 N
-Lift at point 12: 17290.873530 N
-Lift at point 13: 6159.709477 N
+Lift at point 0: 24437.626744 N
+Lift at point 1: 24277.741753 N
+Lift at point 2: 24140.868906 N
+Lift at point 3: 23763.356795 N
+Lift at point 4: 23034.944776 N
+Lift at point 5: 21910.455634 N
+Lift at point 6: 20770.225056 N
+Lift at point 7: 19675.877588 N
+Lift at point 8: 18439.927783 N
+Lift at point 9: 17028.069194 N
+Lift at point 10: 15232.557215 N
+Lift at point 11: 12787.269810 N
+Lift at point 12: 8859.957952 N
+Lift at point 13: 3233.912182 N
 
-Case name = fixed_aoa
+Case name = fixed_cl
 
 Totals:
 CYtot;   -0.0
-Cmtot;   -1.7028
-CZtot;   -1.56241
-Cntot;   0.0
-CLtot;   1.5643
-CDtot;   0.04659
-CDind;   0.0465917
-CLff;   1.56832
+Cmtot;   -1.48893
+CZtot;   -1.67124
+Cntot;   1e-05
+CLtot;   1.7
+CDtot;   0.05958
+CDind;   0.0595834
+CLff;   1.71339
 
 Stability derivatives:
-CLa;   10.239991
-CLb;   0.0
-CYa;   -2.8e-05
-CYb;   0.000549
-Cla;   7e-06
-Clb;   -0.319733
-Cma;   -9.646995
+CLa;   9.409351
+CLb;   -0.0
+CYa;   -4e-05
+CYb;   -0.002559
+Cla;   2e-05
+Clb;   -0.400462
+Cma;   -8.588686
 Cmb;   -0.0
-Cna;   4.4e-05
-Cnb;   0.026832
-CLp;   -7e-06
-CLq;   31.654825
-CLr;   0.0
-CYp;   0.603893
-CYq;   -7.4e-05
-CYr;   -0.054678
-Clp;   -3.824599
-Clq;   1.4e-05
-Clr;   1.556711
-Cmp;   1e-06
-Cmq;   -33.05864
-Cmr;   0.0
-Cnp;   -0.67688
-Cnq;   0.000127
-Cnr;   -0.041677
-Xnp;   3.400357
+Cna;   5.4e-05
+Cnb;   0.091742
+CLp;   -3e-05
+CLq;   29.652233
+CLr;   8e-06
+CYp;   0.862802
+CYq;   -0.000121
+CYr;   -0.192127
+Clp;   -3.538076
+Clq;   4.1e-05
+Clr;   1.90764
+Cmp;   2e-06
+Cmq;   -30.096062
+Cmr;   -0.0
+Cnp;   -0.883576
+Cnq;   0.000166
+Cnr;   -0.064605
+Xnp;   3.294572

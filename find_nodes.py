@@ -127,31 +127,6 @@ class CodeAster_primitives(Base):
     def spanwise_points_list(self):
         return np.linspace(0, 1, self.points_number)
 
-    # @Part
-    # def points(self):
-    #     return Points(wing_airfoil_root=self.wing_airfoil_root,
-    #                   wing_airfoil_middle=self.wing_airfoil_middle,
-    #                   wing_airfoil_tip=self.wing_airfoil_tip,
-    #
-    #                   wing_root_chord=self.wing_root_chord,
-    #                   wing_middle_chord=self.wing_middle_chord,
-    #                   wing_tip_chord=self.wing_tip_chord,
-    #
-    #                   wing_thickness_factor_root=self.wing_thickness_factor_root,
-    #                   wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-    #                   wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-    #
-    #                   wing_semi_span_planform1=self.wing_semi_span_planform1,
-    #                   wing_semi_span=self.wing_semi_span,
-    #                   wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-    #                   wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-    #                   wing_twist=self.wing_twist,
-    #
-    #                   quantify=self.points_number,
-    #                   point_spanwise_position=self.spanwise_points_list[child.index],
-    #                   hidden=False
-    #                   )
-
     @Attribute
     def points_list(self):
         return [pt.point for pt in self.torsionbox.points]
@@ -170,15 +145,6 @@ class CodeAster_primitives(Base):
                 msg = "No mesh node found near strip force cp point. Increase" \
                       "the tolerance of find_node_at."
                 raise RuntimeError(msg)
-
-            # subgrid = NodesSubGrid(nodes=[node],
-            #                        label=label)
-            # load = NodeLoad(subgrid.nodes,
-            #                 subgrid=subgrid,
-            #                 outward=True,
-            #                 force=Vector(0, 0, round(strip_result.lift_force, 2)),
-            #                 base_length=strip_result.arrow.base_length,
-            #                 head_length=strip_result.arrow.head_length)
             lst.append(node)
         return lst
 
@@ -196,30 +162,6 @@ class CodeAster_primitives(Base):
             lst.append(subgrid)
 
         return lst
-
-    # @Attribute
-    # def foo(self):
-    #     lst = []
-    #     history = self.finalmesh.shape_to_mesh.history
-    #     mesh = self.finalmesh.mesh_generator.mesh
-    #     get_subgrid = mesh.get_subgrid_on_the_fly
-    #
-    #     for face in self.root_skin.shell.faces:
-    #         shape = history(face)
-    #         label = 'group_ma_' + str(id(face))
-    #         subgrid = get_subgrid(shape[0], *shape[1:], label=label)
-    #         lst.append(subgrid)
-    #
-    #     for skin in [self.tip_skin, self.lateral_skin]:
-    #         for face in skin.shell.faces:
-    #             shapes = history(face)
-    #             label = 'group_ma_' + str(id(face))
-    #             if len(shapes) == 1:
-    #                 subgrid = get_subgrid(shapes[0], label=label)
-    #             else:
-    #                 subgrid = get_subgrid(shapes[0], *shapes[1:], label=label)
-    #             lst.append(subgrid)
-    #     return lst
 
     @Attribute
     def structural_elements(self):

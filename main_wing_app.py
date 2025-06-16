@@ -16,7 +16,6 @@ from find_nodes import CodeAster_primitives
 import numpy as np
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from kbeutils import avl
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
@@ -24,8 +23,8 @@ from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEq
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 def interpolate_airfoil(input_file, output_file, factor=5):
@@ -633,11 +632,72 @@ class IntegratedWingAnalysis(Base):
     def avl_results(self):
         new_file_name = "avl_results.txt"
         directory_path = excel_directory.rsplit('\\', 1)[0]
-        file_path = directory_path + '\\' + 'output' + '\\' + new_file_name
+        file_path = directory_path + '\\' + 'Project\\KBE\\output' + '\\' + new_file_name
+        result = self.run_fem_analysis
 
-        # Clear the output file and rewrite content
+        # Clear the output file and rewrite content, including the inputs
         with open(file_path, 'w') as f:
-            f.write("Output file for the AVL analysis")
+            f.write("Output file for the AVL and FEM analysis")
+            f.write('\n')
+            f.write('\n')
+            f.write('AVL inputs:')
+            f.write('\n')
+            f.write(f"Fixed aoa or Cl: {self.new_parameter} m")
+            f.write('\n')
+            f.write(f"Mach number: {self.Mach} m")
+            f.write('\n')
+            f.write(f"Air density: {self.rho} m")
+            f.write('\n')
+            f.write('\n')
+            f.write('Inputs used in this simulation:')
+            f.write('\n')
+            f.write(f"Wing root chord: {self.wing_root_chord} m")
+            f.write('\n')
+            f.write(f"Wing middle chord: {self.wing_middle_chord} m")
+            f.write('\n')
+            f.write(f"Wing tip chord: {self.wing_tip_chord} m")
+            f.write('\n')
+            f.write(f"Wing thickness factor root: {self.wing_thickness_factor_root} m")
+            f.write('\n')
+            f.write(f"Wing thickness factor middle: {self.wing_thickness_factor_middle} m")
+            f.write('\n')
+            f.write(f"Wing thickness factor tip: {self.wing_thickness_factor_tip} m")
+            f.write('\n')
+            f.write(f"Wing semi span: {self.wing_semi_span} m")
+            f.write('\n')
+            f.write(f"Wing span planform 1: {self.wing_semi_span_planform1} m")
+            f.write('\n')
+            f.write(f"Wing sweep of leading edge of planform 1: {self.wing_sweep_leading_edge_planform1} deg")
+            f.write('\n')
+            f.write(f"Wing sweep of leading edge of planform 2: {self.wing_sweep_leading_edge_planform2} deg")
+            f.write('\n')
+            f.write(f"Front spar position: {self.front_spar_position} m")
+            f.write('\n')
+            f.write(f"Rear spar position: {self.rear_spar_position} m")
+            f.write('\n')
+            f.write(f"Stringer number: {self.stringer_number} m")
+            f.write('\n')
+            f.write(f"Rib number: {self.rib_number} m")
+            f.write('\n')
+            f.write(f"Stringer thickness: {self.stringer_thickness} m")
+            f.write('\n')
+            f.write('\n')
+            f.write('\n')
+            f.write(f"Target deflection: {self.target_deflection} m")
+            f.write('\n')
+            f.write(f"Thickness bounds: [{self.thickness_bounds[0]}, {self.thickness_bounds[1]}] m")
+            f.write('\n')
+            f.write(f"Initial thickness: {self.initial_thickness} m")
+            f.write('\n')
+            f.write(f"Material: {self.material} m")
+            f.write('\n')
+            f.write('\n')
+            f.write('\n')
+            f.write(f"Optimized thickness: {result['optimized_thickness']} m")
+            f.write('\n')
+            f.write(f"Max deflection achieved: {result['max_deflection']} m")
+            f.write('\n')
+            f.write(f"Optimization success: {result['success']}")
             f.write('\n')
             f.write('\n')
 

@@ -53,30 +53,6 @@ class WingAVLAnalysis(avl.Interface):
             print(f"Keys: {data.keys()}")
             print(f"StripForces: {data.get('StripForces')}")
 
-    # @Attribute
-    # def lift_forces(self):
-    #     # Pak eerste case
-    #     first_case_name = list(self.results.keys())[0]
-    #     result = self.results[first_case_name]
-    #
-    #     # Haal StripForces op
-    #     strip_forces = result.get('StripForces', {})
-    #
-    #     # Check op juiste sleutel
-    #     surface_data = strip_forces.get('None', {})
-    #     ccl_list = surface_data.get('c cl', [])
-    #
-    #     if not ccl_list:
-    #         print("No 'c cl' in results")
-    #         return []
-    #
-    #     # Bereken lift per strip
-    #     rho = 1200
-    #     v = 0.4 * 343
-    #     q = 0.5 * rho * v ** 2
-    #
-    #     return [q * ccl/100000 for ccl in ccl_list]
-
     @Attribute
     def lift_forces(self) -> List[float]:
         # Pak eerste case
