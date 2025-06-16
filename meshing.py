@@ -1,3 +1,4 @@
+# Import necessary modules and classes
 from glueing import GeneralFuse
 from parapy.mesh.salome import FixedLength, Mesh as PPMesh, Quad, Tri
 from parapy.mesh.salome.grid import SubGrid
@@ -7,14 +8,16 @@ from torsionbox import TorsionBox
 from parapy.core import *
 from parapy.core import Attribute, Part
 
-
+# Extended Mesh class with a helper to get subgrids for selected shapes
 class Mesh(PPMesh):
     def get_subgrid_on_the_fly(self, shape, *other_shapes, label):
+        # Create compound shape if multiple shapes are provided
         if other_shapes:
             topods_shape = make_TopoDS_Compound(map(
                 topods_shape_getter, [shape, *other_shapes]))
         else:
             topods_shape = shape.TopoDS_Shape
+        # Get the mesh and submesh from SMESH API
         smesh_mesh = self.SMESH_Mesh
         smesh_submesh = smesh_mesh.GetSubMesh(topods_shape)
         return SubGrid(SMESH_Mesh=smesh_mesh,
@@ -22,8 +25,9 @@ class Mesh(PPMesh):
                        dimension=shape.TOPODIM,
                        label=label)
 
-
+# MeshGenerator class: generates wing mesh from parametric input
 class MeshGenerator(Base):
+    # Geometry and control inputs
     check_element = Input()
 
     wing_airfoil_root = Input()
@@ -44,20 +48,21 @@ class MeshGenerator(Base):
     wing_sweep_leading_edge_planform2 = Input()
     wing_twist = Input()
 
-    # Spars
+    # Spar positions
     front_spar_position = Input()
     rear_spar_position = Input()
 
-    # Ribs
+    # Number of ribs
     rib_number = Input()
 
-    # Extra
+    # Discretization settings
     section_number = Input()
     points_number = Input()
     element_length = Input()
 
     @Attribute
     def torsionbox(self):
+        # Generates the 3D wing structure using a torsion box representation
         return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
                           wing_airfoil_middle=self.wing_airfoil_middle,
                           wing_airfoil_tip=self.wing_airfoil_tip,
@@ -85,6 +90,7 @@ class MeshGenerator(Base):
 
     @Part
     def shape_to_mesh(self):
+        # Merge and fuse all structural components into one compound for meshing
         return GeneralFuse(
             tools=[self.torsionbox.wing_upper_surface,
                    self.torsionbox.wing_lower_surface,
@@ -98,6 +104,7 @@ class MeshGenerator(Base):
 
     @Attribute
     def quad_faces(self):
+        # Select faces that are suitable for quadrilateral meshing
         faces = [f for f in self.shape_to_mesh.faces if len(f.edges) == 4]
         lst = []
 
@@ -122,16 +129,19 @@ class MeshGenerator(Base):
 
     @Part(in_tree=False)
     def fixed_length(self):
+        # Fixed edge length control for mesh generation
         return FixedLength(shape_to_mesh=self.shape_to_mesh,
                            length=self.element_length)
 
     @Part(in_tree=False)
     def quad(self):
+        # Quadrilateral mesh generation for selected faces
         return Quad(quantify=len(self.quad_faces),
                     shape=self.quad_faces[child.index])
 
     @Part
     def tri(self):
+        # Triangular mesh for all surfaces (fallback or full domain)
         return Tri(shape_to_mesh=self.shape_to_mesh,
                    quad_dominant=False,
                    only_2d=False,
@@ -141,15 +151,18 @@ class MeshGenerator(Base):
 
     @Part
     def mesh(self):
+        # Full mesh object combining fixed length and triangulation
         return Mesh(shape_to_mesh=self.shape_to_mesh,
                     display_mode="shaded",
                     controls=[self.fixed_length, self.tri])
 
     @Attribute
     def face_hash_map(self):
+        # Create a hash map for mesh faces to track identity/changes
         return [(i, hash(face.TopoDS_Shape)) for i, face in enumerate(self.shape_to_mesh.faces)]
 
 
+# Standalone visualization if this script is run directly
 if __name__ == '__main__':
     from parapy.gui import display
 
