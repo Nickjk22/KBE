@@ -14,6 +14,7 @@ import pandas as pd
 import os
 from scipy.interpolate import interp1d
 from kbeutils import avl
+import matplotlib.pyplot as plt
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
 from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo, Between, LessThan
 
@@ -187,34 +188,34 @@ class IntegratedWingAnalysis(Base):
         # Pad naar het bestand
         path = self.wing_airfoil_root if isinstance(self.wing_airfoil_root, str) else self.wing_airfoil_root.path
 
-        # Lees data uit bestand
+        # Read data from file
         with open(path, 'r') as f:
             coords = [tuple(map(float, line.strip().split())) for line in f if line.strip()]
 
         # Extract X and Y separately
         x_vals = [pt[0] for pt in coords]
 
-        # Zoek de x-coördinaat die het dichtst bij front_spar_position ligt
+        # Search the x-coördinate that is the closest to front_spar_position
         x_front = min(x_vals, key=lambda x: abs(x - self.front_spar_position))
         x_rear = min(x_vals, key=lambda x: abs(x - self.rear_spar_position))
 
-        # Haal de y-waarden van beide kanten voor elk van deze x’s
+        # Extract the y-values on both sides of the x value
         front_ys = [y for x, y in coords if abs(x - x_front) < 1e-5]
         rear_ys = [y for x, y in coords if abs(x - x_rear) < 1e-5]
 
-        # Controleer dat we per x minstens een boven- en onderpunt hebben
+        # Check if the x-values have an upper and lower side
         if len(front_ys) < 2 or len(rear_ys) < 2:
             raise ValueError("Niet genoeg y-punten gevonden bij sparlocaties.")
 
-        # Sorteer y's om boven/onder te splitsen
+        # sort y values to sort by upper and lower
         front_ys.sort()
         rear_ys.sort()
 
-        # Neem verschil tussen bovenste en onderste punt
+        # Take the difference between upper and lower
         front_thickness = abs(front_ys[-1] - front_ys[0])
         rear_thickness = abs(rear_ys[-1] - rear_ys[0])
 
-        # Kies de kleinste als effectieve spardikte
+        # Choose the smallest value for the thickness
         return min(front_thickness, rear_thickness)
 
     @Attribute
@@ -316,7 +317,7 @@ class IntegratedWingAnalysis(Base):
             case2 = ('fixed_cl', {'alpha': avl.Parameter(name='alpha', value=self.new_parameter, setting='CL')})
             return case2
 
-    # Stap 2: AVL-analyse (pas zichtbaar in GUI wanneer aangeklikt)
+    # Stap 2: AVL-analysis
     @Attribute
     def avl_analysis(self):
         return WingAVLAnalysis(
@@ -356,282 +357,13 @@ class IntegratedWingAnalysis(Base):
                                              element_length=self.element_length))
 
     @Attribute
-    def avl_lift_forces_normalized(self):
-        lift_forces = []
-        max_value = max(self.avl_analysis.lift_forces)
-        for i in self.avl_analysis.lift_forces:
-            norm = i / max_value
-            lift_forces.append(norm)
-        return lift_forces
-
-    @Attribute
-    def avl_lift_forces(self):
-        return self.avl_analysis.lift_forces
-
-    @Attribute
-    def plot_lift_distribution(self):
-        lift_values = self.avl_lift_forces
-        num_points = len(lift_values)
-
-        # Generate evenly spaced spanwise positions from 0 to wing_semi_span
-        spanwise_positions = np.linspace(0, self.wing_semi_span, num_points)
-
-        # Plot
-        plt.figure(figsize=(10, 5))
-        plt.plot(spanwise_positions, lift_values, label="Lift Distribution", color="blue")
-        plt.xlabel("Spanwise Position [m]")
-        plt.ylabel("Lift Force [N]")
-        plt.title("Lift Distribution over Semi-Span")
-        plt.grid(True)
-        plt.legend()
-        plt.xlim(0, self.wing_semi_span)
-
-        # Save the figure as .eps in the output folder
-        output_dir = os.path.join(os.path.dirname(__file__), "output")
-        os.makedirs(output_dir, exist_ok=True)
-
-        file_path = os.path.join(output_dir, "lift_distribution.eps")
-        plt.savefig(file_path, format='eps')
-        plt.close()
-
-        return file_path
-
-        # @Attribute
-    # def torsionbox(self):
-    #     return TorsionBox(hidden=True)
-    #
-    # @Attribute
-    # def points_list(self):
-    #     return [pt.point for pt in self.torsionbox.points]
-
-    # @Part
-    # def lift_arrows(self):
-    #     return LiftArrowArray(points_list=self.points_list, lift_forces=self.avl_lift_forces)
-
-    @Attribute
-    def points_list(self):
-        return self.wing_surface.points
-
-    @Part
-    def lift_arrows(self):
-        return LiftArrowArray(points_list=[pt.point for pt in self.points_list],
-                              lift_forces=self.avl_lift_forces_normalized)
-
-    # FEM Analysis Code
-
-    @Part
-    def mesh(self):
-        return MeshGenerator(check_element=0,
-                             wing_airfoil_root=self.wing_airfoil_root,
-                             wing_airfoil_middle=self.wing_airfoil_middle,
-                             wing_airfoil_tip=self.wing_airfoil_tip,
-
-                             wing_root_chord=self.corrected_root_chord,
-                             wing_middle_chord=self.corrected_middle_chord,
-                             wing_tip_chord=self.wing_tip_chord,
-
-                             wing_thickness_factor_root=self.wing_thickness_factor_root,
-                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-
-                             wing_semi_span_planform1=self.wing_semi_span_planform1,
-                             wing_semi_span=self.corrected_semi_span,
-                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-
-                             front_spar_position=self.corrected_front_spar_position,
-                             rear_spar_position=self.corrected_rear_spar_position,
-                             rib_number=self.corrected_rib_number,
-
-                             section_number=self.section_number,
-                             points_number=self.points_number,
-                             element_length=self.element_length
-                             )
-
-    @Attribute
-    def material_choice(self):
-        STEEL = DEFI_MATERIAU(ELAS=_F(E=3e11, RHO=7850, NU=0.1666))  # structural steel
-        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))  # generic aluminum
-        AL7075 = DEFI_MATERIAU(ELAS=_F(E=7.1e10, RHO=2810, NU=0.33))  # Aluminum 7075-T6
-        TI6AL4V = DEFI_MATERIAU(ELAS=_F(E=1.1e11, RHO=4430, NU=0.34))  # Titanium alloy
-        CFRP = DEFI_MATERIAU(ELAS=_F(E=1.4e11, RHO=1600, NU=0.28))  # Carbon Fiber Reinforced Polymer (average)
-        GFRP = DEFI_MATERIAU(ELAS=_F(E=3.5e10, RHO=1900, NU=0.27))  # Glass Fiber Reinforced Polymer
-
-        if self.material == 'Steel':
-            return STEEL
-        elif self.material == 'Aluminium':
-            return ALUMINIUM
-        elif self.material == 'AL7075':
-            return AL7075
-        elif self.material == 'Titanium':
-            return TI6AL4V
-        elif self.material == 'CFRP':
-            return CFRP
-        elif self.material == 'GFRP':
-            return GFRP
-        else:
-            raise ValueError(f"Unknown material: {self.material}")
-
-    # @Attribute
-    # def fem_setup(self):
-    #     return WingFEM(finalmesh=self.mesh,
-    #                    avl=self.avl_analysis,
-    #                    skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
-    #                                                     wing_airfoil_middle=self.wing_airfoil_middle,
-    #                                                     wing_airfoil_tip=self.wing_airfoil_tip,
-    #
-    #                                                     wing_root_chord=self.corrected_root_chord,
-    #                                                     wing_middle_chord=self.corrected_middle_chord,
-    #                                                     wing_tip_chord=self.wing_tip_chord,
-    #
-    #                                                     wing_thickness_factor_root=self.wing_thickness_factor_root,
-    #                                                     wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-    #                                                     wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-    #
-    #                                                     wing_semi_span_planform1=self.wing_semi_span_planform1,
-    #                                                     wing_semi_span=self.corrected_semi_span,
-    #                                                     wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-    #                                                     wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-    #
-    #                                                     front_spar_position=self.corrected_front_spar_position,
-    #                                                     rear_spar_position=self.corrected_rear_spar_position,
-    #                                                     rib_number=self.corrected_rib_number,
-    #
-    #                                                     section_number=self.section_number,
-    #                                                     points_number=self.points_number,
-    #
-    #                                                     finalmesh=self.mesh,
-    #                                                     element_length=self.element_length
-    #                                                     ))
-
-    # @Attribute
-    # def fem_writer(self):
-    #     return Writer(instance=self.fem_setup, avl=self.avl_analysis, material=self.material_choice)
-
-    @Attribute
-    def run_fem_analysis(self):
-        result = optimize_plate_thickness(
-            target_deflection=self.target_deflection,
-            initial_thickness=self.corrected_initial_thickness,
-            thickness_bounds=self.corrected_thickness_bounds2,
-            check_element=0,
-            wing_airfoil_root=self.wing_airfoil_root,
-            wing_airfoil_middle=self.wing_airfoil_middle,
-            wing_airfoil_tip=self.wing_airfoil_tip,
-
-            wing_root_chord=self.corrected_root_chord,
-            wing_middle_chord=self.corrected_middle_chord,
-            wing_tip_chord=self.wing_tip_chord,
-
-            wing_thickness_factor_root=self.wing_thickness_factor_root,
-            wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-
-            wing_semi_span_planform1=self.wing_semi_span_planform1,
-            wing_semi_span=self.corrected_semi_span,
-            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-
-            front_spar_position=self.corrected_front_spar_position,
-            rear_spar_position=self.corrected_rear_spar_position,
-            rib_number=self.corrected_rib_number,
-
-            section_number=self.section_number,
-            points_number=self.points_number,
-            element_length=self.element_length,
-            avl_analysis=self.avl_analysis,
-            material_choice=self.material_choice,
-            skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
-                                             wing_airfoil_middle=self.wing_airfoil_middle,
-                                             wing_airfoil_tip=self.wing_airfoil_tip,
-
-                                             wing_root_chord=self.corrected_root_chord,
-                                             wing_middle_chord=self.corrected_middle_chord,
-                                             wing_tip_chord=self.wing_tip_chord,
-
-                                             wing_thickness_factor_root=self.wing_thickness_factor_root,
-                                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-                                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-
-                                             wing_semi_span_planform1=self.wing_semi_span_planform1,
-                                             wing_semi_span=self.corrected_semi_span,
-                                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-                                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-
-                                             front_spar_position=self.corrected_front_spar_position,
-                                             rear_spar_position=self.corrected_rear_spar_position,
-                                             rib_number=self.corrected_rib_number,
-
-                                             section_number=self.section_number,
-                                             points_number=self.points_number,
-
-                                             finalmesh=self.mesh,
-                                             element_length=self.element_length
-                                             )
-        )
-        print(f"Optimized thickness: {result['optimized_thickness']} m")
-        print(f"Max deflection achieved: {result['max_deflection']} m")
-        print(f"Optimization success: {result['success']}")
-        return result
-
-    # Showcase optimized thicknesses, and generate stepfile
-    @Part
-    def wingbox(self):
-        return Wingbox(
-            wing_airfoil_root=self.wing_airfoil_root,
-            wing_airfoil_middle=self.wing_airfoil_middle,
-            wing_airfoil_tip=self.wing_airfoil_tip,
-            wing_root_chord=self.corrected_root_chord,
-            wing_middle_chord=self.corrected_middle_chord,
-            wing_tip_chord=self.wing_tip_chord,
-            wing_thickness_factor_root=self.wing_thickness_factor_root,
-            wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-            wing_semi_span_planform1=self.wing_semi_span_planform1,
-            wing_semi_span=self.corrected_semi_span,
-            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-            front_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            front_spar_position=self.corrected_front_spar_position,
-            rear_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            rear_spar_position=self.corrected_rear_spar_position,
-
-            rib_thickness=float(self.run_fem_analysis['optimized_thickness']),
-            rib_number=self.corrected_rib_number,
-
-            plate_thickness=float(self.run_fem_analysis['optimized_thickness']),
-
-            stringer_thickness=self.stringer_thickness,
-            stringer_number=self.stringer_number
-        )
-
-    @Part
-    def step_writer(self):
-        """
-        Generates a STEPWriter object for exporting wingbox components.
-        """
-        return STEPWriter(nodes=[self.wingbox.spars.front_spar,
-                                 self.wingbox.spars.rear_spar,
-                                 self.wingbox.plates.upper_plate,
-                                 self.wingbox.plates.lower_plate] +
-                                [rib.lofted_solid for rib in self.wingbox.ribs])
-
-    @Attribute
-    def wing_mass(self):
-        total_volume = (self.wingbox.spars.volume +
-                        self.wingbox.plates.volume +
-                        sum(rib.volume for rib in self.wingbox.ribs))
-        density = self.material_choice.ELAS.RHO
-        return total_volume * density
-
-    @Attribute
-    def avl_results(self):
-        new_file_name = "avl_results.txt"
+    def avl_and_optimisation_results(self):
+        new_file_name = "avl_and_optimisation_results.txt"
         directory_path = excel_directory.rsplit('\\', 1)[0]
         file_path = directory_path + '\\' + 'Project\\KBE\\output' + '\\' + new_file_name
         result = self.run_fem_analysis
 
-        # Clear the output file and rewrite content, including the inputs
+        # Clear the output file and rewrite content, including the inputs used for AVL, geometry and optimisation
         with open(file_path, 'w') as f:
             f.write("Output file for the AVL and FEM analysis")
             f.write('\n')
@@ -736,6 +468,226 @@ class IntegratedWingAnalysis(Base):
 
         # return self.results.items()
         return "results generated in text file"
+
+    @Attribute
+    def plot_lift_distribution(self):
+        lift_values = self.avl_lift_forces
+        num_points = len(lift_values)
+
+        # Generate evenly spaced spanwise positions from 0 to wing_semi_span
+        spanwise_positions = np.linspace(0, self.wing_semi_span, num_points)
+
+        # Plot
+        plt.figure(figsize=(10, 5))
+        plt.plot(spanwise_positions, lift_values, label="Lift Distribution", color="blue")
+        plt.xlabel("Spanwise Position [m]")
+        plt.ylabel("Lift Force [N]")
+        plt.title("Lift Distribution over Semi-Span")
+        plt.grid(True)
+        plt.legend()
+        plt.xlim(0, self.wing_semi_span)
+
+        # Save the figure as .eps in the output folder
+        output_dir = os.path.join(os.path.dirname(__file__), "output")
+        os.makedirs(output_dir, exist_ok=True)
+
+        file_path = os.path.join(output_dir, "lift_distribution.eps")
+        plt.savefig(file_path, format='eps')
+        plt.close()
+
+        return file_path
+
+    @Attribute
+    def avl_lift_forces_normalized(self):
+        lift_forces = []
+        max_value = max(self.avl_analysis.lift_forces)
+        for i in self.avl_analysis.lift_forces:
+            norm = i / max_value
+            lift_forces.append(norm)
+        return lift_forces
+
+    @Attribute
+    def avl_lift_forces(self):
+        return self.avl_analysis.lift_forces
+
+    @Attribute
+    def points_list(self):
+        return self.wing_surface.points  # Points list based on points_number
+
+    @Part
+    def lift_arrows(self):
+        return LiftArrowArray(points_list=[pt.point for pt in self.points_list],
+                              lift_forces=self.avl_lift_forces_normalized)
+
+    # FEM Analysis Code
+    @Part
+    def mesh(self):
+        return MeshGenerator(check_element=0,
+                             wing_airfoil_root=self.wing_airfoil_root,
+                             wing_airfoil_middle=self.wing_airfoil_middle,
+                             wing_airfoil_tip=self.wing_airfoil_tip,
+
+                             wing_root_chord=self.corrected_root_chord,
+                             wing_middle_chord=self.corrected_middle_chord,
+                             wing_tip_chord=self.wing_tip_chord,
+
+                             wing_thickness_factor_root=self.wing_thickness_factor_root,
+                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                             wing_semi_span_planform1=self.wing_semi_span_planform1,
+                             wing_semi_span=self.corrected_semi_span,
+                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+                             front_spar_position=self.corrected_front_spar_position,
+                             rear_spar_position=self.corrected_rear_spar_position,
+                             rib_number=self.corrected_rib_number,
+
+                             section_number=self.section_number,
+                             points_number=self.points_number,
+                             element_length=self.element_length
+                             )
+
+    @Attribute
+    def material_choice(self):
+        STEEL = DEFI_MATERIAU(ELAS=_F(E=3e11, RHO=7850, NU=0.1666))  # structural steel
+        ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))  # generic aluminum
+        AL7075 = DEFI_MATERIAU(ELAS=_F(E=7.1e10, RHO=2810, NU=0.33))  # Aluminum 7075-T6
+        TI6AL4V = DEFI_MATERIAU(ELAS=_F(E=1.1e11, RHO=4430, NU=0.34))  # Titanium alloy
+        CFRP = DEFI_MATERIAU(ELAS=_F(E=1.4e11, RHO=1600, NU=0.28))  # Carbon Fiber Reinforced Polymer (average)
+        GFRP = DEFI_MATERIAU(ELAS=_F(E=3.5e10, RHO=1900, NU=0.27))  # Glass Fiber Reinforced Polymer
+
+        if self.material == 'Steel':
+            return STEEL
+        elif self.material == 'Aluminium':
+            return ALUMINIUM
+        elif self.material == 'AL7075':
+            return AL7075
+        elif self.material == 'Titanium':
+            return TI6AL4V
+        elif self.material == 'CFRP':
+            return CFRP
+        elif self.material == 'GFRP':
+            return GFRP
+        else:
+            raise ValueError(f"Unknown material: {self.material}")
+
+    @Attribute
+    def run_fem_analysis(self):  # Runs optimisation
+        result = optimize_plate_thickness(
+            target_deflection=self.target_deflection,
+            initial_thickness=self.corrected_initial_thickness,
+            thickness_bounds=self.corrected_thickness_bounds2,
+            check_element=0,
+            wing_airfoil_root=self.wing_airfoil_root,
+            wing_airfoil_middle=self.wing_airfoil_middle,
+            wing_airfoil_tip=self.wing_airfoil_tip,
+
+            wing_root_chord=self.corrected_root_chord,
+            wing_middle_chord=self.corrected_middle_chord,
+            wing_tip_chord=self.wing_tip_chord,
+
+            wing_thickness_factor_root=self.wing_thickness_factor_root,
+            wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+            wing_semi_span_planform1=self.wing_semi_span_planform1,
+            wing_semi_span=self.corrected_semi_span,
+            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+            front_spar_position=self.corrected_front_spar_position,
+            rear_spar_position=self.corrected_rear_spar_position,
+            rib_number=self.corrected_rib_number,
+
+            section_number=self.section_number,
+            points_number=self.points_number,
+            element_length=self.element_length,
+            avl_analysis=self.avl_analysis,
+            material_choice=self.material_choice,
+            skin_writer=CodeAster_primitives(wing_airfoil_root=self.wing_airfoil_root,
+                                             wing_airfoil_middle=self.wing_airfoil_middle,
+                                             wing_airfoil_tip=self.wing_airfoil_tip,
+
+                                             wing_root_chord=self.corrected_root_chord,
+                                             wing_middle_chord=self.corrected_middle_chord,
+                                             wing_tip_chord=self.wing_tip_chord,
+
+                                             wing_thickness_factor_root=self.wing_thickness_factor_root,
+                                             wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+                                             wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+
+                                             wing_semi_span_planform1=self.wing_semi_span_planform1,
+                                             wing_semi_span=self.corrected_semi_span,
+                                             wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+                                             wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+
+                                             front_spar_position=self.corrected_front_spar_position,
+                                             rear_spar_position=self.corrected_rear_spar_position,
+                                             rib_number=self.corrected_rib_number,
+
+                                             section_number=self.section_number,
+                                             points_number=self.points_number,
+
+                                             finalmesh=self.mesh,
+                                             element_length=self.element_length
+                                             )
+        )
+        print(f"Optimized thickness: {result['optimized_thickness']} m")
+        print(f"Max deflection achieved: {result['max_deflection']} m")
+        print(f"Optimization success: {result['success']}")
+        return result
+
+    # Showcase optimized thicknesses, and generate stepfile
+    @Part()
+    def wingbox(self):
+        return Wingbox(
+            wing_airfoil_root=self.wing_airfoil_root,
+            wing_airfoil_middle=self.wing_airfoil_middle,
+            wing_airfoil_tip=self.wing_airfoil_tip,
+            wing_root_chord=self.corrected_root_chord,
+            wing_middle_chord=self.corrected_middle_chord,
+            wing_tip_chord=self.wing_tip_chord,
+            wing_thickness_factor_root=self.wing_thickness_factor_root,
+            wing_thickness_factor_middle=self.wing_thickness_factor_middle,
+            wing_thickness_factor_tip=self.wing_thickness_factor_tip,
+            wing_semi_span_planform1=self.wing_semi_span_planform1,
+            wing_semi_span=self.corrected_semi_span,
+            wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
+            wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
+            front_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
+            front_spar_position=self.corrected_front_spar_position,
+            rear_spar_thickness=float(self.run_fem_analysis['optimized_thickness']),
+            rear_spar_position=self.corrected_rear_spar_position,
+
+            rib_thickness=float(self.run_fem_analysis['optimized_thickness']),
+            rib_number=self.corrected_rib_number,
+
+            plate_thickness=float(self.run_fem_analysis['optimized_thickness']),
+
+            stringer_thickness=self.stringer_thickness,
+            stringer_number=self.stringer_number
+        )
+
+    @Part
+    def step_writer(self):
+        """
+        Generates a STEPWriter object for exporting wingbox components.
+        """
+        return STEPWriter(nodes=[self.wingbox.spars.front_spar,
+                                 self.wingbox.spars.rear_spar,
+                                 self.wingbox.plates.upper_plate,
+                                 self.wingbox.plates.lower_plate] +
+                                [rib.lofted_solid for rib in self.wingbox.ribs])
+
+    @Attribute
+    def wing_mass(self):
+        total_volume = (self.wingbox.spars.volume +
+                        self.wingbox.plates.volume +
+                        sum(rib.volume for rib in self.wingbox.ribs))
+        density = self.material_choice.ELAS.RHO
+        return total_volume * density
 
 
 if __name__ == '__main__':

@@ -49,10 +49,6 @@ class Section(GeomBase):
                     (self.wing_tip_chord - self.wing_middle_chord) / (
                     self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
-    # @Attribute
-    # def chord_section(self):
-    #     return self._calculate_chord_at_position(self.spanwise_points_list_sections[child.index])
-
     @Part
     def section_airfoil(self):
         return Airfoil(

@@ -8,7 +8,6 @@ import kbeutils.avl as avl
 from points import Points
 
 
-
 class WingSurface(GeomBase):
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
     wing_airfoil_middle = Input("whitcomb_interpolated.dat")
@@ -31,7 +30,6 @@ class WingSurface(GeomBase):
     points_number = Input(14)
 
     is_mirrored = Input(True)
-
 
     @Attribute
     def profiles(self):

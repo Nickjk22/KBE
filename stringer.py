@@ -3,7 +3,6 @@ from parapy.geom import *
 from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
-from spar_profile import SparProfile
 import numpy as np
 from stringer_profile import StringerProfile
 
@@ -158,81 +157,6 @@ class Stringer(GeomBase):
             ],
             color=[105,105,105],
         )
-
-    # @Part
-    # def lower_stringer_loft(self):
-    #     return LoftedSolid(
-    #         profiles=[
-    #             self.stringer_root_profile.lower_stringer,
-    #             self.stringer_middle_profile.lower_stringer,
-    #             self.stringer_tip_profile.lower_stringer
-    #         ],
-    #         color="blue",
-    #         transparency=0.5
-    #     )
-
-    # @Attribute
-    # def profiles_plan1(self):
-    #     return [
-    #         self.stringer_root_profile.upper_stringer,
-    #         self.stringer_middle_profile.upper_stringer
-    #     ]
-    #
-    # @Attribute
-    # def profiles_plan2(self):
-    #     return [
-    #         self.stringer_middle_profile.upper_stringer,
-    #         self.stringer_tip_profile.upper_stringer
-    #     ]
-
-    # @Part
-    # def stringer_plan1(self):
-    #     return LoftedSolid(
-    #         profiles=self.profiles_plan1,
-    #         color="Blue",
-    #         transparency=0.5
-    #     )
-    #
-    # @Part
-    # def stringer_plan2(self):
-    #     return LoftedSolid(
-    #         profiles=self.profiles_plan2,
-    #         color="Blue",
-    #         transparency=0.5
-    #     )
-    #
-    # @Part
-    # def stringer(self):
-    #     return FusedSolid(
-    #         shape_in=self.stringer_plan1,
-    #         tool=[self.stringer_plan2],
-    #         color="Blue",
-    #         transparency=0.5
-    #     )
-
-    # @Part
-    # def upper_stringer_loft(self):
-    #     return LoftedSolid(
-    #         profiles=[
-    #             self.stringer_root_profile.upper_stringer,
-    #             self.stringer_middle_profile.upper_stringer,
-    #             self.stringer_tip_profile.upper_stringer
-    #         ],
-    #         color="red",
-    #         transparency=0.3
-    #     )
-    #
-    # @Part
-    # def lower_stringer_loft(self):
-    #     return LoftedSolid(
-    #         profiles=[
-    #             self.stringer_root_profile.lower_stringer,
-    #             self.stringer_middle_profile.lower_stringer,
-    #             self.stringer_tip_profile.lower_stringer
-    #         ],
-    #         color="blue",
-    #         transparency=0.3
-    #     )
 
 
 if __name__ == '__main__':

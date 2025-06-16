@@ -5,7 +5,6 @@ from airfoil import Airfoil
 from reference_frame import Frame
 import numpy as np
 from wing_profiles import WingProfiles
-from points import Points
 
 
 class WingSurfaces(GeomBase):
@@ -187,26 +186,6 @@ class WingSurfaces(GeomBase):
                              transparency=1,
                              hidden=True)
 
-    #
-    # @Part
-    # def wing_upper_surface(self):
-    #     return FusedShell(
-    #         shape_in=self.upper_surface1,
-    #         tool=[self.upper_surface2],
-    #         mesh_deflection=0.0001,
-    #         transparency=0.8,
-    #         color="Yellow"
-    #     )
-    #
-    # @Part
-    # def wing_lower_surface(self):
-    #     return FusedShell(
-    #         shape_in=self.lower_surface1,
-    #         tool=[self.lower_surface2],
-    #         mesh_deflection=0.0001,
-    #         transparency=0.8,
-    #         color="Yellow"
-    #     )
 
 if __name__ == '__main__':
     from parapy.gui import display

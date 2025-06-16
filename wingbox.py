@@ -9,13 +9,9 @@ from ribs import Rib
 from stringer import Stringer
 from sections import Section
 import numpy as np
-from parapy.geom import Compound, FusedSolid
 from upper_lower_plates import Plates
-from upper_lower_plates import Plates
-from scipy.interpolate import interp1d
 
 
-# Class
 class Wingbox(GeomBase):
     # Wing
     wing_airfoil_root = Input("whitcomb_interpolated.dat")
@@ -254,6 +250,7 @@ class Wingbox(GeomBase):
                        section_number=self.section_number,
                        hidden=True
                        )
+
 
 if __name__ == '__main__':
     from parapy.gui import display

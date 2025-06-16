@@ -5,13 +5,6 @@ from OCC.utils.utilities import make_TopoDS_Compound
 from parapy.geom.occ.utilities import topods_shape_getter
 from torsionbox import TorsionBox
 from parapy.core import *
-from parapy.geom.occ.brep import BRep
-from sections import Section
-from parapy.mesh import EdgeGroup, FaceGroup
-
-import numpy as np
-
-# Add these imports at the top of torsionbox.py if not already present
 from parapy.core import Attribute, Part
 
 
@@ -155,125 +148,6 @@ class MeshGenerator(Base):
     @Attribute
     def face_hash_map(self):
         return [(i, hash(face.TopoDS_Shape)) for i, face in enumerate(self.shape_to_mesh.faces)]
-
-
-# class FinalMesh(Base):
-#     check_element = Input()
-#
-#     wing_airfoil_root = Input()
-#     wing_airfoil_middle = Input()
-#     wing_airfoil_tip = Input()
-#
-#     wing_root_chord = Input()
-#     wing_middle_chord = Input()
-#     wing_tip_chord = Input()
-#
-#     wing_thickness_factor_root = Input()
-#     wing_thickness_factor_middle = Input()
-#     wing_thickness_factor_tip = Input()
-#
-#     wing_semi_span_planform1 = Input()
-#     wing_semi_span = Input()
-#     wing_sweep_leading_edge_planform1 = Input()
-#     wing_sweep_leading_edge_planform2 = Input()
-#     wing_twist = Input()
-#
-#     # Spars
-#     front_spar_position = Input()
-#     rear_spar_position = Input()
-#
-#     # Ribs
-#     rib_number = Input()
-#
-#     # Extra
-#     section_number = Input()
-#     points_number = Input()
-#     mesh_generator_cls = Input(MeshGenerator)
-#     element_length = Input()
-#
-#     # @Part
-#     # def sections(self):
-#     #     return Section(wing_airfoil_root=self.wing_airfoil_root,
-#     #                    wing_airfoil_middle=self.wing_airfoil_middle,
-#     #                    wing_airfoil_tip=self.wing_airfoil_tip,
-#     #
-#     #                    wing_root_chord=self.wing_root_chord,
-#     #                    wing_middle_chord=self.wing_middle_chord,
-#     #                    wing_tip_chord=self.wing_tip_chord,
-#     #
-#     #                    wing_thickness_factor_root=self.wing_thickness_factor_root,
-#     #                    wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-#     #                    wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-#     #
-#     #                    wing_semi_span_planform1=self.wing_semi_span_planform1,
-#     #                    wing_semi_span=self.wing_semi_span,
-#     #                    wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-#     #                    wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-#     #                    wing_twist=self.wing_twist,
-#     #
-#     #                    section_number=self.section_number,
-#     #                    hidden=True
-#     #                    )
-#
-#     @Attribute
-#     def torsionbox(self):
-#         return TorsionBox(wing_airfoil_root=self.wing_airfoil_root,
-#                           wing_airfoil_middle=self.wing_airfoil_middle,
-#                           wing_airfoil_tip=self.wing_airfoil_tip,
-#
-#                           wing_root_chord=self.wing_root_chord,
-#                           wing_middle_chord=self.wing_middle_chord,
-#                           wing_tip_chord=self.wing_tip_chord,
-#
-#                           wing_thickness_factor_root=self.wing_thickness_factor_root,
-#                           wing_thickness_factor_middle=self.wing_thickness_factor_middle,
-#                           wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-#
-#                           wing_semi_span_planform1=self.wing_semi_span_planform1,
-#                           wing_semi_span=self.wing_semi_span,
-#                           wing_sweep_leading_edge_planform1=self.wing_sweep_leading_edge_planform1,
-#                           wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
-#
-#                           front_spar_position=self.front_spar_position,
-#                           rear_spar_position=self.rear_spar_position,
-#                           rib_number=self.rib_number,
-#
-#                           section_number=self.section_number,
-#                           points_number=self.points_number,
-#                           hidden=True)
-#
-#     @Part
-#     def shape_to_mesh(self):
-#         return GeneralFuse(
-#             tools=[self.torsionbox.wing_upper_surface,
-#                    self.torsionbox.wing_lower_surface,
-#                    self.torsionbox.front_spar,
-#                    self.torsionbox.rear_spar
-#                    ] + [rib.rib_surface for rib in self.torsionbox.ribs],
-#             transparency=0.9,
-#             mesh_deflection=0.001,
-#             fuzzy_value=0.001
-#         )
-#
-#     # @Input
-#     # def mesh_generator(self):
-#     #     return MeshGenerator(shape_to_mesh=self.shape_to_mesh)
-#
-#     @Part
-#     def mesh_generator(self):
-#         return self.mesh_generator_cls(shape_to_mesh=self.shape_to_mesh, element_length=self.element_length)
-#
-#     @Attribute
-#     def mesh(self):
-#         return self.mesh_generator.mesh
-#
-#     @Attribute
-#     def number_of_faces(self):
-#         return len(self.shape_to_mesh.faces)
-#
-#     @Attribute
-#     def face_hash_map(self):
-#         return [(i, hash(face.TopoDS_Shape)) for i, face in enumerate(self.shape_to_mesh.faces)]
 
 
 if __name__ == '__main__':

@@ -59,33 +59,6 @@ class Rib(LoftedSolid):
         if offset_position > 1.0:
             offset_position = 1.0
         return self._calculate_chord_at_position(offset_position)
-    # @Attribute
-    # def root_chord_rib(self):
-    #     if self.rib_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1:
-    #         return (self.rib_spanwise_position / (
-    #                 self.wing_semi_span_planform1 / self.wing_semi_span)) * self.wing_semi_span_planform1 * (
-    #                 (
-    #                         self.wing_middle_chord - self.wing_root_chord) / self.wing_semi_span_planform1) + self.wing_root_chord
-    #     else:
-    #         return ((self.rib_spanwise_position - (self.wing_semi_span_planform1 / self.wing_semi_span)) / (
-    #                 1 - (self.wing_semi_span_planform1 / self.wing_semi_span))) * (
-    #                 self.wing_semi_span - self.wing_semi_span_planform1) * (
-    #                 (self.wing_tip_chord - self.wing_middle_chord) / (
-    #                 self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
-    #
-    # @Attribute
-    # def tip_chord_rib(self):
-    #     if self.rib_spanwise_position * self.wing_semi_span < self.wing_semi_span_planform1:
-    #         return ((self.rib_spanwise_position / (
-    #                 self.wing_semi_span_planform1 / self.wing_semi_span)) * self.wing_semi_span_planform1 + self.rib_thickness) * (
-    #                 (
-    #                         self.wing_middle_chord - self.wing_root_chord) / self.wing_semi_span_planform1) + self.wing_root_chord
-    #     else:
-    #         return (((self.rib_spanwise_position - (self.wing_semi_span_planform1 / self.wing_semi_span)) / (
-    #                 1 - (self.wing_semi_span_planform1 / self.wing_semi_span))) * (
-    #                         self.wing_semi_span - self.wing_semi_span_planform1) + self.rib_thickness) * (
-    #                 (self.wing_tip_chord - self.wing_middle_chord) / (
-    #                 self.wing_semi_span - self.wing_semi_span_planform1)) + self.wing_middle_chord
 
     @Part
     def rib_root_airfoil(self):
@@ -141,7 +114,6 @@ class Rib(LoftedSolid):
                 ),
             hidden=True
         )
-
 
     @Part
     def wing_root_airfoil(self):

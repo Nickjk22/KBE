@@ -113,31 +113,6 @@ class GeneralFuse(Compound_, BRepBuilder):
             lst.insert(0, s1)
             return lst
 
-    # @Attribute(private=True)
-    # def TopoDS_Shape(self):
-    #     if self.single_argument:
-    #         return self.arguments[0].TopoDS_Shape
-    #     return super().TopoDS_Shape
-    #
-    # @Attribute
-    # def single_argument(self):
-    #     return len(self.arguments) == 1
-    #
-    # def generated(self, shape):
-    #     if self.single_argument:
-    #         return ()
-    #     return super().generated(shape)
-    #
-    # def modified(self, shape):
-    #     if self.single_argument:
-    #         return ()
-    #     return super().modified(shape)
-    #
-    # def is_deleted(self, shape):
-    #     if self.single_argument:
-    #         return False
-    #     return super().is_deleted(shape)
-
     def build(self):
         arguments = self.arguments
 

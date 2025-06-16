@@ -1,9 +1,7 @@
-from math import radians, tan
 from parapy.geom import *
 from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
-import numpy as np
 
 
 class SparProfile1D(GeomBase):
@@ -13,7 +11,6 @@ class SparProfile1D(GeomBase):
 
     front_spar_position = Input(0.2)
     rear_spar_position = Input(0.6)
-
 
     @Attribute
     def points(self):

@@ -150,18 +150,18 @@ class Spars(GeomBase):
                            spar_thickness=self.rear_spar_thickness,
                            spar_position=self.rear_spar_position,
                            position=translate(self.position,
-                                                     "y", self.wing_semi_span,
-                                                     "x",
-                                                     self.wing_semi_span_planform1 * np.tan(radians(
-                                                         self.wing_sweep_leading_edge_planform1)) + (
-                                                             (
-                                                                         self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
-                                                         radians(
-                                                             self.wing_sweep_leading_edge_planform2)))
+                                              "y", self.wing_semi_span,
+                                              "x",
+                                              self.wing_semi_span_planform1 * np.tan(radians(
+                                                  self.wing_sweep_leading_edge_planform1)) + (
+                                                      (
+                                                              self.wing_semi_span - self.wing_semi_span_planform1) * np.tan(
+                                                  radians(
+                                                      self.wing_sweep_leading_edge_planform2)))
 
-                                                     #                   tan(radians(
-                                                     # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
-                                                     ),
+                                              #                   tan(radians(
+                                              # (self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform1 + (1 - self.wing_semi_span_planform1/self.wing_semi_span)*self.wing_sweep_leading_edge_planform2))
+                                              ),
                            hidden=True
                            )
 
@@ -220,7 +220,7 @@ class Spars(GeomBase):
             shape_in=self.front_spar_plan1,
             tool=[self.front_spar_plan2],
             mesh_deflection=0.0001,
-            color=[169,169,169],
+            color=[169, 169, 169],
         )
 
     @Part
@@ -229,17 +229,8 @@ class Spars(GeomBase):
             shape_in=self.rear_spar_plan1,
             tool=[self.rear_spar_plan2],
             mesh_deflection=0.0001,
-            color=[169,169,169],
+            color=[169, 169, 169],
         )
-
-    # @Part
-    # def solid_spar(self):
-    #     return FusedSolid(
-    #         shape_in=Solid(self.front_spar),
-    #         tool=[Solid(self.rear_spar)],
-    #         color="Cyan",
-    #         hidden=True,
-    #     )
 
 
 if __name__ == '__main__':

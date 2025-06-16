@@ -14,7 +14,6 @@
 from parapy.core import Attribute, Input, Part, derived
 from parapy.geom import (
     Compound, Cone, Cylinder, GeomBase, Orientation, Position, translate)
-from parapy.geom.generic.positioning import orthogonal_vector
 
 
 class ArrowVisualisationMixin(GeomBase):
@@ -73,7 +72,6 @@ class LiftArrowArray(GeomBase):
         if not self.lift_forces:
             return 1.0  # voorkomt deling door nul
         return max(abs(f) for f in self.lift_forces if not isclose(f, 0.0))
-
 
     @Part
     def arrows(self):

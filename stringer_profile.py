@@ -1,9 +1,7 @@
-from math import radians, tan
 from parapy.geom import *
 from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
-import numpy as np
 
 
 class StringerProfile(Polygon):
@@ -45,7 +43,7 @@ class StringerProfile(Polygon):
             for x, z in reversed(upper_in_region):
                 upper_profile.append(self.position.translate(
                     "x", x * self.chord,
-                    "z", (z - self.stringer_thickness/self.thickness_factor) * self.chord * self.thickness_factor))
+                    "z", (z - self.stringer_thickness / self.thickness_factor) * self.chord * self.thickness_factor))
 
             # Create lower stringer profile (rectangle)
             lower_profile = []
@@ -58,7 +56,7 @@ class StringerProfile(Polygon):
             for x, z in reversed(lower_in_region):
                 lower_profile.append(self.position.translate(
                     "x", x * self.chord,
-                    "z", (z + self.stringer_thickness/self.thickness_factor) * self.chord * self.thickness_factor))
+                    "z", (z + self.stringer_thickness / self.thickness_factor) * self.chord * self.thickness_factor))
 
         return {
             'upper_profile': upper_profile,
@@ -71,6 +69,7 @@ class StringerProfile(Polygon):
                        chord=self.chord,
                        thickness_factor=self.thickness_factor,
                        hidden=True)
+
     @Part
     def airfoil_frame(self):
         return Frame(pos=self.position,
@@ -92,7 +91,9 @@ class StringerProfile(Polygon):
             transparency=0.5
         )
 
+
 if __name__ == '__main__':
     from parapy.gui import display
+
     obj = StringerProfile(label="Stringer profile")
     display(obj)

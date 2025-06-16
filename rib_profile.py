@@ -1,9 +1,6 @@
-from math import radians, tan
 from parapy.geom import *
 from parapy.core import *
-from airfoil import Airfoil
 from reference_frame import Frame
-import numpy as np
 from spars_profile_1d import SparProfile1D
 from wing_profiles import WingProfiles
 

@@ -1,9 +1,7 @@
-from math import radians, tan
 from parapy.geom import *
 from parapy.core import *
 from airfoil import Airfoil
 from reference_frame import Frame
-import numpy as np
 
 
 class WingProfiles(GeomBase):
@@ -13,7 +11,6 @@ class WingProfiles(GeomBase):
 
     front_spar_position = Input(0.2)
     rear_spar_position = Input(0.6)
-
 
     @Attribute
     def wing_surface_profiles(self):
@@ -60,6 +57,7 @@ class WingProfiles(GeomBase):
                        chord=self.chord,
                        thickness_factor=self.thickness_factor,
                        hidden=True)
+
     @Part
     def airfoil_frame(self):
         return Frame(pos=self.position,
@@ -80,6 +78,7 @@ class WingProfiles(GeomBase):
             color="blue",
             transparency=0.5
         )
+
 
 if __name__ == '__main__':
     from parapy.gui import display

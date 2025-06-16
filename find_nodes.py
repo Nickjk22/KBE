@@ -11,9 +11,6 @@ from meshing import MeshGenerator
 import numpy as np
 
 
-
-
-
 class Skin(Base):
     wing_shell = Input()
     faces_to_keep = Input()
@@ -83,7 +80,7 @@ class CodeAster_primitives(Base):
                           wing_sweep_leading_edge_planform2=self.wing_sweep_leading_edge_planform2,
 
                           front_spar_position=self.front_spar_position,
-                          rear_spar_position =self.rear_spar_position,
+                          rear_spar_position=self.rear_spar_position,
                           rib_number=self.rib_number,
 
                           section_number=self.section_number,
@@ -136,8 +133,6 @@ class CodeAster_primitives(Base):
         lst = []
         mesh = self.finalmesh.mesh
         for pt in self.points_list:
-            label = 'group_no_' + str(id(pt))
-            # node = mesh.grid.find_node_at(pt)
             tolerance = self.finalmesh.element_length * 2
             node = mesh.grid.find_node_at(pt,
                                           tolerance=tolerance)
@@ -197,4 +192,3 @@ if __name__ == "__main__":
     comp = CodeAster_primitives()
 
     print(comp.load_primitives)
-

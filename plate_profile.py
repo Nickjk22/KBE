@@ -1,7 +1,6 @@
 from parapy.geom import *
 from parapy.core import *
 from wing_profiles import WingProfiles
-from reference_frame import Frame
 
 
 class UpperPlateProfile(Wire):

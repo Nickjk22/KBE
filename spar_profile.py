@@ -14,27 +14,6 @@ class SparProfile(Wire):
     spar_thickness = Input(0.2)
     spar_position = Input(0.2)
 
-    # @Attribute
-    # def points(self):
-    #     with open(self.airfoil_name, 'r') as f:
-    #         points_list = []
-    #         for line in f:
-    #             x, z = line.split(' ', 1)
-    #             if float(self.spar_position) <= float(x) <= float(self.spar_position) + self.spar_thickness/float(self.chord):
-    #                 points_list.append(self.position.translate(
-    #                     "x", float(x) * self.chord,
-    #                     "z", float(z) * self.chord * self.thickness_factor))
-    #     return points_list
-    #
-    #
-    # @Part
-    # def airfoil_frame(self):
-    #     return Frame(pos=self.position,
-    #                  hidden=False)
-    #
-
-
-
     @Part
     def wing_profiles(self):
         return WingProfiles(airfoil_name=self.airfoil_name,

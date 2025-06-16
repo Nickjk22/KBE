@@ -2,7 +2,6 @@ from parapy.geom import *
 from parapy.core import *
 from reference_frame import Frame
 import kbeutils.avl as avl
-import pandas as pd
 
 
 class Airfoil(FittedCurve):
