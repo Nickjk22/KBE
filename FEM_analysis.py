@@ -477,7 +477,7 @@ def optimize_plate_thickness(target_deflection: float,
         constraints=constraints,
         options={
             'disp': True,
-            'ftol': 1e-9,
+            'ftol': 1e-3,
             'maxiter': 100
         }
     )

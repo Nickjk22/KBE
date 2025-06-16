@@ -20,8 +20,8 @@ from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEq
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 def interpolate_airfoil(input_file, output_file, factor=5):
@@ -360,7 +360,8 @@ class IntegratedWingAnalysis(Base):
     def avl_and_optimisation_results(self):
         new_file_name = "avl_and_optimisation_results.txt"
         directory_path = excel_directory.rsplit('\\', 1)[0]
-        file_path = directory_path + '\\' + 'Project\\KBE\\output' + '\\' + new_file_name
+        # file_path = directory_path + '\\' + 'Project\\KBE\\output' + '\\' + new_file_name
+        file_path = directory_path + '\\' + 'GitHub\\output' + '\\' + new_file_name
         result = self.run_fem_analysis
 
         # Clear the output file and rewrite content, including the inputs used for AVL, geometry and optimisation
