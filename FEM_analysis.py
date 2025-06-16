@@ -20,7 +20,6 @@ import os
 
 from parapy.core import Attribute, Base, Input, Part, child
 from glueing import GeneralFuse
-from parapy.geom import RectangularFace
 from parapy.mesh import EdgeGroup, FaceGroup
 from parapy.mesh.salome import Mesh, Tri
 from parapy.geom import Compound, Face
@@ -53,43 +52,6 @@ class WingFEM(Base):
     length: float = Input(1)
     width: float = Input(2)
     element_length: float = Input(0.1)
-
-    # @Part
-    # def shape_to_mesh(self) -> RectangularFace:
-    #     return RectangularFace(length=self.length,
-    #                            width=self.width)
-
-    # @Part
-    # def hyp_1d(self) -> FixedLength:
-    #     return FixedLength(length=self.element_length,
-    #                        shape=self.shape_to_mesh)
-    #
-    # @Part
-    # def hyp_2d(self) -> Tri:
-    #     return Tri(shape=self.shape_to_mesh)
-
-    # @Part
-    # def contrained_edge_groups(self) -> EdgeGroup:
-    #     return EdgeGroup(quantify=2,
-    #                      shape=self.shape_to_mesh.edges[0].neighbours[child.index],
-    #                      label=[CONSTRAINED_EDGE1, CONSTRAINED_EDGE2][child.index])
-
-    # @Part
-    # def loaded_edge_group(self) -> EdgeGroup:
-    #     return EdgeGroup(shape=self.shape_to_mesh.edges[0],
-    #                      label=LOADED_EDGE)
-
-    # @Part
-    # def face_group(self) -> FaceGroup:
-    #     return FaceGroup(shape=self.shape_to_mesh,
-    #                      label=FACE)
-
-    # @Part
-    # def mesh(self) -> Mesh:
-    #     return Mesh(shape_to_mesh=self.shape_to_mesh,
-    #                 groups=[self.face_group,
-    #                         self.loaded_edge_group] + self.contrained_edge_groups,
-    #                 controls=[self.hyp_1d, self.hyp_2d])
 
     @Input
     def finalmesh(self):
@@ -175,12 +137,6 @@ class Writer:
     Written: ...
     """
 
-    # @Input
-    # def avl(self):
-    #     return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
-    #         ("alpha_5deg", {'alpha': 5.0}),
-    #     ])
-
     def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None, material: DEFI_MATERIAU = None) -> None:
         self._instance: WingFEM = instance or self._default_instance()
         self.avl: WingAVLAnalysis = avl or self._default_avl()
@@ -240,14 +196,6 @@ class Writer:
     @Attribute
     def liftforces(self):
         return self.avl.lift_forces
-
-    # @Input
-    # def liftforces(self):
-    #     return self.avl.lift_forces
-
-    # @Attribute
-    # def nodes(self):
-    #     return self.skin_writer.load_primitives
 
     def write_comm(self, pathname: str) -> None:
         writer = CommandWriter(self._commands)
@@ -356,11 +304,6 @@ class Writer:
             )
             self.mesh_groups.append(node_group)
 
-        # print(">>> DEBUG: mesh_groups")
-        # for grp in self.mesh_groups:
-        #     if grp.element_type == "node" and grp.label.startswith("load_node"):
-        #         print(f"    {grp.label}:  {len(grp.element_ids)} node(s) -> {grp.element_ids}")
-
     def _generate_mesh_settings_command(self) -> None:
         self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20,
                                                    FORMAT="ASTER")
@@ -386,10 +329,6 @@ class Writer:
                 EPAIS=self._instance.thickness,
                 GROUP_MA=tuple(self.FACE),
                 VECTEUR=(vec.x, vec.y, vec.z))])
-
-    # @Input
-    # def material(self):
-    #     return DEFI_MATERIAU(ELAS=_F(E=300000000000.0, RHO=7850, NU=0.1666))
 
     def _generate_material_zone_command(self) -> None:
         self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=tuple(self.FACE),
@@ -426,10 +365,6 @@ class Writer:
                 MODELE=self.model_command
             )
             self.load_commands.append(cmd)
-        #
-        # print(">>> DEBUG: load_commands")
-        # for cmd in self.load_commands:
-        #     print("   ", cmd)
 
     def _generate_solver_settings_command(self) -> None:
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]
