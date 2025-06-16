@@ -232,6 +232,13 @@ class Plates(GeomBase):
             color=[169,169,169],
         )
 
+    @property
+    def volume(self):
+        return (
+                self.upper_plate.volume +
+                self.lower_plate.volume
+        )
+
     # @Part
     # def lower_stringer_loft(self):
     #     return LoftedSolid(

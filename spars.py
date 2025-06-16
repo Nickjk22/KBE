@@ -8,9 +8,9 @@ import numpy as np
 
 
 class Spars(GeomBase):
-    wing_airfoil_root = Input("whitcomb_interpolated.dat")
-    wing_airfoil_middle = Input("whitcomb_interpolated.dat")
-    wing_airfoil_tip = Input("whitcomb_interpolated.dat")
+    wing_airfoil_root = Input("airfoil_data\whitcomb_interpolated.dat")
+    wing_airfoil_middle = Input("airfoil_data\whitcomb_interpolated.dat")
+    wing_airfoil_tip = Input("airfoil_data\whitcomb_interpolated.dat")
 
     wing_root_chord = Input(12)
     wing_middle_chord = Input(7)
@@ -204,6 +204,15 @@ class Spars(GeomBase):
         return LoftedSolid(profiles=self.profiles_rear_plan2,
                            color="Blue",
                            hidden=True)
+
+    @property
+    def volume(self):
+        return (
+                self.front_spar_plan1.volume +
+                self.front_spar_plan2.volume +
+                self.rear_spar_plan1.volume +
+                self.rear_spar_plan2.volume
+        )
 
     @Part
     def front_spar(self):

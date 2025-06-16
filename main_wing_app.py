@@ -15,6 +15,8 @@ from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
 import pandas as pd
+import os
+import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from kbeutils import avl
 from parapy.lib.code_aster import (_F, DEFI_MATERIAU)
@@ -22,8 +24,8 @@ from parapy.core.validate import LessThanOrEqualTo, GreaterThan, GreaterThanOrEq
 
 warnings.filterwarnings("ignore", category=UserWarning)  # Suppress AVL/FEM warnings
 
-# excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
-excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
+excel_directory = r"C:\Users\nick2\PycharmProjects\KBE\Parameters.xlsm"
+# excel_directory = r"C:\Users\raane\Documents\Uni\Master\KBE\Year2\Tutorials\Parameters.xlsm"
 
 
 def interpolate_airfoil(input_file, output_file, factor=5):
@@ -67,7 +69,7 @@ def interpolate_airfoil(input_file, output_file, factor=5):
 
 
 # Usage
-interpolate_airfoil('airfoil_data\whitcomb.dat', 'airfoil_data\whitcomb_interpolated.dat', factor=25)
+interpolate_airfoil('airfoil_data\whitcomb.dat', 'airfoil_data\whitcomb_interpolated.dat', factor=300)
 
 
 def generate_warning(warning_header, msg):
@@ -371,7 +373,35 @@ class IntegratedWingAnalysis(Base):
     def avl_lift_forces(self):
         return self.avl_analysis.lift_forces
 
-    # @Attribute
+    @Attribute
+    def plot_lift_distribution(self):
+        lift_values = self.avl_lift_forces
+        num_points = len(lift_values)
+
+        # Generate evenly spaced spanwise positions from 0 to wing_semi_span
+        spanwise_positions = np.linspace(0, self.wing_semi_span, num_points)
+
+        # Plot
+        plt.figure(figsize=(10, 5))
+        plt.plot(spanwise_positions, lift_values, label="Lift Distribution", color="blue")
+        plt.xlabel("Spanwise Position [m]")
+        plt.ylabel("Lift Force [N]")
+        plt.title("Lift Distribution over Semi-Span")
+        plt.grid(True)
+        plt.legend()
+        plt.xlim(0, self.wing_semi_span)
+
+        # Save the figure as .eps in the output folder
+        output_dir = os.path.join(os.path.dirname(__file__), "output")
+        os.makedirs(output_dir, exist_ok=True)
+
+        file_path = os.path.join(output_dir, "lift_distribution.eps")
+        plt.savefig(file_path, format='eps')
+        plt.close()
+
+        return file_path
+
+        # @Attribute
     # def torsionbox(self):
     #     return TorsionBox(hidden=True)
     #
@@ -590,6 +620,14 @@ class IntegratedWingAnalysis(Base):
                                  self.wingbox.plates.upper_plate,
                                  self.wingbox.plates.lower_plate] +
                                 [rib.lofted_solid for rib in self.wingbox.ribs])
+
+    @Attribute
+    def wing_mass(self):
+        total_volume = (self.wingbox.spars.volume +
+                        self.wingbox.plates.volume +
+                        sum(rib.volume for rib in self.wingbox.ribs))
+        density = self.material_choice.ELAS.RHO
+        return total_volume * density
 
     @Attribute
     def avl_results(self):

@@ -186,6 +186,11 @@ class Rib(LoftedSolid):
                            color=[211,211,211],
                           )
 
+    @property
+    def volume(self):
+        return (self.lofted_solid.volume
+        )
+
 
 if __name__ == '__main__':
     from parapy.gui import display
