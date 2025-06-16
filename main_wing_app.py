@@ -1,17 +1,13 @@
 from parapy.core import *
-import os
 from parapy.exchange import STEPWriter
 from parapy.gui import display
-from parapy.geom import *
 from wingbox import Wingbox
-from parapy.geom import Compound
 from AVL_analysis import WingAVLAnalysis
 from visualisation_arrows import LiftArrowArray
 import warnings
 from FEM_analysis import optimize_plate_thickness
 from wing import WingSurface
 from meshing import MeshGenerator
-from FEM_analysis import WingFEM, Writer
 from find_nodes import CodeAster_primitives
 import numpy as np
 import pandas as pd

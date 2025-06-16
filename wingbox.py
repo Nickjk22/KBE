@@ -59,14 +59,6 @@ class Wingbox(GeomBase):
         return Frame(pos=self.position,
                      hidden=False)
 
-    # @Attribute
-    # def spanwise_points_list_plan1(self):
-    #     return np.linspace(0, 1, self.rib_number_plan1)
-    #
-    # @Attribute
-    # def spanwise_points_list_plan2(self):
-    #     return np.linspace(0, 1, self.rib_number_plan2)
-
     # Spanwise points for ribs (fraction of semi_span)
     @Attribute
     def spanwise_points_list(self):
@@ -166,51 +158,6 @@ class Wingbox(GeomBase):
                      rear_spar_thickness=self.rear_spar_thickness,
                      rear_spar_position=self.rear_spar_position,
                      )
-
-    # @Part
-    # def ribs_plan1(self):
-    #     return Rib(
-    #         wing_airfoil_root=self.wing_airfoil_root,
-    #         wing_airfoil_tip=self.wing_airfoil_middle,
-    #
-    #         wing_root_chord=self.wing_root_chord,
-    #         wing_tip_chord=self.wing_middle_chord,
-    #
-    #         wing_thickness_factor_root=self.wing_thickness_factor_root,
-    #         wing_thickness_factor_tip=self.wing_thickness_factor_middle,
-    #
-    #         wing_semi_span=self.wing_semi_span_planform1,
-    #         wing_sweep=self.wing_sweep_leading_edge_planform1,
-    #         wing_twist=self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span),
-    #
-    #         rib_thickness=self.rib_thickness,
-    #         quantify=self.rib_number_plan1,
-    #         rib_spanwise_position=self.spanwise_points_list_plan1[child.index]
-    #     )
-    #
-    # @Part
-    # def ribs_plan2(self):
-    #     return Rib(position=rotate(translate(self.position, "y", self.wing_semi_span_planform1,
-    #                                          "x", self.wing_semi_span_planform1 * tan(
-    #             radians(self.wing_sweep_leading_edge_planform1))), "y", radians(
-    #         self.wing_twist * (self.wing_semi_span_planform1 / self.wing_semi_span))),
-    #                wing_airfoil_root=self.wing_airfoil_middle,
-    #                wing_airfoil_tip=self.wing_airfoil_tip,
-    #
-    #                wing_root_chord=self.wing_middle_chord,
-    #                wing_tip_chord=self.wing_tip_chord,
-    #
-    #                wing_thickness_factor_root=self.wing_thickness_factor_middle,
-    #                wing_thickness_factor_tip=self.wing_thickness_factor_tip,
-    #
-    #                wing_semi_span=self.wing_semi_span - self.wing_semi_span_planform1,
-    #                wing_sweep=(self.wing_sweep_leading_edge_planform2 + self.wing_sweep_leading_edge_planform1) / 2,
-    #                wing_twist=self.wing_twist * (1 - self.wing_semi_span_planform1 / self.wing_semi_span),
-    #
-    #                rib_thickness=self.rib_thickness,
-    #                quantify=self.rib_number_plan2,
-    #                rib_spanwise_position=self.spanwise_points_list_plan2[child.index]
-    #                )
 
     # Ribs
     @Part
