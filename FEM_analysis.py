@@ -13,29 +13,33 @@
 clamping half of the nodes on the sides. Loading is applied via point loads.
 """
 
+# --- General imports ---
 from collections import namedtuple
 from typing import Dict, List, NamedTuple
 from scipy.optimize import minimize
 import os
 
+# --- ParaPy core and geometry imports ---
 from parapy.core import Attribute, Base, Input, Part, child
 from glueing import GeneralFuse
 from parapy.mesh import EdgeGroup, FaceGroup
-from parapy.mesh.salome import Mesh, Tri
+from parapy.mesh.salome import Mesh
 from parapy.geom import Compound, Face
 from parapy.mesh.salome import MeshNode
-from parapy.mesh.salome.controls import FixedLength
 from parapy.lib.code_aster import (_F, AFFE_CARA_ELEM, AFFE_CHAR_MECA,
                                    AFFE_MATERIAU, AFFE_MODELE, DEFI_MATERIAU,
                                    IMPR_RESU, LIRE_MAILLAGE, MECA_STATIQUE,
                                    Command, CommandWriter, MeshGroup,
                                    MeshWriter, ResultsReaderBase,
                                    create_export_file, run_code_aster)
+
+# --- Project-specific modules ---
 from meshing import MeshGenerator
 from AVL_analysis import WingAVLAnalysis
 from find_nodes import CodeAster_primitives
 from wing import WingSurface
 
+# --- Constants for constraint group labels ---
 CONSTRAINED_EDGE1 = "constrained_edge1_group"
 CONSTRAINED_EDGE2 = "constrained_edge2_group"
 CONSTRAINED_EDGE3 = "constrained_edge3_group"
@@ -43,6 +47,7 @@ CONSTRAINED_EDGE4 = "constrained_edge4_group"
 
 
 class WingFEM(Base):
+    # Input parameters defining the FEM geometry and mesh
     thickness: float = Input(0.1)
     length: float = Input(1)
     width: float = Input(2)
@@ -50,14 +55,17 @@ class WingFEM(Base):
 
     @Input
     def finalmesh(self):
+        # Mesh generator input
         return MeshGenerator(element_length=self.element_length)
 
     @Attribute
     def shape_to_mesh(self) -> GeneralFuse:
+        # Geometry to mesh conversion
         return self.finalmesh.shape_to_mesh
 
     @Part
     def contrained_edge_groups(self) -> EdgeGroup:
+        # Create edge groups used for constraints
         return EdgeGroup(quantify=4,
                          shape=[self.shape_to_mesh.edges[3],
                                 self.shape_to_mesh.edges[6],
@@ -70,57 +78,56 @@ class WingFEM(Base):
 
     @Attribute
     def FACE(self):
+        # Generate labels for face groups
         return [f"face{i + 1}_group" for i in range(len(self.shape_to_mesh.faces))]
 
     @Part
     def face_group(self) -> FaceGroup:
+        # Create face groups for shell definition
         return FaceGroup(quantify=len(self.shape_to_mesh.faces),
                          shape=[self.shape_to_mesh.faces[child.index]],
                          label=self.FACE[child.index])
 
     @Attribute
     def mesh(self) -> Mesh:
+        # The generated mesh object
         return self.finalmesh.mesh
 
     @Input
     def avl(self):
+        # AVL analysis input with basic setup
         return WingAVLAnalysis(aircraft=WingSurface(label="wing"), case_settings=[
             ("alpha_5deg", {'alpha': 5.0}),
         ])
 
     @Input
     def skin_writer(self):
+        # Helper that provides load application nodes
         return CodeAster_primitives()
 
     @Attribute
     def liftforces(self) -> List[float]:
+        # Extract lift forces from AVL
         return self.avl.lift_forces
 
     @Attribute
     def nodes(self) -> List[MeshNode]:
+        # Load application nodes
         return self.skin_writer.load_primitives
 
 
 class Writer:
-    """Writes code_aster command and mesh files.
-
-    # >>> instance = WingFEM()
-    # >>> obj = Writer(instance)
-    # >>> obj.write_comm("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/output.comm")  # doctest: +ELLIPSIS
-    # # >>> obj.write_comm("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/output.comm")  # doctest: +ELLIPSIS
-    #
-    # # Written: ...
-    # >>> obj.write_mesh("C:/Users/raane/Documents/Uni/Master/KBE/Year2/Tutorials/plate_CodeAster/output/mesh2.aster")  # doctest: +ELLIPSIS
-    # # >>> obj.write_mesh("C:/Users/nick2/PycharmProjects//KBE/GitHub/output/mesh2.aster")  # doctest: +ELLIPSIS
-
-    Written: ...
-    """
+    """Writes code_aster command and mesh files."""
 
     def __init__(self, instance: WingFEM = None, avl: WingAVLAnalysis = None, material: DEFI_MATERIAU = None) -> None:
+        # If no WingFEM instance is passed, use default
         self._instance: WingFEM = instance or self._default_instance()
+        # If no AVL is passed, use fallback setup
         self.avl: WingAVLAnalysis = avl or self._default_avl()
+        # If no material is passed, use default aluminum
         self.material: DEFI_MATERIAU = material or self._default_material()
 
+        # These will be filled by helper methods
         self.mesh_settings_command: LIRE_MAILLAGE = None
         self.mesh_groups: List[MeshGroup] = None
         self.model_command: AFFE_MODELE = None
@@ -131,6 +138,7 @@ class Writer:
         self.solver_settings_command: MECA_STATIQUE = None
         self.result_settings_command: IMPR_RESU = None
 
+        # Generate all Code_Aster setup commands
         self._generate_mesh_groups()
         self._generate_mesh_settings_command()
         self._generate_model_command()
@@ -141,133 +149,111 @@ class Writer:
         self._generate_solver_settings_command()
         self._generate_results_settings_command()
 
-        # Commands that are part of other commands do not need to be
-        # collected. These nested commands are unpacked recursively by the
-        # Code Aster writer. Examples of nested commands are:
-        #   MAILLAGE in AFFE_MODELE
-        #   AFFE in AFFE_MODELE, etc
-        # As such, we only need to pass the root command which recursively
-        # contains all other commands of the FEM model.
+        # Top-level commands for writing .comm
         self._commands: List[Command] = [self.result_settings_command]
 
     @staticmethod
     def _default_instance() -> WingFEM:
-        """Fallback WingFEM setup for standalone execution."""
-        # Example placeholder — replace with actual logic or test setup
+        # Creates default WingFEM for standalone execution
         return WingFEM()
 
     @staticmethod
     def _default_avl() -> WingAVLAnalysis:
-        """Fallback AVL setup for standalone execution."""
-        # You’ll likely need to provide a minimal working AVL configuration
+        # Default AVL setup with simple alpha=5deg case
         wing = WingSurface(label="wing")
         return WingAVLAnalysis(aircraft=wing, case_settings=[("alpha_5deg", {'alpha': 5.0})])
 
     @staticmethod
     def _default_material() -> DEFI_MATERIAU:
+        # Default material is aluminum
         ALUMINIUM = DEFI_MATERIAU(ELAS=_F(E=7e10, RHO=2700, NU=0.33))
         return ALUMINIUM
 
     @Attribute
     def liftforces(self):
+        # Re-expose AVL lift forces
         return self.avl.lift_forces
 
     def write_comm(self, pathname: str) -> None:
+        # Write the .comm file using Code_Aster CommandWriter
         writer = CommandWriter(self._commands)
         return writer.write(pathname)
 
     def write_mesh(self, pathname: str) -> None:
+        # Write the .aster mesh file
         writer = MeshWriter(grid=self._instance.mesh.grid,
                             groups=self.mesh_groups)
         return writer.write(pathname)
 
     def _generate_mesh_groups(self) -> None:
+        # Create MeshGroup objects for constraint edges and faces
         instance = self._instance
+
+        # For each constrained edge, find corresponding mesh node group
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE1,
                                                         shape=self._instance.shape_to_mesh.edges[3]).nodes
         ids = [elm.mesh_id for elm in elements]
-        group1 = MeshGroup(label=CONSTRAINED_EDGE1,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        group1 = MeshGroup(label=CONSTRAINED_EDGE1, header="GROUP_NO", element_ids=ids, element_type="node")
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE2,
                                                         shape=self._instance.shape_to_mesh.edges[6]).nodes
         ids = [elm.mesh_id for elm in elements]
-        group2 = MeshGroup(label=CONSTRAINED_EDGE2,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        group2 = MeshGroup(label=CONSTRAINED_EDGE2, header="GROUP_NO", element_ids=ids, element_type="node")
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE3,
                                                         shape=self._instance.shape_to_mesh.edges[9]).nodes
         ids = [elm.mesh_id for elm in elements]
-        group3 = MeshGroup(label=CONSTRAINED_EDGE3,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        group3 = MeshGroup(label=CONSTRAINED_EDGE3, header="GROUP_NO", element_ids=ids, element_type="node")
 
         elements = instance.mesh.get_subgrid_on_the_fly(label=CONSTRAINED_EDGE4,
                                                         shape=self._instance.shape_to_mesh.edges[10]).nodes
         ids = [elm.mesh_id for elm in elements]
-        group4 = MeshGroup(label=CONSTRAINED_EDGE4,
-                           header="GROUP_NO",
-                           element_ids=ids,
-                           element_type="node")
+        group4 = MeshGroup(label=CONSTRAINED_EDGE4, header="GROUP_NO", element_ids=ids, element_type="node")
 
-        self.mesh_groups = [group1, group2, group3, group4,
-                            # group5, group6
-                            ]
+        # Store edge and face groups
+        self.mesh_groups = [group1, group2, group3, group4]
 
         self.FACE = [f"face{i + 1}_group" for i in range(len(self._instance.shape_to_mesh.faces))]
 
-        # Create and append MeshGroups for each face starting from group6
+        # Add face-based groups (surface elements)
         for i, face_label in enumerate(self.FACE):
             shape = self._instance.shape_to_mesh
             element_ids = []
 
             if isinstance(shape, Compound):
-                # Get all subfaces directly from the compound
                 faces = shape.faces
             elif isinstance(shape, Face):
                 faces = [shape]
             else:
-                # fallback: try to access `.faces` if possible
                 faces = getattr(shape, 'faces', [])
 
             for face in faces:
                 try:
-                    subgrid = instance.mesh.get_subgrid_on_the_fly(
-                        label=face_label,
-                        shape=face
-                    )
+                    subgrid = instance.mesh.get_subgrid_on_the_fly(label=face_label, shape=face)
                     element_ids.extend(f.mesh_id for f in subgrid.faces)
                 except Exception as e:
                     print(f"Warning: Failed to process face for label {face_label}: {e}")
 
-            group = MeshGroup(
-                label=face_label,
-                header="GROUP_MA",
-                element_ids=element_ids,
-                element_type="face"
-            )
+            group = MeshGroup(label=face_label, header="GROUP_MA", element_ids=element_ids, element_type="face")
             self.mesh_groups.append(group)
 
+        # Add node groups for each load application point
         for i, mesh_node in enumerate(self._instance.nodes):
             grp_label = f"load_node{i + 1}_group"
             node_group = MeshGroup(
                 label=grp_label,
                 header="GROUP_NO",
-                element_ids=[mesh_node.mesh_id],  # directly use the mesh_id
+                element_ids=[mesh_node.mesh_id],
                 element_type="node"
             )
             self.mesh_groups.append(node_group)
 
     def _generate_mesh_settings_command(self) -> None:
-        self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20,
-                                                   FORMAT="ASTER")
+        # Code_Aster command for mesh settings
+        self.mesh_settings_command = LIRE_MAILLAGE(UNITE=20, FORMAT="ASTER")
 
     def _generate_model_command(self) -> None:
+        # Assign DKT shell elements to faces
         shell_model = _F(GROUP_MA=tuple(self.FACE),
                          MODELISATION=("DKT",),
                          PHENOMENE="MECANIQUE")
@@ -275,9 +261,7 @@ class Writer:
                                          MAILLAGE=self.mesh_settings_command)
 
     def _generate_shell_properties_command(self) -> None:
-        # Reference vector needed by CodeAster is based on normal and first
-        # tangent at first node of first face of subgrid.
-        # see CodeAster docs U4.42.01:8.3.4 for more info.
+        # Assign thickness and local direction vector to shell elements
         face = self._instance.mesh.grid.faces[0]
         tangent = face.tangent1
         normal = face.plane_normal
@@ -290,12 +274,14 @@ class Writer:
                 VECTEUR=(vec.x, vec.y, vec.z))])
 
     def _generate_material_zone_command(self) -> None:
+        # Assign material properties to shell elements
         self.material_zone_command = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=tuple(self.FACE),
                                                             MATER=(self.material,)),),
                                                    MAILLAGE=self.mesh_settings_command,
                                                    MODELE=self.model_command)
 
     def _generate_constraint_commands(self) -> None:
+        # Clamp the four edge groups with ENCASTRE boundary condition
         self.constraint_commands = [AFFE_CHAR_MECA(
             DDL_IMPO=_F(
                 GROUP_NO=(CONSTRAINED_EDGE1, CONSTRAINED_EDGE2, CONSTRAINED_EDGE3, CONSTRAINED_EDGE4),
@@ -303,8 +289,7 @@ class Writer:
             MODELE=self.model_command)]
 
     def _generate_load_commands(self) -> None:
-        # print(">>> DEBUG: nodes.mesh_id  =", [n.mesh_id for n in self._instance.nodes])
-        # print(">>> DEBUG: liftforces      =", self._instance.liftforces)
+        # Apply nodal forces (lift) to each load node group
         self.load_commands = []
         for i, force in enumerate(self._instance.liftforces):
             grp_label = f"load_node{i + 1}_group"
@@ -318,6 +303,7 @@ class Writer:
             self.load_commands.append(cmd)
 
     def _generate_solver_settings_command(self) -> None:
+        # Create MECA_STATIQUE solver command combining loads and constraints
         loads_constraints = [_F(CHARGE=obj) for obj in self.load_commands + self.constraint_commands]
         self.solver_settings_command = MECA_STATIQUE(SOLVEUR=_F(RESI_RELA=1e-06),
                                                      CARA_ELEM=self.shell_properties_command,
@@ -326,6 +312,7 @@ class Writer:
                                                      MODELE=self.model_command)
 
     def _generate_results_settings_command(self):
+        # Specify output of displacement results
         self.result_settings_command = IMPR_RESU(FORMAT="RESULTAT",
                                                  RESU=(_F(NOM_CHAM=("DEPL",),
                                                           RESULTAT=self.solver_settings_command),),
@@ -335,44 +322,40 @@ class Writer:
 class ResultsReader(ResultsReaderBase):
     @Attribute
     def nodes_displacements(self) -> Dict[str, NamedTuple]:
+        # Parse displacement results into a dictionary of namedtuples
         results_ = self.results["DEPL"]
         tmplt = namedtuple("nodes_displacements", ["TX", "TY", "TZ", "RX", "RY", "RZ"])
         dct = {}
         for line in results_[1:]:
             line_ = line.split()
             dct[line_[0]] = tmplt(*line_[1:])
-
         return dct
 
     @Attribute
     def max_deflection(self) -> float:
+        # Compute the maximum deflection in the Z direction
         deflections = [float(value.TZ) for value in self.nodes_displacements.values()]
         return max(deflections)
 
 
 def optimize_plate_thickness(target_deflection: float,
-                             check_element,  # New argument for WingFEM instance
+                             check_element,
                              wing_airfoil_root,
                              wing_airfoil_middle,
                              wing_airfoil_tip,
-
                              wing_root_chord,
                              wing_middle_chord,
                              wing_tip_chord,
-
                              wing_thickness_factor_root,
                              wing_thickness_factor_middle,
                              wing_thickness_factor_tip,
-
                              wing_semi_span_planform1,
                              wing_semi_span,
                              wing_sweep_leading_edge_planform1,
                              wing_sweep_leading_edge_planform2,
-
                              front_spar_position,
                              rear_spar_position,
                              rib_number,
-
                              section_number,
                              points_number,
                              element_length,
@@ -383,53 +366,50 @@ def optimize_plate_thickness(target_deflection: float,
                              thickness_bounds=(0.02, 0.5),
                              ):
     """
-    Optimize plate thickness to minimize thickness while keeping max deflection <= target_deflection.
+    Optimize plate thickness to minimize weight while keeping deflection under the target.
 
     Args:
-        target_deflection (float): Maximum allowed deflection (e.0.01 meters).
-        wing_fem_instance: An instance of the WingFEM class.
-        writer_instance: An instance of the Writer class.
-        initial_thickness (float): Initial guess for the plate thickness.
-        thickness_bounds (tuple): (min_thickness, max_thickness) allowed bounds.
+        target_deflection (float): Upper limit on allowed max deflection (e.g., 0.01 meters).
+        check_element (int): Identifier for meshing config.
+        wing_airfoil_*: Airfoil definitions for root, middle, and tip.
+        wing_*: Geometry and configuration parameters of the wing.
+        avl_analysis: AVL force results used as loads.
+        skin_writer: Provides nodes to apply loads.
+        material_choice: Material to be used in the model.
+        initial_thickness (float): Starting point for optimization.
+        thickness_bounds (tuple): Min and max bounds on thickness.
 
     Returns:
-        dict: Contains optimized thickness, max deflection, success status, and optimizer info.
+        dict: Includes optimized thickness, deflection, success flag, and full result object.
     """
 
     def objective(thickness):
-        """Objective: minimize thickness."""
-        return thickness[0]  # minimize thickness itself
+        # Objective: minimize the thickness itself
+        return thickness[0]
 
     def constraint(thickness):
-        """Constraint: deflection must be <= target_deflection."""
-        # --- Update WingFEM instance with new thickness ---
-        # wing_fem_instance.thickness = thickness[0]
-
+        # Constraint: max deflection should not exceed target
         print("Thickness =", thickness[0])
 
+        # Create a new WingFEM instance with updated thickness
         instance_new = WingFEM(finalmesh=MeshGenerator(
             check_element=check_element,
             wing_airfoil_root=wing_airfoil_root,
             wing_airfoil_middle=wing_airfoil_middle,
             wing_airfoil_tip=wing_airfoil_tip,
-
             wing_root_chord=wing_root_chord,
             wing_middle_chord=wing_middle_chord,
             wing_tip_chord=wing_tip_chord,
-
             wing_thickness_factor_root=wing_thickness_factor_root,
             wing_thickness_factor_middle=wing_thickness_factor_middle,
             wing_thickness_factor_tip=wing_thickness_factor_tip,
-
             wing_semi_span_planform1=wing_semi_span_planform1,
             wing_semi_span=wing_semi_span,
             wing_sweep_leading_edge_planform1=wing_sweep_leading_edge_planform1,
             wing_sweep_leading_edge_planform2=wing_sweep_leading_edge_planform2,
-
             front_spar_position=front_spar_position,
             rear_spar_position=rear_spar_position,
             rib_number=rib_number,
-
             section_number=section_number,
             points_number=points_number,
             element_length=element_length
@@ -441,7 +421,7 @@ def optimize_plate_thickness(target_deflection: float,
 
         writer_new = Writer(instance=instance_new, avl=avl_analysis, material=material_choice)
 
-        # --- Paths ---
+        # --- Define file paths ---
         current_path = os.path.dirname(__file__)
         output_dir = os.path.join(current_path, "output")
         os.makedirs(output_dir, exist_ok=True)
@@ -452,12 +432,12 @@ def optimize_plate_thickness(target_deflection: float,
         results_path = os.path.join(output_dir, "results.txt")
         log_file = os.path.join(output_dir, "aster_log.txt")
 
-        # --- Clean old files ---
+        # --- Clean up old files if they exist ---
         for path in [mesh_path, comm_path, export_path, results_path, log_file]:
             if os.path.exists(path):
                 os.remove(path)
 
-        # --- Write new files ---
+        # --- Generate new files for Code_Aster ---
         writer_new.write_mesh(mesh_path)
         writer_new.write_comm(comm_path)
         create_export_file(
@@ -467,32 +447,32 @@ def optimize_plate_thickness(target_deflection: float,
             results_path=results_path,
         )
 
-        # --- Run Code_Aster ---
+        # --- Run simulation ---
         run_code_aster(export_path, log_file=log_file)
 
-        # --- Read results ---
+        # --- Read results and extract max deflection ---
         results_reader = ResultsReader(file_path=results_path)
         max_deflection = float(results_reader.max_deflection)
 
         print("Max deflection =", max_deflection)
 
-        # Constraint: max_deflection must be <= target_deflection
+        # Constraint: target - max_deflection >= 0
         return target_deflection - max_deflection
 
-    # --- Define constraints for minimize ---
+    # Define constraint for optimizer
     constraints = ({
-        'type': 'ineq',  # constraint >= 0
+        'type': 'ineq',  # Must be >= 0
         'fun': constraint
     })
 
-    # --- Initial guess ---
+    # Starting value for thickness
     x0 = [initial_thickness]
 
-    # --- Run the optimization ---
+    # Run the optimization using Sequential Least Squares
     result = minimize(
         objective,
         x0,
-        method='SLSQP',  # good for constraints
+        method='SLSQP',
         bounds=[thickness_bounds],
         constraints=constraints,
         options={
@@ -512,29 +492,25 @@ def optimize_plate_thickness(target_deflection: float,
 
 
 if __name__ == "__main__":
+    # Example usage of the WingFEM and optimization
     instance = WingFEM(finalmesh=MeshGenerator(
         check_element=0,
         wing_airfoil_root="whitcomb_interpolated.dat",
         wing_airfoil_middle="whitcomb_interpolated.dat",
         wing_airfoil_tip="whitcomb_interpolated.dat",
-
         wing_root_chord=6,
         wing_middle_chord=4,
         wing_tip_chord=1.5,
-
         wing_thickness_factor_root=1,
         wing_thickness_factor_middle=1,
         wing_thickness_factor_tip=1,
-
         wing_semi_span_planform1=5,
         wing_semi_span=16,
         wing_sweep_leading_edge_planform1=20,
         wing_sweep_leading_edge_planform2=20,
-
         front_spar_position=0.2,
         rear_spar_position=0.6,
         rib_number=12,
-
         section_number=14,
         points_number=14,
         element_length=0.1
