@@ -165,6 +165,7 @@ class Spars(GeomBase):
                            hidden=True
                            )
 
+    # Create planform groups
     @Attribute
     def profiles_front_plan1(self):
         return [self.front_spar_root_profile, self.front_spar_middle_profile]
@@ -181,6 +182,7 @@ class Spars(GeomBase):
     def profiles_rear_plan2(self):
         return [self.rear_spar_middle_profile, self.rear_spar_tip_profile]
 
+    # Create solids of these groups
     @Part
     def front_spar_plan1(self):
         return LoftedSolid(profiles=self.profiles_front_plan1,
@@ -205,6 +207,7 @@ class Spars(GeomBase):
                            color="Blue",
                            hidden=True)
 
+    # Extract volume
     @property
     def volume(self):
         return (
@@ -214,6 +217,7 @@ class Spars(GeomBase):
                 self.rear_spar_plan2.volume
         )
 
+    # Fuse the solid groups together
     @Part
     def front_spar(self):
         return FusedSolid(
